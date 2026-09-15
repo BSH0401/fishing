@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e52eb336fc30448ba19f53a13a35b9, type: 3}
+  m_Name: Skill_booster_power
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.SkillNode
+  id: booster_power
+  displayName: "\uBD80\uC2A4\uD130 \uC704\uB825 \uAC15\uD654"
+  tooltip: 
+  description: "\uBD80\uC2A4\uD130\uB97C \uC0AC\uC6A9\uD560 \uB54C \uC790\uAE30\uBCF4\uB2E4
+    \uB354 \uD070 \uBB3C\uACE0\uAE30\uB3C4 \uBA39\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
+  icon: {fileID: 0}
+  prerequisites:
+  - node: {fileID: 11400000, guid: 276eb288055ac3047ab5143195d0c03c, type: 2}
+    level: 1
+  gridPosition: {x: 0, y: -5}
+  effectType: 201
+  valuePerLevel: 1
+  maxLevel: 1
+  costMultiplier: 14

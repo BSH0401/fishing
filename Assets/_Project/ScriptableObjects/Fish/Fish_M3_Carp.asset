@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
+  m_Name: Fish_M3_Carp
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
+  speciesId: Fish_M3_Carp
+  displayName: "\uC789\uC5B4"
+  codexNote: 
+  sprite: {fileID: 21300000, guid: fb5cdc787c80abf439168382e6504c01, type: 3}
+  spriteFacesLeft: 0
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  size: 8.6
+  visualScaleMultiplier: 1
+  pattern: 4
+  moveSpeed: 4
+  patternParam: 8
+  patternParam2: 1
+  turnRate: 250
+  swayAmplitude: 8
+  swayFrequency: 2.2
+  currencyReward: 5.8
+  timeReward: 1.6
+  codexBonusType: 3
+  codexBonusPerTier: 0.018
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

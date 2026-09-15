@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
+  m_Name: Fish_M2_Pipe
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
+  speciesId: Fish_M2_Pipe
+  displayName: "\uAD00\uBC8C\uB808\uACE0\uAE30"
+  codexNote: 
+  sprite: {fileID: 21300000, guid: 821b5d51409bb4e4883db98843793587, type: 3}
+  spriteFacesLeft: 0
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  size: 3.2
+  visualScaleMultiplier: 1
+  pattern: 4
+  moveSpeed: 3.6
+  patternParam: 6
+  patternParam2: 1
+  turnRate: 270
+  swayAmplitude: 8
+  swayFrequency: 2.3
+  currencyReward: 1.4
+  timeReward: 1.3
+  codexBonusType: 3
+  codexBonusPerTier: 0.018
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

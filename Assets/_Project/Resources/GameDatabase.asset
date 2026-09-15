@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b98559983a7cb64291b04f9216f1cb6, type: 3}
+  m_Name: GameDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.GameDatabase
+  maps:
+  - {fileID: 11400000, guid: 96314cd587e7f6d4181977c8cfad08d0, type: 2}
+  - {fileID: 11400000, guid: c39c673ab971bc44b93dad1777568ae1, type: 2}
+  - {fileID: 11400000, guid: 1f3fdd9dafd8d404f93e0ded88775703, type: 2}
+  - {fileID: 11400000, guid: 76389a58bb95f3345b04424ad814a333, type: 2}
+  skills:
+  - {fileID: 11400000, guid: 276eb288055ac3047ab5143195d0c03c, type: 2}
+  - {fileID: 11400000, guid: e192686a46743404d995356c2adf33dc, type: 2}
+  - {fileID: 11400000, guid: 0bd031e68cec9b0479bbd0b6482b92ae, type: 2}
+  - {fileID: 11400000, guid: e9f67a8f83617bd4a9922db20fb8bf4b, type: 2}
+  - {fileID: 11400000, guid: 723f43c288a2dca4db87c0a69410cd46, type: 2}
+  - {fileID: 11400000, guid: 9a129405e8f998b4b9bd1d5c463dca24, type: 2}
+  - {fileID: 11400000, guid: 7048b6b809a8ebe4cb01729aa66acf52, type: 2}
+  - {fileID: 11400000, guid: ecc245ad4a38acf47bb4f8e2c629ee5b, type: 2}
+  - {fileID: 11400000, guid: 3b6cf2ff0ded3084d8a9337b69336a95, type: 2}
+  - {fileID: 11400000, guid: 994ba83d5aba22c4598b8061d67d3746, type: 2}
+  - {fileID: 11400000, guid: fd7281fbf72350745b19d75517bc1431, type: 2}
+  - {fileID: 11400000, guid: 08ce2c184f67a234da875df2f4efb7f1, type: 2}
+  - {fileID: 11400000, guid: 1bbfc01182175eb4ca19ff84c34b8da4, type: 2}
+  - {fileID: 11400000, guid: ffda6b02cbf996c44b414092b597451f, type: 2}
+  - {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+  - {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+  - {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+  - {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+  - {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+  - {fileID: 11400000, guid: b04cead872b865b41a0d8a23c27e0a47, type: 2}
+  - {fileID: 11400000, guid: c00b63c10d54a7a4aa8440f4d3582c11, type: 2}
+  - {fileID: 11400000, guid: f1bce54c21c35f24e81db76d94ea0ee4, type: 2}
+  - {fileID: 11400000, guid: 2bf956bc665562746946a5e3d423f8a8, type: 2}
+  allFish:
+  - {fileID: 11400000, guid: bc31949e8279dfd4e88253b1521ee21c, type: 2}
+  - {fileID: 11400000, guid: 72653278472025f4489c4e1bdfcce218, type: 2}
+  - {fileID: 11400000, guid: a8e2482698dbc6d4fa5c1d26f2861921, type: 2}
+  - {fileID: 11400000, guid: 9876d1661dfc5e34a9bfd460ff17352d, type: 2}
+  - {fileID: 11400000, guid: 0274ba9936cf03d4b8dc8a15332fa6c8, type: 2}
+  - {fileID: 11400000, guid: b8349c237bdcaf34aa152b09aeddc9b1, type: 2}
+  - {fileID: 11400000, guid: 43757a572ad98d4459ee96612e2a8468, type: 2}
+  - {fileID: 11400000, guid: 8eb8f1d05d099fb45bc9dc438a4ade36, type: 2}
+  - {fileID: 11400000, guid: abdaa1bd9d640a540b912d74dd200e98, type: 2}
+  - {fileID: 11400000, guid: c7c577c81485ecb46851f513181bfe3e, type: 2}
+  - {fileID: 11400000, guid: 164e15c314a9ad04a9f06669d3a852f1, type: 2}
+  - {fileID: 11400000, guid: a92d8e3a995672944b03f3288114986a, type: 2}
+  - {fileID: 11400000, guid: 618daa193740ec640bc1f87f392b0cad, type: 2}
+  - {fileID: 11400000, guid: 07bf6306822cd8a438bab64798020141, type: 2}
+  - {fileID: 11400000, guid: daf627564f9eda34884b4fe21344badc, type: 2}
+  - {fileID: 11400000, guid: a8ab2e954d2c46b409e581d989aecf79, type: 2}
+  - {fileID: 11400000, guid: 160f94215be0eba4ab592a3eafa41864, type: 2}
+  - {fileID: 11400000, guid: 5690ef87f9eb81c4089b6d9dc53afcc8, type: 2}
+  - {fileID: 11400000, guid: 0a52cc1d0d87f824e91fae3c822e5544, type: 2}
+  - {fileID: 11400000, guid: 614c2ad450159624a95714c4d838370e, type: 2}
+  - {fileID: 11400000, guid: cda0b797a574bfb4eb2b2856f007f464, type: 2}
+  - {fileID: 11400000, guid: e310ec762aea0cb4f851164b602e6d1a, type: 2}
+  - {fileID: 11400000, guid: 51227836fce79f44d9bf14b6fc77bcd0, type: 2}
+  - {fileID: 11400000, guid: 50a65fc4d3b096b438b742bae7d784c6, type: 2}
+  baseSurvivalTime: 30
+  baseSize: 1
+  baseMoveSpeed: 6.5
+  baseMouthRatio: 0.45
+  baseVision: 6.5
+  speedScalingExponent: 0.5
+  maxMoveSpeed: 24
+  boosterDistance: 4.5
+  boosterDuration: 0.18
+  boosterCooldown: 3.5
+  boosterHitRadiusRatio: 0.7
+  boosterEatSizeMultiplier: 1.6
+  vacuumRadius: 5
+  vacuumPullForce: 16
+  vacuumSizeRatio: 0.6
+  armorInvulnerability: 1.2
+  armorKnockback: 12
+  armorMaxStacks: 3
+  baitInterval: 8
+  baitLifetime: 6
+  baitRadius: 8
+  baitLureSpeedMultiplier: 1.35
+  voltInterval: 10
+  voltRadius: 6
+  voltStunNormal: 2
+  voltStunBoss: 0.1
+  missileInterval: 6
+  missileSpeed: 14
+  missileLifetime: 3
+  missileHitRadius: 1.1
+  missileMaxTargetSizeMultiplier: 3
+  missileSpreadAngle: 24
+  eatSizeTolerance: 1
+  deathCurrencyPenalty: 0.3
+  inRunGrowthEnabled: 1
+  growthMassEfficiency: 0.15
+  growthMaxMultiplier: 2.5
+  timeDrainAccelerationPer60s: 2.2
+  maxTimeDrainMultiplier: 10
+  bossGateUsesBaseSize: 1
+  codexMilestone: 100
+  codexMaxTiers: 10

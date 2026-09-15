@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
+  m_Name: Fish_M3_Sweet
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
+  speciesId: Fish_M3_Sweet
+  displayName: "\uC740\uC5B4\uB5BC"
+  codexNote: 
+  sprite: {fileID: 21300000, guid: 9a746ed83487e8441accfc85c278cffe, type: 3}
+  spriteFacesLeft: 0
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  size: 2.7
+  visualScaleMultiplier: 1
+  pattern: 1
+  moveSpeed: 3.6
+  patternParam: 1.8
+  patternParam2: 0.9
+  turnRate: 340
+  swayAmplitude: 10
+  swayFrequency: 3
+  currencyReward: 1.8
+  timeReward: 1.2
+  codexBonusType: 1
+  codexBonusPerTier: 0.02
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

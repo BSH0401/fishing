@@ -1,0 +1,100 @@
+# ══════════════════════════════════════════════════════════════
+#  Unity 프로젝트 .gitattributes
+#  목적 1) 줄바꿈이 PC마다 달라져서 "안 고쳤는데 전부 수정됨"으로 뜨는 걸 막는다
+#  목적 2) Unity YAML 파일을 텍스트로 다뤄 diff / 병합이 가능하게 한다
+#  목적 3) 이미지·사운드를 바이너리로 못 박아 깨지지 않게 한다
+# ══════════════════════════════════════════════════════════════
+
+# 기본: Git이 알아서 판단하되, 저장소 안에는 LF로 통일해 저장
+* text=auto
+
+# ── Unity YAML (Force Text 직렬화 기준) ───────────────────────
+# merge=unityyamlmerge 는 Unity가 제공하는 병합 도구를 쓰겠다는 표시다.
+# 설정하지 않아도 동작에 문제는 없고, 설정하면 씬 충돌 해결이 쉬워진다.
+*.unity            text eol=lf merge=unityyamlmerge
+*.prefab           text eol=lf merge=unityyamlmerge
+*.asset            text eol=lf merge=unityyamlmerge
+*.meta             text eol=lf merge=unityyamlmerge
+*.mat              text eol=lf merge=unityyamlmerge
+*.anim             text eol=lf merge=unityyamlmerge
+*.controller       text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.physicMaterial   text eol=lf merge=unityyamlmerge
+*.physicsMaterial2D text eol=lf merge=unityyamlmerge
+*.playable         text eol=lf merge=unityyamlmerge
+*.mask             text eol=lf merge=unityyamlmerge
+*.brain            text eol=lf merge=unityyamlmerge
+*.flare            text eol=lf merge=unityyamlmerge
+*.fontsettings     text eol=lf merge=unityyamlmerge
+*.guiskin          text eol=lf merge=unityyamlmerge
+*.giparams         text eol=lf merge=unityyamlmerge
+*.renderTexture    text eol=lf merge=unityyamlmerge
+*.spriteatlas      text eol=lf merge=unityyamlmerge
+*.terrainlayer     text eol=lf merge=unityyamlmerge
+*.mixer            text eol=lf merge=unityyamlmerge
+*.shadervariants   text eol=lf merge=unityyamlmerge
+*.preset           text eol=lf merge=unityyamlmerge
+*.asmdef           text eol=lf
+*.asmref           text eol=lf
+*.inputactions     text eol=lf
+
+# ── 소스 / 문서 ───────────────────────────────────────────────
+*.cs     text diff=csharp eol=lf
+*.shader text eol=lf
+*.hlsl   text eol=lf
+*.cginc  text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.py     text eol=lf
+*.txt    text eol=lf
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+
+# ── 바이너리 (diff 시도 금지) ─────────────────────────────────
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.bmp    binary
+*.tga    binary
+*.tif    binary
+*.psd    binary
+*.exr    binary
+*.hdr    binary
+*.ico    binary
+*.ttf    binary
+*.otf    binary
+*.fbx    binary
+*.obj    binary
+*.blend  binary
+*.wav    binary
+*.mp3    binary
+*.ogg    binary
+*.aif    binary
+*.mp4    binary
+*.mov    binary
+*.dll    binary
+*.so     binary
+*.dylib  binary
+*.a      binary
+*.pdf    binary
+*.zip    binary
+*.unitypackage binary
+
+# ══════════════════════════════════════════════════════════════
+#  Git LFS — 지금은 켜지 않았다
+#
+#  지금 프로젝트에 50MB 넘는 파일이 하나도 없어서 필요가 없다.
+#  나중에 큰 텍스처·오디오·동영상이 들어오면 그때 켜면 된다.
+#
+#    1) https://git-lfs.com 설치 후  git lfs install
+#    2) 아래 줄들의 # 을 지운다
+#    3) git add .gitattributes && git commit -m "Enable Git LFS"
+#
+#  주의: GitHub 무료 계정의 LFS 용량은 1GB, 월 전송량도 1GB다.
+# ══════════════════════════════════════════════════════════════
+# *.psd  filter=lfs diff=lfs merge=lfs -text
+# *.exr  filter=lfs diff=lfs merge=lfs -text
+# *.fbx  filter=lfs diff=lfs merge=lfs -text
+# *.wav  filter=lfs diff=lfs merge=lfs -text
+# *.mp4  filter=lfs diff=lfs merge=lfs -text

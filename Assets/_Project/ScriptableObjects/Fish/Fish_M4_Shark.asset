@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
+  m_Name: Fish_M4_Shark
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
+  speciesId: Fish_M4_Shark
+  displayName: "\uCCAD\uC0C1\uC544\uB9AC"
+  codexNote: 
+  sprite: {fileID: 21300000, guid: c9716af520882364889fe5b27aabdb01, type: 3}
+  spriteFacesLeft: 0
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  size: 34
+  visualScaleMultiplier: 1
+  pattern: 3
+  moveSpeed: 5.4
+  patternParam: 14
+  patternParam2: 1
+  turnRate: 200
+  swayAmplitude: 7
+  swayFrequency: 1.8
+  currencyReward: 38
+  timeReward: 2.2
+  codexBonusType: 4
+  codexBonusPerTier: 0.015
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

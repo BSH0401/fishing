@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e52eb336fc30448ba19f53a13a35b9, type: 3}
+  m_Name: Skill_volt_power
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.SkillNode
+  id: volt_power
+  displayName: "10\uB9CC \uBCFC\uD2B8 \uAC15\uD654"
+  tooltip: 
+  description: "\uC804\uAE30 \uCDA9\uACA9 \uBC94\uC704\uC640 \uB9C8\uBE44 \uC2DC\uAC04
+    +50%."
+  icon: {fileID: 0}
+  prerequisites:
+  - node: {fileID: 11400000, guid: 723f43c288a2dca4db87c0a69410cd46, type: 2}
+    level: 1
+  gridPosition: {x: 8, y: -4}
+  effectType: 206
+  valuePerLevel: 0.5
+  maxLevel: 5
+  costMultiplier: 1

@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb2f97dcbe2fc054fb082cec2de30c70, type: 3}
+  m_Name: Map_3_River
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.MapData
+  mapIndex: 2
+  displayName: "\uAC15"
+  description: "\uBB3C\uC0B4\uC774 \uC138\uB2E4. \uC5EC\uAE30\uC11C\uBD80\uD130\uB294
+    \uC774\uBE68\uC744 \uAC00\uC9C4 \uAC83\uB4E4\uC774 \uB9CE\uB2E4."
+  background: {fileID: 0}
+  waterColor: {r: 0.35, g: 0.66, b: 0.78, a: 1}
+  boundsSize: {x: 290, y: 160}
+  spawnTable:
+  - species: {fileID: 11400000, guid: 164e15c314a9ad04a9f06669d3a852f1, type: 2}
+    weight: 34
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: a92d8e3a995672944b03f3288114986a, type: 2}
+    weight: 26
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: 618daa193740ec640bc1f87f392b0cad, type: 2}
+    weight: 20
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: 07bf6306822cd8a438bab64798020141, type: 2}
+    weight: 13
+    maxAlive: 5
+  - species: {fileID: 11400000, guid: daf627564f9eda34884b4fe21344badc, type: 2}
+    weight: 7
+    maxAlive: 5
+  targetPopulation: 34
+  spawnInterval: 0.28
+  spawnMarginFromPlayer: 46.399998
+  boss: {fileID: 11400000, guid: 51227836fce79f44d9bf14b6fc77bcd0, type: 2}
+  bossGateMinSize: 21
+  bossGatePosition: {x: 116, y: 0}
+  requiresClearOfMapIndex: 1
+  currencyMultiplier: 0.2265

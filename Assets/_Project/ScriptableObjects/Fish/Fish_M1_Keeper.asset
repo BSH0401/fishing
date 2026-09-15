@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
+  m_Name: Fish_M1_Keeper
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
+  speciesId: Fish_M1_Keeper
+  displayName: "\uC218\uC870 \uD3EC\uC2DD\uC790"
+  codexNote: 
+  sprite: {fileID: 21300000, guid: f5ff1bcde9f58524f9bc6d67830601a8, type: 3}
+  spriteFacesLeft: 0
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  size: 2.6
+  visualScaleMultiplier: 1
+  pattern: 3
+  moveSpeed: 3
+  patternParam: 6
+  patternParam2: 1
+  turnRate: 220
+  swayAmplitude: 7
+  swayFrequency: 2
+  currencyReward: 0.85
+  timeReward: 1.8
+  codexBonusType: 6
+  codexBonusPerTier: 0.6
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

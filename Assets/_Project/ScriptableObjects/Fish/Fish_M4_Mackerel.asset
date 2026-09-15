@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
+  m_Name: Fish_M4_Mackerel
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
+  speciesId: Fish_M4_Mackerel
+  displayName: "\uACE0\uB4F1\uC5B4"
+  codexNote: 
+  sprite: {fileID: 21300000, guid: 225f98a2f97c72649a615e0b33cf50a6, type: 3}
+  spriteFacesLeft: 0
+  tint: {r: 1, g: 1, b: 1, a: 1}
+  size: 12
+  visualScaleMultiplier: 1
+  pattern: 2
+  moveSpeed: 4.4
+  patternParam: 8
+  patternParam2: 1
+  turnRate: 280
+  swayAmplitude: 9
+  swayFrequency: 2.4
+  currencyReward: 13
+  timeReward: 1.6
+  codexBonusType: 2
+  codexBonusPerTier: 0.02
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

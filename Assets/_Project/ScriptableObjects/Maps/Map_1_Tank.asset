@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb2f97dcbe2fc054fb082cec2de30c70, type: 3}
+  m_Name: Map_1_Tank
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.MapData
+  mapIndex: 0
+  displayName: "\uC5B4\uD56D"
+  description: "\uD0C8\uCD9C\uC740 \uC5EC\uAE30\uC11C \uC2DC\uC791\uB41C\uB2E4. \uC720\uB9AC\uBCBD
+    \uB108\uBA38\uB85C \uBC30\uC218\uAD6C\uAC00 \uBCF4\uC778\uB2E4."
+  background: {fileID: 0}
+  waterColor: {r: 0.55, g: 0.8, b: 0.72, a: 1}
+  boundsSize: {x: 44, y: 24}
+  spawnTable:
+  - species: {fileID: 11400000, guid: bc31949e8279dfd4e88253b1521ee21c, type: 2}
+    weight: 34
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: 72653278472025f4489c4e1bdfcce218, type: 2}
+    weight: 26
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: a8e2482698dbc6d4fa5c1d26f2861921, type: 2}
+    weight: 20
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: 9876d1661dfc5e34a9bfd460ff17352d, type: 2}
+    weight: 13
+    maxAlive: 5
+  - species: {fileID: 11400000, guid: 0274ba9936cf03d4b8dc8a15332fa6c8, type: 2}
+    weight: 7
+    maxAlive: 5
+  targetPopulation: 26
+  spawnInterval: 0.28
+  spawnMarginFromPlayer: 9
+  boss: {fileID: 11400000, guid: cda0b797a574bfb4eb2b2856f007f464, type: 2}
+  bossGateMinSize: 3.1
+  bossGatePosition: {x: 17.6, y: 0}
+  requiresClearOfMapIndex: 0
+  currencyMultiplier: 0.2893

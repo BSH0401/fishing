@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0e52eb336fc30448ba19f53a13a35b9, type: 3}
+  m_Name: Skill_bait_range
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.SkillNode
+  id: bait_range
+  displayName: "\uD669\uAE08 \uBBF8\uB07C \uBC94\uC704 \uAC15\uD654"
+  tooltip: 
+  description: "\uBBF8\uB07C \uD6A8\uACFC \uBC94\uC704 +50%."
+  icon: {fileID: 0}
+  prerequisites:
+  - node: {fileID: 11400000, guid: e9f67a8f83617bd4a9922db20fb8bf4b, type: 2}
+    level: 1
+  gridPosition: {x: 6, y: -4}
+  effectType: 204
+  valuePerLevel: 0.5
+  maxLevel: 4
+  costMultiplier: 1
