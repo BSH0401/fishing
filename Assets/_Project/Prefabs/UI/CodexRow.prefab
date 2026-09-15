@@ -142,8 +142,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uBB3C\uACE0\uAE30"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 25581bcadaf4aee4192e8d3f47c590e4, type: 2}
+  m_sharedMaterial: {fileID: 2864312003563762203, guid: 25581bcadaf4aee4192e8d3f47c590e4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -279,8 +279,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 25581bcadaf4aee4192e8d3f47c590e4, type: 2}
+  m_sharedMaterial: {fileID: 2864312003563762203, guid: 25581bcadaf4aee4192e8d3f47c590e4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -416,8 +416,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 25581bcadaf4aee4192e8d3f47c590e4, type: 2}
+  m_sharedMaterial: {fileID: 2864312003563762203, guid: 25581bcadaf4aee4192e8d3f47c590e4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -649,7 +649,7 @@ GameObject:
   - component: {fileID: 8192428475806887447}
   - component: {fileID: 2612984015193129535}
   - component: {fileID: 7369051025580624148}
-  - component: {fileID: 6516956307105390064}
+  - component: {fileID: 7004708216513556427}
   m_Layer: 0
   m_Name: CodexRow
   m_TagString: Untagged
@@ -739,7 +739,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &6516956307105390064
+--- !u!114 &7004708216513556427
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
