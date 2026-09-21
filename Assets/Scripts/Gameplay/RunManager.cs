@@ -269,7 +269,8 @@ namespace FishGame.Gameplay
 
             float dt = Time.deltaTime;
             ElapsedSeconds += dt;
-            TimeRemaining -= dt * CurrentDrainMultiplier;
+            if (!FishGame.Utils.DevFlags.InfiniteTime)
+                TimeRemaining -= dt * CurrentDrainMultiplier;
 
             TrackZone();
 
@@ -401,6 +402,53 @@ namespace FishGame.Gameplay
             Time.timeScale = 1f;
             if (GameManager.Instance != null) GameManager.Instance.GoToMainMenu();
             else Debug.LogWarning("[RunManager] GameManager가 없어 씬 이동을 건너뜁니다.");
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  개발자 모드용 — DevConsole만 부른다
+        // ══════════════════════════════════════════════════════════
+        /// <summary>제한시간을 가득 채운다.</summary>
+        public void DevRefillTime()
+        {
+            if (!IsRunning) return;
+            TimeRemaining = MaxTime;
+        }
+
+        /// <summary>이번 판의 통로를 전부 연다.</summary>
+        public void DevOpenAllGates()
+        {
+            foreach (var g in _gates)
+                if (g != null && !g.IsOpen) g.Open();
+        }
+
+        /// <summary>해당 구역의 시작 위치로 순간이동. 위쪽 통로도 같이 열어 되돌아갈 길을 남긴다.</summary>
+        public void DevTeleportToZone(int zoneIndex)
+        {
+            if (!IsRunning || Layout == null || player == null) return;
+            zoneIndex = Mathf.Clamp(zoneIndex, 0, Layout.ZoneCount - 1);
+
+            foreach (var g in _gates)
+                if (g != null && g.ZoneIndex < zoneIndex && !g.IsOpen) g.Open();
+
+            Vector2 pos = Layout.SpawnPointForZone(zoneIndex);
+            var rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null) { rb.position = pos; rb.linearVelocity = Vector2.zero; }
+            player.transform.position = pos;
+        }
+
+        /// <summary>보스 구조물 바로 위로 옮긴 뒤 구조물을 깬다.</summary>
+        public void DevReleaseBossNow()
+        {
+            if (!IsRunning || worldBuilder == null || worldBuilder.Boss == null) return;
+            var bs = worldBuilder.Boss;
+
+            DevTeleportToZone(bs.ZoneIndex);
+            Vector2 near = (Vector2)bs.transform.position + Vector2.up * 60f;
+            var rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null) rb.position = near;
+            player.transform.position = near;
+
+            if (!bs.IsBroken) bs.Break();
         }
 
         public void RestartRun()

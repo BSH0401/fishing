@@ -105,6 +105,8 @@ MonoBehaviour:
   growthMaxMultiplier: 2.5
   timeDrainAccelerationPer60s: 2.2
   maxTimeDrainMultiplier: 10
+  globalValueScale: 1
+  depthRichness: 3
   gateUsesCurrentSize: 1
   recordDeepestZone: 1
   hiddenItemCurrencyBonus: 0.05

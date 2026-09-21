@@ -57,8 +57,18 @@ MonoBehaviour:
   targetPopulation: 30
   spawnInterval: 0.28
   spawnMarginFromPlayer: 16.64
-  currencyMultiplier: 0.041
-  depthValueBonus: 0.25
+  currencyMultiplier: 0.0655
+  obstacles:
+  - shape: 1
+    depthT: 0.42
+    sideRatio: -0.42
+    size: 17
+    rotation: 0
+  - shape: 1
+    depthT: 0.42
+    sideRatio: 0.42
+    size: 17
+    rotation: 0
   hiddenItemCount: 2
   boss: {fileID: 0}
   bossFromStructure: 0

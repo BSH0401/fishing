@@ -221,8 +221,13 @@ namespace FishGame.Player
 
             ReadMoveInput();
             TickTimers(Time.deltaTime);
-            HandleBoosterInput();
-            HandleVacuumInput();
+            // 개발자 창을 누르는 클릭이 부스터·청소기로 새지 않게
+            if (!FishGame.Utils.DevFlags.PointerOverPanel)
+            {
+                HandleBoosterInput();
+                HandleVacuumInput();
+            }
+            else _vacuumActive = false;
             UpdateIndicators();
         }
 
@@ -597,7 +602,7 @@ namespace FishGame.Player
         /// <summary>더 큰 물고기에게 물렸다. 비늘 경화가 남아 있으면 막는다.</summary>
         void TakeHit(FishBody attacker)
         {
-            if (IsInvulnerable) return;
+            if (IsInvulnerable || FishGame.Utils.DevFlags.GodMode) return;
 
             if (_armorRemaining > 0)
             {
