@@ -9,16 +9,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb2f97dcbe2fc054fb082cec2de30c70, type: 3}
-  m_Name: Map_1_Tank
-  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.MapData
-  mapIndex: 0
+  m_Script: {fileID: 11500000, guid: c8f21de6eb9c2564f92acbf6f188e003, type: 3}
+  m_Name: Zone_1_Tank
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.ZoneData
+  zoneIndex: 0
   displayName: "\uC5B4\uD56D"
-  description: "\uD0C8\uCD9C\uC740 \uC5EC\uAE30\uC11C \uC2DC\uC791\uB41C\uB2E4. \uC720\uB9AC\uBCBD
-    \uB108\uBA38\uB85C \uBC30\uC218\uAD6C\uAC00 \uBCF4\uC778\uB2E4."
-  background: {fileID: 0}
+  description: "\uD0C8\uCD9C\uC740 \uC5EC\uAE30\uC11C \uC2DC\uC791\uB41C\uB2E4. \uBC14\uB2E5\uC758
+    \uBC30\uC218\uAD6C\uAC00 \uC720\uC77C\uD55C \uCD9C\uAD6C\uB2E4."
+  height: 46
+  widthProfile:
+  - t: 0
+    halfWidth: 22
+  - t: 0.45
+    halfWidth: 21
+  - t: 0.8
+    halfWidth: 13
+  - t: 1
+    halfWidth: 5.5
+  outlineSegments: 32
+  hasExit: 1
+  exitHalfWidth: 5.5
+  exitHeight: 16
+  exitOffsetX: 0
+  exitRequiredSize: 3.1
   waterColor: {r: 0.55, g: 0.8, b: 0.72, a: 1}
-  boundsSize: {x: 44, y: 24}
+  background: {fileID: 0}
+  wallColor: {r: 0.1, g: 0.11, b: 0.14, a: 1}
   spawnTable:
   - species: {fileID: 11400000, guid: bc31949e8279dfd4e88253b1521ee21c, type: 2}
     weight: 34
@@ -35,11 +51,16 @@ MonoBehaviour:
   - species: {fileID: 11400000, guid: 0274ba9936cf03d4b8dc8a15332fa6c8, type: 2}
     weight: 7
     maxAlive: 5
+  - species: {fileID: 11400000, guid: f67a69db8b944224e941807230112750, type: 2}
+    weight: 2.5
+    maxAlive: 1
   targetPopulation: 26
   spawnInterval: 0.28
   spawnMarginFromPlayer: 9
-  boss: {fileID: 11400000, guid: cda0b797a574bfb4eb2b2856f007f464, type: 2}
-  bossGateMinSize: 3.1
-  bossGatePosition: {x: 17.6, y: 0}
-  requiresClearOfMapIndex: 0
-  currencyMultiplier: 0.2893
+  currencyMultiplier: 0.1326
+  depthValueBonus: 0.25
+  hiddenItemCount: 2
+  boss: {fileID: 0}
+  bossFromStructure: 0
+  bossStructureLocalPos: {x: 0, y: 21.16}
+  bossStructureRadius: 5

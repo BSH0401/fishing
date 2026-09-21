@@ -35,7 +35,14 @@ namespace FishGame.Gameplay
         FishBody _body;
         FishMotor _motor;
         FishSpawner _spawner;
-        Rect _bounds;
+        // 물고기는 자기 존 안에서만 논다. 통합 맵이 되면서 "맵 전체"가 아니라
+        // "내가 속한 구역"이 활동 범위가 됐다 — 안 그러면 어항 치어가 바다까지 헤엄쳐 간다.
+        WorldLayout _layout;
+        int _homeZone;
+        float _homeTop, _homeBottom;
+
+        /// <summary>이 물고기가 속한 구역. 스포너의 밀도 계산과 디버깅에 쓴다.</summary>
+        public int HomeZone => _homeZone;
 
         Vector2 _heading = Vector2.right;
         Vector2 _wanderTarget;
@@ -65,10 +72,26 @@ namespace FishGame.Gameplay
         }
 
         /// <summary>스포너가 풀에서 꺼내며 호출.</summary>
-        public void Setup(FishSpecies data, Rect bounds, FishSpawner spawner, Vector2 initialHeading)
+        public void Setup(FishSpecies data, WorldLayout layout, int zoneIndex,
+                          FishSpawner spawner, Vector2 initialHeading)
         {
             species = data;
-            _bounds = bounds;
+            _layout = layout;
+            _homeZone = zoneIndex;
+
+            if (_layout != null)
+            {
+                var slice = _layout.GetSlice(zoneIndex);
+                _homeTop = slice.YTop;
+                // 통로까지는 내려갈 수 있게 조금 여유를 준다 (통로 안에서도 자연스럽게 보이도록)
+                _homeBottom = slice.HasCorridor ? slice.CorridorBottom : slice.YBottom;
+            }
+            else
+            {
+                _homeTop = 12f;
+                _homeBottom = -12f;
+            }
+
             _spawner = spawner;
             _spawnTime = Time.time;
             _patternSeed = Random.value * 100f;
@@ -124,6 +147,11 @@ namespace FishGame.Gameplay
             Vector2 desired = ComputeDesiredVelocity();
             desired += SeparationForce() * (species.moveSpeed * separationWeight);
             desired += WallAvoidForce() * (species.moveSpeed * wallAvoidWeight);
+
+            // 장애물은 벽보다 조금 더 세게 피한다. 벽은 스치며 따라가도 자연스럽지만,
+            // 구조물에 옆구리를 붙이고 비비는 건 딱 봐도 이상하다.
+            desired += Obstacle.AvoidForce(_rb.position, species.size * 0.5f, species.size * 1.2f)
+                       * (species.moveSpeed * wallAvoidWeight * 1.4f);
 
             float maxSpeed = species.moveSpeed * _speedScale;
             if (desired.sqrMagnitude > maxSpeed * maxSpeed)
@@ -192,7 +220,7 @@ namespace FishGame.Gameplay
                     {
                         Vector2 away = (pos - (Vector2)playerT.position).normalized;
                         // 벽으로 몰리지 않게 중심 쪽 성분을 살짝 섞는다
-                        Vector2 toCenter = ((Vector2)_bounds.center - pos).normalized;
+                        Vector2 toCenter = (HomeCenter - pos).normalized;
                         return (away * 1.0f + toCenter * 0.35f).normalized * speed * 1.3f;
                     }
                     goto case AIPatternType.SineWave;
@@ -245,7 +273,9 @@ namespace FishGame.Gameplay
                 float angle = Random.Range(-70f, 70f) * Mathf.Deg2Rad;
                 Vector2 dir = Rotate(_heading, angle);
                 Vector2 candidate = pos + dir * Random.Range(radius * 0.6f, radius * 1.8f);
-                if (_bounds.Contains(candidate)) return candidate;
+                // 장애물 안을 목표로 잡으면 그쪽으로 계속 밀고 들어가다 끼인다
+                if (InsideHome(candidate) && !Obstacle.Overlaps(candidate, species.size * 0.6f))
+                    return candidate;
             }
             return RandomPointInBounds();
         }
@@ -284,16 +314,36 @@ namespace FishGame.Gameplay
             return used == 0 ? Vector2.zero : Vector2.ClampMagnitude(push, 1f);
         }
 
+        // ── 활동 범위 ───────────────────────────────────────────
+        Vector2 HomeCenter => new Vector2(CenterXAt((_homeTop + _homeBottom) * 0.5f),
+                                          (_homeTop + _homeBottom) * 0.5f);
+
+        float HalfWidthAt(float y) => _layout != null ? _layout.HalfWidthAt(y) : 20f;
+        float CenterXAt(float y) => _layout != null ? _layout.CenterXAt(y) : 0f;
+
+        bool InsideHome(Vector2 p)
+        {
+            if (p.y > _homeTop || p.y < _homeBottom) return false;
+            return Mathf.Abs(p.x - CenterXAt(p.y)) <= HalfWidthAt(p.y);
+        }
+
+        /// <summary>
+        /// 벽을 피하는 힘. 통합 맵은 벽이 기울어져 있어서 y마다 폭이 다르므로
+        /// 고정된 사각형이 아니라 그 높이에서의 실제 폭을 매번 본다.
+        /// </summary>
         Vector2 WallAvoidForce()
         {
             float margin = species.size * wallAvoidRatio;
             Vector2 p = _rb.position;
             Vector2 force = Vector2.zero;
 
-            float left   = p.x - _bounds.xMin;
-            float right  = _bounds.xMax - p.x;
-            float bottom = p.y - _bounds.yMin;
-            float top    = _bounds.yMax - p.y;
+            float cx = CenterXAt(p.y);
+            float hw = HalfWidthAt(p.y);
+
+            float left   = p.x - (cx - hw);
+            float right  = (cx + hw) - p.x;
+            float bottom = p.y - _homeBottom;
+            float top    = _homeTop - p.y;
 
             if (left   < margin) force.x += 1f - left / margin;
             if (right  < margin) force.x -= 1f - right / margin;
@@ -324,9 +374,10 @@ namespace FishGame.Gameplay
         Vector2 RandomPointInBounds()
         {
             float m = species != null ? species.size * 0.5f : 0.5f;
-            return new Vector2(
-                Random.Range(_bounds.xMin + m, _bounds.xMax - m),
-                Random.Range(_bounds.yMin + m, _bounds.yMax - m));
+            float y = Random.Range(_homeBottom + m, _homeTop - m);
+            float cx = CenterXAt(y);
+            float hw = Mathf.Max(m + 0.1f, HalfWidthAt(y));
+            return new Vector2(Random.Range(cx - hw + m, cx + hw - m), y);
         }
 
         /// <summary>경계를 넘어가면 안쪽으로 되돌린다. (밀어내기는 WallAvoidForce가 먼저 처리)</summary>
@@ -334,8 +385,13 @@ namespace FishGame.Gameplay
         {
             Vector2 p = _rb.position;
             float m = species.size * 0.5f;
-            p.x = Mathf.Clamp(p.x, _bounds.xMin + m, _bounds.xMax - m);
-            p.y = Mathf.Clamp(p.y, _bounds.yMin + m, _bounds.yMax - m);
+
+            p.y = Mathf.Clamp(p.y, _homeBottom + m, _homeTop - m);
+
+            float cx = CenterXAt(p.y);
+            float limit = Mathf.Max(0.1f, HalfWidthAt(p.y) - m);
+            p.x = Mathf.Clamp(p.x, cx - limit, cx + limit);
+
             if (p != _rb.position) _rb.position = p;
         }
     }

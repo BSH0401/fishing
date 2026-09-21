@@ -238,8 +238,14 @@ namespace FishGame.Player
 
             if (_boosterTimer > 0f)
             {
-                _motor.OverrideVelocity(_boosterVelocity);
-                ResolveBoosterHits();
+                // 구조물에 정면으로 박으면 부스터가 끊긴다.
+                // 그냥 두면 속도가 빨라 콜라이더를 뚫고 나가는 일이 생긴다.
+                if (BoosterWouldHitObstacle()) CancelBoosterOnImpact();
+                else
+                {
+                    _motor.OverrideVelocity(_boosterVelocity);
+                    ResolveBoosterHits();
+                }
             }
             else
             {
@@ -319,6 +325,29 @@ namespace FishGame.Player
             PlaySfx(AudioManager.Instance.Bank?.booster);
         }
 
+        /// <summary>이번 물리 프레임에 장애물 안으로 들어가는가. 한 프레임 앞을 내다본다.</summary>
+        bool BoosterWouldHitObstacle()
+        {
+            Vector2 next = _rb.position + _boosterVelocity * Time.fixedDeltaTime;
+            return Obstacle.Overlaps(next, _body.Size * bodyRadiusRatio);
+        }
+
+        /// <summary>
+        /// 부스터가 구조물에 막혔을 때. 대쉬를 끊고 살짝 튕겨낸다.
+        /// 피해는 주지 않는다 — 벽에 부딪혔다고 죽으면 조작이 무서워진다.
+        /// </summary>
+        void CancelBoosterOnImpact()
+        {
+            _boosterTimer = 0f;
+            _boosterHits.Clear();
+
+            Vector2 back = -_boosterVelocity.normalized;
+            _motor.OverrideVelocity(back * (_stats.MoveSpeed * 0.55f));
+
+            Juice.Hit(0.04f, 0.6f);
+            _body.Pop(0.12f);
+        }
+
         /// <summary>부스터 경로에 걸린 물고기를 크기 판정 없이(또는 완화해서) 먹는다.</summary>
         void ResolveBoosterHits()
         {
@@ -387,7 +416,6 @@ namespace FishGame.Player
 
             int count = Mathf.Max(1, _stats.BaitCount);
             float radius = _db.baitRadius * _stats.BaitRangeMultiplier;
-            var bounds = _run.MapBounds;
 
             for (int i = 0; i < count; i++)
             {
@@ -397,9 +425,7 @@ namespace FishGame.Player
                 // 플레이어 주변에 흩뿌린다
                 Vector2 offset = UnityEngine.Random.insideUnitCircle.normalized *
                                  UnityEngine.Random.Range(radius * 0.25f, radius * 0.7f);
-                Vector2 pos = _rb.position + offset;
-                pos.x = Mathf.Clamp(pos.x, bounds.xMin + 1f, bounds.xMax - 1f);
-                pos.y = Mathf.Clamp(pos.y, bounds.yMin + 1f, bounds.yMax - 1f);
+                Vector2 pos = _run.ClampToWorld(_rb.position + offset, 1f);
 
                 bait.Launch(pos, radius, _db.baitLifetime);
             }
@@ -630,13 +656,15 @@ namespace FishGame.Player
             armorIndicator.gameObject.SetActive(_armorRemaining > 0);
         }
 
+        /// <summary>
+        /// 벽을 뚫고 나갔을 때 되돌리는 안전망. 실제 충돌은 WorldBuilder가 만든
+        /// 콜라이더가 처리하고, 이건 부스터로 빠르게 통과했을 때의 보험이다.
+        /// </summary>
         void ClampToBounds()
         {
-            var bounds = _run.MapBounds;
+            if (_run == null) return;
             float r = _body.Size * bodyRadiusRatio;
-            Vector2 p = _rb.position;
-            p.x = Mathf.Clamp(p.x, bounds.xMin + r, bounds.xMax - r);
-            p.y = Mathf.Clamp(p.y, bounds.yMin + r, bounds.yMax - r);
+            Vector2 p = _run.ClampToWorld(_rb.position, r);
             if (p != _rb.position) _rb.position = p;
         }
 

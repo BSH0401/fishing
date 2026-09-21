@@ -38,11 +38,20 @@ namespace FishGame.Core
         /// </summary>
         public int totalNodesPurchased = 0;
 
+        /// <summary>
+        /// 지금까지 도달해 본 가장 깊은 존. 메인 화면의 '시작 구역 선택' 범위가 된다.
+        /// (세이브 호환을 위해 필드 이름은 예전 그대로 둔다)
+        /// </summary>
         public int highestUnlockedMap = 0;
         public int lastSelectedMap = 0;
         public List<int> clearedMaps = new List<int>();
         public List<SkillLevelEntry> skillLevels = new List<SkillLevelEntry>();
         public List<CodexEntry> codex = new List<CodexEntry>();
+
+        /// <summary>먹은 히든 아이템의 ID. 한 번 먹으면 다시 생성되지 않는다.</summary>
+        public List<string> hiddenItems = new List<string>();
+
+        [NonSerialized] HashSet<string> _hiddenCache;
 
         // ── 통계 ────────────────────────────────────────────────
         public int totalRuns = 0;
@@ -113,26 +122,72 @@ namespace FishGame.Core
             codex.Add(new CodexEntry { speciesId = speciesId, eaten = next });
         }
 
-        // ── 맵 ──────────────────────────────────────────────────
-        public bool IsMapCleared(int mapIndex) => clearedMaps.Contains(mapIndex);
-
-        public void MarkMapCleared(int mapIndex)
+        // ── 존 ──────────────────────────────────────────────────
+        /// <summary>도달해 본 가장 깊은 존의 인덱스.</summary>
+        public int DeepestZoneReached
         {
-            if (!clearedMaps.Contains(mapIndex)) clearedMaps.Add(mapIndex);
-            highestUnlockedMap = Mathf.Max(highestUnlockedMap, mapIndex + 1);
+            get => highestUnlockedMap;
+            set => highestUnlockedMap = Mathf.Max(highestUnlockedMap, value);
         }
+
+        /// <summary>메인 화면에서 고른 시작 구역.</summary>
+        public int SelectedStartZone
+        {
+            get => Mathf.Clamp(lastSelectedMap, 0, highestUnlockedMap);
+            set => lastSelectedMap = Mathf.Max(0, value);
+        }
+
+        public bool IsZoneCleared(int zoneIndex) => clearedMaps.Contains(zoneIndex);
+
+        public void MarkZoneCleared(int zoneIndex)
+        {
+            if (!clearedMaps.Contains(zoneIndex)) clearedMaps.Add(zoneIndex);
+        }
+
+        // ── 히든 아이템 ─────────────────────────────────────────
+        void BuildHiddenCache()
+        {
+            _hiddenCache = new HashSet<string>();
+            foreach (var id in hiddenItems)
+                if (!string.IsNullOrEmpty(id)) _hiddenCache.Add(id);
+        }
+
+        public HashSet<string> HiddenItemSet
+        {
+            get
+            {
+                if (_hiddenCache == null) BuildHiddenCache();
+                return _hiddenCache;
+            }
+        }
+
+        public bool HasHiddenItem(string id) =>
+            !string.IsNullOrEmpty(id) && HiddenItemSet.Contains(id);
+
+        /// <summary>새로 먹었으면 true. 이미 갖고 있었으면 false.</summary>
+        public bool AddHiddenItem(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return false;
+            if (!HiddenItemSet.Add(id)) return false;
+            hiddenItems.Add(id);
+            return true;
+        }
+
+        public int HiddenItemCount => HiddenItemSet.Count;
 
         /// <summary>역직렬화 직후 호출. 캐시 무효화 + 값 보정.</summary>
         public void OnAfterLoad()
         {
             _skillCache = null;
             _codexCache = null;
+            _hiddenCache = null;
 
             if (currency < 0d || double.IsNaN(currency)) currency = 0d;
             if (highestUnlockedMap < 0) highestUnlockedMap = 0;
             if (clearedMaps == null) clearedMaps = new List<int>();
             if (skillLevels == null) skillLevels = new List<SkillLevelEntry>();
             if (codex == null) codex = new List<CodexEntry>();
+            if (hiddenItems == null) hiddenItems = new List<string>();
 
             // v1 세이브에는 totalNodesPurchased가 없다. 스킬 레벨 합으로 복원한다.
             if (totalNodesPurchased <= 0 && skillLevels.Count > 0)

@@ -649,7 +649,7 @@ GameObject:
   - component: {fileID: 8192428475806887447}
   - component: {fileID: 2612984015193129535}
   - component: {fileID: 7369051025580624148}
-  - component: {fileID: 7004708216513556427}
+  - component: {fileID: 7234796175284430063}
   m_Layer: 0
   m_Name: CodexRow
   m_TagString: Untagged
@@ -739,7 +739,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &7004708216513556427
+--- !u!114 &7234796175284430063
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8f21de6eb9c2564f92acbf6f188e003, type: 3}
+  m_Name: Zone_2_Sewer
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.ZoneData
+  zoneIndex: 1
+  displayName: "\uD558\uC218\uAD6C"
+  description: "\uD0C1\uD55C \uBB3C\uC0B4\uACFC \uC1E0\uCC3D\uC0B4. \uC5EC\uAE30\uC11C
+    \uC0B4\uC544\uB0A8\uC73C\uBA74 \uAC15 \uB0C4\uC0C8\uAC00 \uB09C\uB2E4."
+  height: 110
+  widthProfile:
+  - t: 0
+    halfWidth: 30
+  - t: 0.12
+    halfWidth: 52
+  - t: 0.88
+    halfWidth: 52
+  - t: 1
+    halfWidth: 34
+  outlineSegments: 32
+  hasExit: 1
+  exitHalfWidth: 12
+  exitHeight: 22
+  exitOffsetX: 0
+  exitRequiredSize: 8.1
+  waterColor: {r: 0.42, g: 0.55, b: 0.52, a: 1}
+  background: {fileID: 0}
+  wallColor: {r: 0.1, g: 0.11, b: 0.14, a: 1}
+  spawnTable:
+  - species: {fileID: 11400000, guid: b8349c237bdcaf34aa152b09aeddc9b1, type: 2}
+    weight: 34
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: 43757a572ad98d4459ee96612e2a8468, type: 2}
+    weight: 26
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: 8eb8f1d05d099fb45bc9dc438a4ade36, type: 2}
+    weight: 20
+    maxAlive: 0
+  - species: {fileID: 11400000, guid: abdaa1bd9d640a540b912d74dd200e98, type: 2}
+    weight: 13
+    maxAlive: 5
+  - species: {fileID: 11400000, guid: c7c577c81485ecb46851f513181bfe3e, type: 2}
+    weight: 7
+    maxAlive: 5
+  - species: {fileID: 11400000, guid: 05b7802bace724546a51ea7f9b929c3a, type: 2}
+    weight: 2.5
+    maxAlive: 1
+  targetPopulation: 30
+  spawnInterval: 0.28
+  spawnMarginFromPlayer: 16.64
+  currencyMultiplier: 0.041
+  depthValueBonus: 0.25
+  hiddenItemCount: 2
+  boss: {fileID: 0}
+  bossFromStructure: 0
+  bossStructureLocalPos: {x: 0, y: 50.600002}
+  bossStructureRadius: 5

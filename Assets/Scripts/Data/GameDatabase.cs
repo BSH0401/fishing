@@ -12,8 +12,8 @@ namespace FishGame.Data
     public class GameDatabase : ScriptableObject
     {
         [Header("콘텐츠")]
-        [Tooltip("mapIndex 순서대로 넣을 것 (0,1,2,3)")]
-        public List<MapData> maps = new List<MapData>();
+        [Tooltip("위에서 아래 순서로 넣을 것 (0 어항 → 3 바다). 하나의 통합 맵을 이룬다.")]
+        public List<ZoneData> zones = new List<ZoneData>();
         public List<SkillNode> skills = new List<SkillNode>();
         [Tooltip("도감·스탯 계산에 쓰는 전체 물고기 목록 (보스 포함). 생성기가 채운다.")]
         public List<FishSpecies> allFish = new List<FishSpecies>();
@@ -114,8 +114,26 @@ namespace FishGame.Data
         [Range(0f, 6f)] public float timeDrainAccelerationPer60s = 2.2f;
         [Min(1f)] public float maxTimeDrainMultiplier = 10f;
 
-        [Tooltip("보스 게이트를 '스킬트리로 올린 기본 크기'로만 판정한다.")]
-        public bool bossGateUsesBaseSize = true;
+        [Header("깊이 ↔ 가치")]
+        [Tooltip("모든 재화에 곱해지는 전역 배율. 총 플레이타임을 맞추는 유일한 손잡이다.\n" +
+                 "Tools/tune.py 가 잡아준 값을 넣는다.")]
+        [Min(0.0001f)] public float globalValueScale = 1f;
+
+        [Tooltip("맵 바닥에서 얻는 재화가 맵 천장보다 몇 배인지.\n" +
+                 "깊이에 따라 매끄럽게(지수적으로) 올라가므로 구역 경계에서 값이 튀지 않는다.\n" +
+                 "8 = 바다 바닥이 어항 수면보다 8배 값지다.")]
+        [Min(1f)] public float depthRichness = 8f;
+
+        [Header("통합 맵 / 통로")]
+        [Tooltip("통로는 '판 중에 먹어서 커진 현재 크기'로 열린다.\n" +
+                 "체크를 풀면 스킬트리로 올린 기본 크기로만 판정한다(예전 보스 게이트 방식).")]
+        public bool gateUsesCurrentSize = true;
+        [Tooltip("한 판에서 새로 도달한 구역을 영구 기록할지. 시작 구역 선택 범위가 된다.")]
+        public bool recordDeepestZone = true;
+
+        [Header("히든 아이템")]
+        [Tooltip("하나 먹을 때마다 재화 획득에 더해지는 비율 (가산). 0.05 = +5%")]
+        [Range(0f, 0.5f)] public float hiddenItemCurrencyBonus = 0.05f;
 
         [Header("물고기 도감")]
         [Tooltip("한 종을 이만큼 먹을 때마다 그 종에서 얻는 재화가 늘어난다.")]
@@ -136,13 +154,16 @@ namespace FishGame.Data
             return _skillById.TryGetValue(id, out var node) ? node : null;
         }
 
-        public MapData GetMap(int index)
+        public ZoneData GetZone(int index)
         {
-            foreach (var m in maps)
-                if (m != null && m.mapIndex == index) return m;
-            return null;
+            foreach (var z in zones)
+                if (z != null && z.zoneIndex == index) return z;
+            return index >= 0 && index < zones.Count ? zones[index] : null;
         }
 
-        public int MapCount => maps.Count;
+        public int ZoneCount => zones.Count;
+
+        /// <summary>최하단 존(바다)의 인덱스.</summary>
+        public int DeepestZoneIndex => Mathf.Max(0, zones.Count - 1);
     }
 }

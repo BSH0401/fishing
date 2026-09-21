@@ -18,6 +18,8 @@ namespace FishGame.Core
         public float VisionMultiplier = 1f;
         public float TimeGainMultiplier = 1f;
         public float CurrencyMultiplier = 1f;
+        /// <summary>지금까지 모은 히든 아이템 수. 결과 화면 표시용.</summary>
+        public int HiddenItemsFound;
 
         // ── 액티브 해금 ─────────────────────────────────────────
         public bool HasBooster;
@@ -106,6 +108,7 @@ namespace FishGame.Core
             s.MissileCount  = s.HasMissile ? Mathf.Max(1, 1 + missileExtra) : 0;
 
             ApplyCodexBonuses(s, db, progress);
+            ApplyHiddenItemBonus(s, db, progress);
 
             return s;
         }
@@ -114,6 +117,20 @@ namespace FishGame.Core
         /// 물고기 도감 보너스. 종을 codexMilestone마리 먹을 때마다 그 종의 효과가 한 단계씩 붙는다.
         /// 스킬트리와 달리 "많이 먹는 것" 자체가 보상이 되는 축이다.
         /// </summary>
+        /// <summary>
+        /// 구석에 숨어 있는 히든 아이템. 하나당 재화 획득 +5%가 영구히 붙는다.
+        /// 복리가 아니라 가산이다 — 8개를 다 모아도 +40%로, 다른 강화를 압도하지 않는다.
+        /// </summary>
+        static void ApplyHiddenItemBonus(PlayerStats s, GameDatabase db, PlayerProgress progress)
+        {
+            if (db == null || progress == null) return;
+            int count = progress.HiddenItemCount;
+            if (count <= 0) return;
+
+            s.HiddenItemsFound = count;
+            s.CurrencyMultiplier *= 1f + db.hiddenItemCurrencyBonus * count;
+        }
+
         static void ApplyCodexBonuses(PlayerStats s, GameDatabase db, PlayerProgress progress)
         {
             if (db.allFish == null || db.allFish.Count == 0) return;

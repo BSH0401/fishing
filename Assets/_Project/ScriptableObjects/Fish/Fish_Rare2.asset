@@ -10,26 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e448c64770756fa4facb061599592c21, type: 3}
-  m_Name: Fish_Boss1
+  m_Name: Fish_Rare2
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
-  speciesId: Fish_Boss1
-  displayName: "\uAD00\uB9AC \uB85C\uBD07 \xB7 \uAC8C\uC774\uD2B8\uD0A4\uD37C"
+  speciesId: Fish_Rare2
+  displayName: "\uBC30\uC218\uAD00 \uC9C0\uD0B4\uC774"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 3870a5d55be975341842013bf7d8c3c5, type: 3}
+  sprite: {fileID: 21300000, guid: eda097caf4bbe254ea01ea3d6506c0ad, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
-  size: 2.95
+  size: 7.7
   visualScaleMultiplier: 1
-  pattern: 2
-  moveSpeed: 2.4
-  patternParam: 6
+  pattern: 3
+  moveSpeed: 3.2
+  patternParam: 12
   patternParam2: 1
-  turnRate: 200
+  turnRate: 180
   swayAmplitude: 5
-  swayFrequency: 1.6
-  currencyReward: 4
-  timeReward: 0
+  swayFrequency: 1.5
+  currencyReward: 16
+  timeReward: 2.6
   codexBonusType: 0
   codexBonusPerTier: 0
-  vacuumableSizeRatio: 0
-  isBoss: 1
+  vacuumableSizeRatio: 0.6
+  isBoss: 0

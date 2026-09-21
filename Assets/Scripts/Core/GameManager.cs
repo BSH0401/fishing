@@ -14,13 +14,19 @@ namespace FishGame.Core
     public struct RunResult
     {
         public RunEndReason Reason;
-        public int MapIndex;
+        /// <summary>이번 판을 시작한 구역</summary>
+        public int StartZone;
+        /// <summary>이번 판에 도달한 가장 깊은 구역</summary>
+        public int DeepestZone;
+        /// <summary>지금까지 가 본 적 없는 구역에 처음 내려갔는가</summary>
+        public bool NewZoneReached;
         public double CurrencyEarned;   // 페널티 적용 후 실제 획득량
         public double CurrencyRaw;      // 페널티 전 원본
         public int FishEaten;
+        /// <summary>이번 판에 새로 먹은 히든 아이템 수</summary>
+        public int HiddenItemsFound;
         public float SurvivedSeconds;
         public bool BossKilled;
-        public bool NewMapUnlocked;
     }
 
     /// <summary>
@@ -51,9 +57,9 @@ namespace FishGame.Core
         public PlayerStats Stats { get; private set; }
         public GameState State { get; private set; } = GameState.Boot;
 
-        /// <summary>이번에 진입할 / 진입한 맵</summary>
-        public int SelectedMapIndex { get; private set; }
-        public MapData SelectedMap => database != null ? database.GetMap(SelectedMapIndex) : null;
+        /// <summary>이번 판을 시작할 구역. 맵은 하나지만 도달해 본 구역부터 시작할 수 있다.</summary>
+        public int SelectedStartZone { get; private set; }
+        public ZoneData SelectedZone => database != null ? database.GetZone(SelectedStartZone) : null;
 
         /// <summary>가장 최근 판의 결과 (결과 화면에서 읽음)</summary>
         public RunResult LastResult { get; private set; }
@@ -89,7 +95,7 @@ namespace FishGame.Core
             if (wipeSaveOnStart) SaveSystem.DeleteSave();
 
             Progress = SaveSystem.Load();
-            SelectedMapIndex = Mathf.Clamp(Progress.lastSelectedMap, 0, Progress.highestUnlockedMap);
+            SelectedStartZone = Progress.SelectedStartZone;
             RecalculateStats();
         }
 
@@ -126,15 +132,16 @@ namespace FishGame.Core
             SaveNow();
         }
 
-        // ── 맵 선택 / 플레이 시작 ───────────────────────────────
-        public bool CanSelectMap(int index) =>
-            index >= 0 && index < database.MapCount && index <= Progress.highestUnlockedMap;
+        // ── 시작 구역 선택 / 플레이 시작 ────────────────────────
+        public bool CanSelectZone(int index) =>
+            database != null && index >= 0 && index < database.ZoneCount &&
+            index <= Progress.DeepestZoneReached;
 
-        public void SelectMap(int index)
+        public void SelectStartZone(int index)
         {
-            if (!CanSelectMap(index)) return;
-            SelectedMapIndex = index;
-            Progress.lastSelectedMap = index;
+            if (!CanSelectZone(index)) return;
+            SelectedStartZone = index;
+            Progress.SelectedStartZone = index;
             SaveNow();
         }
 
@@ -154,18 +161,23 @@ namespace FishGame.Core
         // ── 판 종료 처리 ────────────────────────────────────────
         /// <summary>RunManager가 판이 끝났을 때 호출한다. 재화 정산과 해금을 여기서 처리.</summary>
         public void FinishRun(RunEndReason reason, double rawCurrency, int fishEaten,
-                              float survivedSeconds, bool bossKilled)
+                              float survivedSeconds, bool bossKilled,
+                              int deepestZoneThisRun, int hiddenItemsFound)
         {
             double penalty = reason == RunEndReason.Eaten ? database.deathCurrencyPenalty : 0d;
 
             double earned = Math.Max(0d, rawCurrency * (1d - penalty));
 
-            bool newUnlock = false;
-            if (bossKilled && !Progress.IsMapCleared(SelectedMapIndex))
+            // 새 구역 도달은 재화와 달리 죽어도 남는다 — 내려가 본 사실 자체가 진행이다
+            bool newZone = false;
+            if (database != null && database.recordDeepestZone &&
+                deepestZoneThisRun > Progress.DeepestZoneReached)
             {
-                Progress.MarkMapCleared(SelectedMapIndex);
-                newUnlock = SelectedMapIndex + 1 < database.MapCount;
+                Progress.DeepestZoneReached = deepestZoneThisRun;
+                newZone = true;
             }
+
+            if (bossKilled) Progress.MarkZoneCleared(deepestZoneThisRun);
 
             Progress.currency            += earned;
             Progress.totalCurrencyEarned += earned;
@@ -178,13 +190,15 @@ namespace FishGame.Core
             LastResult = new RunResult
             {
                 Reason           = reason,
-                MapIndex         = SelectedMapIndex,
+                StartZone        = SelectedStartZone,
+                DeepestZone      = deepestZoneThisRun,
+                NewZoneReached   = newZone,
                 CurrencyEarned   = earned,
                 CurrencyRaw      = rawCurrency,
                 FishEaten        = fishEaten,
+                HiddenItemsFound = hiddenItemsFound,
                 SurvivedSeconds  = survivedSeconds,
                 BossKilled       = bossKilled,
-                NewMapUnlocked   = newUnlock,
             };
 
             SaveNow();
@@ -197,7 +211,7 @@ namespace FishGame.Core
         {
             SaveSystem.DeleteSave();
             Progress = new PlayerProgress();
-            SelectedMapIndex = 0;
+            SelectedStartZone = 0;
             RecalculateStats();
             OnProgressChanged?.Invoke();
         }

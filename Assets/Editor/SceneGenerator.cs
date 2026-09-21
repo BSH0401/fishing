@@ -79,19 +79,15 @@ namespace FishGame.EditorTools
             camGo.AddComponent<CameraFollow>();
             camGo.AddComponent<AudioListener>();
 
-            // ── 배경 ──
-            var bg = new GameObject("Background");
-            var bgSr = bg.AddComponent<SpriteRenderer>();
-            bgSr.sprite = PlaceholderArt.CreateSolidSprite("BG_Water", Color.white, 8);
-            bgSr.sortingOrder = -100;
-            bg.transform.position = new Vector3(0f, 0f, 1f);
-
-            // ── 보스 게이트 표시 ──
-            var gate = new GameObject("BossGateVisual");
-            var gateSr = gate.AddComponent<SpriteRenderer>();
-            gateSr.sprite = PlaceholderArt.CreateSolidSprite("UI_Gate", new Color(0.95f, 0.35f, 0.35f, 0.5f), 8);
-            gateSr.sortingOrder = -50;
-            gate.transform.localScale = new Vector3(1.5f, 40f, 1f);
+            // ── 월드 ──
+            // 배경 스프라이트와 보스 게이트 표시는 없앴다.
+            // 통합 맵의 물·벽·통로·구조물은 전부 WorldBuilder가 런타임에 만든다.
+            var worldGo = new GameObject("World");
+            var worldBuilder = worldGo.AddComponent<WorldBuilder>();
+            var worldSo = new SerializedObject(worldBuilder);
+            var fontProp = worldSo.FindProperty("labelFont");
+            if (fontProp != null) fontProp.objectReferenceValue = FontSetup.Font;
+            worldSo.ApplyModifiedPropertiesWithoutUndo();
 
             // ── 스포너 ──
             var spawnerGo = new GameObject("FishSpawner");
@@ -126,7 +122,7 @@ namespace FishGame.EditorTools
 
             // 좌상단 정보 패널
             var infoPanel = Panel_(canvasRt, "InfoPanel", new Vector2(0f, 1f), new Vector2(0f, 1f),
-                                   new Vector2(20f, -20f), new Vector2(320f, 168f));
+                                   new Vector2(20f, -20f), new Vector2(320f, 192f));
             var timeText     = Label(infoPanel, "TimeText",     "제한시간 30.0", 26, new Vector2(14f, -14f), 292f, TextAlignmentOptions.Left);
             var timeBarBg    = Bar(infoPanel, "TimeBar", new Vector2(14f, -48f), 292f, out var timeBar);
             var currencyText = Label(infoPanel, "CurrencyText", "재화 0",        22, new Vector2(14f, -70f), 292f, TextAlignmentOptions.Left);
@@ -135,8 +131,12 @@ namespace FishGame.EditorTools
             drainText.color = new Color(0.98f, 0.55f, 0.45f);
             var growthBarBg  = Bar(infoPanel, "GrowthBar", new Vector2(14f, -122f), 292f, out var growthBar);
             growthBar.color = new Color(0.98f, 0.72f, 0.32f);
-            var mapNameText  = Label(infoPanel, "MapNameText",  "맵",            18, new Vector2(14f, -138f), 292f, TextAlignmentOptions.Left);
+            var mapNameText  = Label(infoPanel, "ZoneNameText", "어항",          18, new Vector2(14f, -138f), 160f, TextAlignmentOptions.Left);
             mapNameText.color = new Color(0.75f, 0.82f, 0.86f);
+            var depthText    = Label(infoPanel, "DepthText",    "깊이 0m",       18, new Vector2(160f, -138f), 146f, TextAlignmentOptions.Right);
+            depthText.color = new Color(0.62f, 0.78f, 0.92f);
+            var depthBarBg   = Bar(infoPanel, "DepthBar", new Vector2(14f, -160f), 292f, out var depthBar);
+            depthBar.color = new Color(0.40f, 0.66f, 0.92f);
 
             // 하단 스킬 슬롯
             var skillRow = PrefabGenerator.NewUI("SkillRow", new Vector2(560f, 84f), canvasRt);
@@ -165,7 +165,7 @@ namespace FishGame.EditorTools
             armorText.color = new Color(0.66f, 0.86f, 1f);
 
             // 보스 안내
-            var bossHint = Label(canvasRt, "BossHint", "보스 도전 조건: 크기 4.0", 20,
+            var bossHint = Label(canvasRt, "GateHint", "아래 통로: 크기 1.0 / 3.1", 20,
                                  Vector2.zero, 700f, TextAlignmentOptions.Center);
             var bossHintRt = (RectTransform)bossHint.transform;
             bossHintRt.anchorMin = bossHintRt.anchorMax = new Vector2(0.5f, 1f);
@@ -260,10 +260,10 @@ namespace FishGame.EditorTools
             var runSo = new SerializedObject(run);
             runSo.FindProperty("player").objectReferenceValue = player.GetComponent<FishGame.Player.PlayerFish>();
             runSo.FindProperty("spawner").objectReferenceValue = spawner;
-            runSo.FindProperty("backgroundRenderer").objectReferenceValue = bgSr;
-            runSo.FindProperty("bossGateVisual").objectReferenceValue = gate.transform;
+            runSo.FindProperty("worldBuilder").objectReferenceValue = worldBuilder;
+            runSo.FindProperty("worldCamera").objectReferenceValue = cam;
             runSo.FindProperty("fallbackDatabase").objectReferenceValue = db;
-            runSo.FindProperty("fallbackMapIndex").intValue = 0;
+            runSo.FindProperty("fallbackStartZone").intValue = 0;
             runSo.ApplyModifiedPropertiesWithoutUndo();
 
             // ── HUD 배선 ──
@@ -272,6 +272,8 @@ namespace FishGame.EditorTools
             hudSo.FindProperty("currencyText").objectReferenceValue = currencyText;
             hudSo.FindProperty("sizeText").objectReferenceValue = sizeText;
             hudSo.FindProperty("mapNameText").objectReferenceValue = mapNameText;
+            hudSo.FindProperty("depthText").objectReferenceValue = depthText;
+            hudSo.FindProperty("depthBar").objectReferenceValue = depthBar;
             hudSo.FindProperty("drainText").objectReferenceValue = drainText;
             hudSo.FindProperty("timeBar").objectReferenceValue = timeBar;
             hudSo.FindProperty("growthBar").objectReferenceValue = growthBar;
@@ -293,7 +295,7 @@ namespace FishGame.EditorTools
             hudSo.FindProperty("floatingText").objectReferenceValue = floating;
             hudSo.ApplyModifiedPropertiesWithoutUndo();
 
-            _ = timeBarBg; _ = growthBarBg;
+            _ = timeBarBg; _ = growthBarBg; _ = depthBarBg;
             EditorSceneManager.SaveScene(scene, $"{SceneFolder}/Gameplay.unity");
         }
 
@@ -489,13 +491,13 @@ namespace FishGame.EditorTools
             stats.rectTransform.sizeDelta = new Vector2(288f, 70f);
             stats.color = new Color(0.68f, 0.74f, 0.79f);
 
-            var mapUi = canvas.gameObject.AddComponent<MapSelectUI>();
-            var mapSo = new SerializedObject(mapUi);
-            mapSo.FindProperty("container").objectReferenceValue = mapListRoot.transform;
-            mapSo.FindProperty("buttonPrefab").objectReferenceValue =
+            var zoneUi = canvas.gameObject.AddComponent<ZoneSelectUI>();
+            var zoneSo = new SerializedObject(zoneUi);
+            zoneSo.FindProperty("container").objectReferenceValue = mapListRoot.transform;
+            zoneSo.FindProperty("buttonPrefab").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/MapButton.prefab")
                     ?.GetComponent<Button>();
-            mapSo.ApplyModifiedPropertiesWithoutUndo();
+            zoneSo.ApplyModifiedPropertiesWithoutUndo();
 
             // 세이브 초기화
             var resetBtn = TextButton(canvasRt, "ResetButton", "세이브 초기화",

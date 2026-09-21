@@ -7,11 +7,14 @@ using UnityEngine;
 namespace FishGame.EditorTools
 {
     /// <summary>
-    /// 기획서 2판 + 밸런스 시뮬레이션(Tools/balance_sim.py) 확정 수치로
-    /// 물고기 / 맵 / 스킬 / GameDatabase 에셋을 한 번에 만든다.
+    /// 기획서 2판 + 통합 맵 + 밸런스 시뮬레이션(Tools/balance_sim.py) 확정 수치로
+    /// 물고기 / 구역 / 스킬 / GameDatabase 에셋을 한 번에 만든다.
     ///
-    /// 검증 결과: 25회 시행 전부 완주, 총 플레이타임 4.41 ~ 4.47시간 (중앙 4.44h)
-    /// (물고기 도감 보너스 + 인게임 성장 포함)
+    /// 맵 4개가 세로로 이어진 하나의 맵이 되었다.
+    /// 통로는 "판 중에 먹어서 커진 현재 크기"로 열리고, 아래로 갈수록 값이 오른다.
+    ///
+    /// 검증 결과: 25회 시행 전부 완주, 총 플레이타임 4.42 ~ 4.62시간 (중앙 4.51h)
+    /// (도감 보너스 + 인게임 성장 + 히든 아이템 8개 포함)
     ///
     /// 메뉴: FishGame ▸ 1. 콘텐츠 에셋 생성
     /// </summary>
@@ -19,7 +22,8 @@ namespace FishGame.EditorTools
     {
         const string SoFolder    = "Assets/_Project/ScriptableObjects";
         const string FishFolder  = SoFolder + "/Fish";
-        const string MapFolder   = SoFolder + "/Maps";
+        const string ZoneFolder  = SoFolder + "/Zones";
+        const string LegacyMapFolder = SoFolder + "/Maps";
         const string SkillFolder = SoFolder + "/Skills";
 
         const string ResourcesFolder = "Assets/_Project/Resources";
@@ -57,7 +61,7 @@ namespace FishGame.EditorTools
         // 스폰 가중치 — 작을수록 자주 나온다
         static readonly float[] SpawnWeights = { 34f, 26f, 20f, 13f, 7f };
 
-        // 도감 보너스 — 맵 안에서 크기 순서대로 배정한다.
+        // 도감 보너스 — 구역 안에서 크기 순서대로 배정한다.
         // 작은 종일수록 많이 먹게 되므로 효과를 작게, 큰 종은 드무니 크게.
         static readonly (CodexBonusType type, float value)[] CodexByRank =
         {
@@ -70,7 +74,7 @@ namespace FishGame.EditorTools
 
         static readonly FishDef[][] MapFish =
         {
-            // ── 1맵: 어항 (가중평균 size 0.83 / 재화 0.29) ──
+            // ── 1구역: 어항 (가중평균 size 0.83 / 재화 0.29) ──
             new[]
             {
                 F("Fish_M1_Fry",     "치어",        0.30f, 0.12f, 0.7f, AIPatternType.Straight, 2.0f, 0f,   C1, 1f, 380f, 11f, 3.4f),
@@ -79,7 +83,7 @@ namespace FishGame.EditorTools
                 F("Fish_M1_Angel",   "수조 엔젤",   1.60f, 0.55f, 1.4f, AIPatternType.Flee,     2.8f, 5f,   C3, 1f, 260f, 8f, 2.2f),
                 F("Fish_M1_Keeper",  "수조 포식자", 2.60f, 0.85f, 1.8f, AIPatternType.Chase,    3.0f, 6f,   C4, 1f, 220f, 7f, 2.0f),
             },
-            // ── 2맵: 하수구 (2.75 / 1.21) ──
+            // ── 2구역: 하수구 (2.75 / 1.21) ──
             new[]
             {
                 F("Fish_M2_Larva",   "하수 유생",   1.00f, 0.45f, 0.9f, AIPatternType.SineWave, 2.8f, 1.3f, C1, 0.8f, 360f, 11f, 3.2f),
@@ -88,7 +92,7 @@ namespace FishGame.EditorTools
                 F("Fish_M2_Rat",     "하수 쥐치",   5.20f, 2.30f, 1.6f, AIPatternType.Chase,    3.8f, 8f,   C4, 1f, 230f, 7f, 2.0f),
                 F("Fish_M2_Grate",   "철망 포식자", 8.50f, 3.60f, 2.0f, AIPatternType.Ambush,   3.2f, 9f,   C5, 3.0f, 190f, 6f, 1.7f),
             },
-            // ── 3맵: 강 (7.37 / 4.94) ──
+            // ── 3구역: 강 (7.37 / 4.94) ──
             new[]
             {
                 F("Fish_M3_Sweet",   "은어떼",      2.70f,  1.8f, 1.2f, AIPatternType.SineWave, 3.6f, 1.8f, C1, 0.9f, 340f, 10f, 3.0f),
@@ -97,7 +101,7 @@ namespace FishGame.EditorTools
                 F("Fish_M3_Cat",     "메기",       14.00f,  9.5f, 1.9f, AIPatternType.Chase,    4.4f, 11f,  C4, 1f, 210f, 7f, 1.9f),
                 F("Fish_M3_Snake",   "가물치",     23.00f, 15.0f, 2.3f, AIPatternType.Ambush,   3.4f, 10f,  C5, 3.2f, 180f, 6f, 1.6f),
             },
-            // ── 4맵: 바다 (17.8 / 19.6) ──
+            // ── 4구역: 바다 (17.8 / 19.6) ──
             new[]
             {
                 F("Fish_M4_Sardine", "정어리 군집",  6.50f,  7.0f, 1.4f, AIPatternType.SineWave, 4.2f, 2.2f, C1, 1.0f, 330f, 10f, 2.9f),
@@ -108,42 +112,107 @@ namespace FishGame.EditorTools
             },
         };
 
-        // 보스 — 게이트 크기보다 살짝 작아야 잡을 수 있다
-        static readonly FishDef[] Bosses =
+        // ── 희귀 대형어 ───────────────────────────────────────────
+        // 예전 1~3맵 보스였던 것들. 맵이 하나로 합쳐지면서 "길을 막는 보스" 자리가 없어졌지만,
+        // 구역마다 가끔 나타나는 위협적인 대어로 남겨 두는 편이 낫다.
+        // 잡으면 값이 크고, 못 잡으면 피해 다녀야 하는 긴장을 준다.
+        static readonly FishDef[] Rares =
         {
-            F("Fish_Boss1", "관리 로봇 · 게이트키퍼",  2.95f,  4.0f, 0f, AIPatternType.Wander, 2.4f, 6f,  CB, 1f, 200f, 5f, 1.6f),
-            F("Fish_Boss2", "배수관 지킴이",           7.70f, 16.0f, 0f, AIPatternType.Chase,  3.2f, 12f, CB, 1f, 180f, 5f, 1.5f),
-            F("Fish_Boss3", "강의 주인 · 늙은 가물치",20.00f, 70.0f, 0f, AIPatternType.Ambush, 3.8f, 14f, CB, 3.4f, 160f, 4f, 1.4f),
-            F("Fish_Boss4", "심해 리바이어던",        43.00f,260.0f, 0f, AIPatternType.Chase,  4.6f, 20f, CB, 1f, 150f, 4f, 1.3f),
+            F("Fish_Rare1", "관리 로봇 · 게이트키퍼",  2.95f,  4.0f, 2.2f, AIPatternType.Wander, 2.4f, 6f,  CB, 1f, 200f, 5f, 1.6f),
+            F("Fish_Rare2", "배수관 지킴이",           7.70f, 16.0f, 2.6f, AIPatternType.Chase,  3.2f, 12f, CB, 1f, 180f, 5f, 1.5f),
+            F("Fish_Rare3", "강의 주인 · 늙은 가물치",20.00f, 70.0f, 3.0f, AIPatternType.Ambush, 3.8f, 14f, CB, 3.4f, 160f, 4f, 1.4f),
         };
 
+        // ── 보스 ──────────────────────────────────────────────────
+        // 이제 단 하나. 바다 한가운데 고리 구조물에 갇혀 있고,
+        // 부스터로 들이받아야 풀려난다. 잡으면 게임 클리어.
+        static readonly FishDef Boss =
+            F("Fish_Boss_Leviathan", "심해 리바이어던", 43.00f, 260.0f, 0f,
+              AIPatternType.Chase, 4.6f, 20f, CB, 1f, 150f, 4f, 1.3f);
+
         // ═════════════════════════════════════════════════════════
-        //  맵 — 재화 배율은 balance_sim.py의 확정값
+        //  구역 — 재화 배율은 balance_sim.py의 확정값
         // ═════════════════════════════════════════════════════════
-        struct MapDef
+        struct ZoneDef
         {
             public string file, display, desc;
-            public float currencyMult, bossGate;
-            public Vector2 bounds;
+            /// <summary>재화 배율 (balance_sim.py 확정값)</summary>
+            public float currencyMult;
+            /// <summary>세로 길이</summary>
+            public float height;
+            /// <summary>실루엣: (정규화 깊이 t, 반폭) 쌍. t=0 천장, t=1 바닥.</summary>
+            public (float t, float hw)[] profile;
+            /// <summary>아래 통로: 반폭 / 길이 / 열리는 데 필요한 크기</summary>
+            public float exitHalfWidth, exitHeight, exitRequiredSize;
+            public bool hasExit;
             public int population;
             public Color water;
+            /// <summary>장애물: (모양, 구역 안 깊이 t, 반폭 대비 좌우 비율, 크기, 회전)</summary>
+            public (ObstacleShape shape, float t, float side, float size, float rot)[] obstacles;
         }
 
-        static readonly MapDef[] Maps =
+        static (float, float)[] P(params (float, float)[] pts) => pts;
+
+        static (ObstacleShape, float, float, float, float)[] O(
+            params (ObstacleShape, float, float, float, float)[] items) => items;
+
+        // 실루엣은 기획 PPT의 그림을 그대로 옮긴 것이다.
+        //   어항   사발 — 넓게 시작해 배수구로 좁아진다
+        //   하수구 상자 — 곧은 벽
+        //   강     렌즈 — 좁게 들어가 넓어졌다가 다시 좁아진다
+        //   바다   개활 — 입구만 좁고 그 아래는 전부 트여 있다
+        static readonly ZoneDef[] Zones =
         {
-            new MapDef { file = "Map_1_Tank",  display = "어항",   currencyMult = 0.2893f, bossGate =  3.1f,
-                         bounds = new Vector2(44, 24),   population = 26, water = new Color(0.55f, 0.80f, 0.72f),
-                         desc = "탈출은 여기서 시작된다. 유리벽 너머로 배수구가 보인다." },
-            new MapDef { file = "Map_2_Sewer", display = "하수구", currencyMult = 0.2103f, bossGate =  8.1f,
-                         bounds = new Vector2(110, 60),  population = 30, water = new Color(0.42f, 0.55f, 0.52f),
-                         desc = "탁한 물살. 여기서 살아남으면 강 냄새가 난다." },
-            new MapDef { file = "Map_3_River", display = "강",     currencyMult = 0.2265f, bossGate = 21.0f,
-                         bounds = new Vector2(290, 160), population = 34, water = new Color(0.35f, 0.66f, 0.78f),
-                         desc = "물살이 세다. 여기서부터는 이빨을 가진 것들이 많다." },
-            new MapDef { file = "Map_4_Ocean", display = "바다",   currencyMult = 0.5452f, bossGate = 45.0f,
-                         bounds = new Vector2(620, 340), population = 38, water = new Color(0.16f, 0.34f, 0.55f),
-                         desc = "실험실에서 가장 먼 곳. 여기서는 무엇이든 나를 삼킬 수 있다." },
+            new ZoneDef {
+                file = "Zone_1_Tank", display = "어항", currencyMult = 0.1474f,
+                height = 46f,
+                profile = P((0f, 22f), (0.45f, 21f), (0.80f, 13f), (1f, 5.5f)),
+                hasExit = true, exitHalfWidth = 5.5f, exitHeight = 16f, exitRequiredSize = 3.1f,
+                population = 26, water = new Color(0.55f, 0.80f, 0.72f),
+                // 어항 장식품 — 성 하나, 집 하나. 사발이 좁아지기 전 넓은 구간에 둔다.
+                obstacles = O((ObstacleShape.Box, 0.34f,  0.46f, 7.5f,  0f),
+                              (ObstacleShape.Box, 0.52f, -0.50f, 6.0f, 12f)),
+                desc = "탈출은 여기서 시작된다. 바닥의 배수구가 유일한 출구다." },
+
+            new ZoneDef {
+                file = "Zone_2_Sewer", display = "하수구", currencyMult = 0.0655f,
+                height = 110f,
+                profile = P((0f, 30f), (0.12f, 52f), (0.88f, 52f), (1f, 34f)),
+                hasExit = true, exitHalfWidth = 12f, exitHeight = 22f, exitRequiredSize = 8.1f,
+                population = 30, water = new Color(0.42f, 0.55f, 0.52f),
+                // 쇠창살 원형 둘 — PPT 그림대로 가운데 높이에 좌우 대칭으로.
+                obstacles = O((ObstacleShape.Disc, 0.42f, -0.42f, 17f, 0f),
+                              (ObstacleShape.Disc, 0.42f,  0.42f, 17f, 0f)),
+                desc = "탁한 물살과 쇠창살. 여기서 살아남으면 강 냄새가 난다." },
+
+            new ZoneDef {
+                file = "Zone_3_River", display = "강", currencyMult = 0.0271f,
+                height = 260f,
+                profile = P((0f, 22f), (0.35f, 120f), (0.70f, 142f), (1f, 34f)),
+                hasExit = true, exitHalfWidth = 30f, exitHeight = 40f, exitRequiredSize = 21f,
+                population = 34, water = new Color(0.35f, 0.66f, 0.78f),
+                // 자갈 무더기 — 위쪽 중앙에 큰 것 하나, 아래쪽에 작은 것 둘.
+                obstacles = O((ObstacleShape.Triangle, 0.22f,  0.00f, 34f, 0f),
+                              (ObstacleShape.Triangle, 0.55f, -0.55f, 26f, 0f),
+                              (ObstacleShape.Triangle, 0.66f,  0.52f, 22f, 0f)),
+                desc = "물살이 세다. 여기서부터는 이빨을 가진 것들이 많다." },
+
+            new ZoneDef {
+                file = "Zone_4_Ocean", display = "바다", currencyMult = 0.0124f,
+                height = 520f,
+                profile = P((0f, 60f), (0.18f, 250f), (0.45f, 310f), (1f, 300f)),
+                hasExit = false, exitHalfWidth = 30f, exitHeight = 0f, exitRequiredSize = 0f,
+                population = 38, water = new Color(0.16f, 0.34f, 0.55f),
+                // 암초 — 보스 구조물(t=0.46 중앙)을 피해 사방에 흩어 둔다.
+                obstacles = O((ObstacleShape.Triangle, 0.26f, -0.58f, 62f, 0f),
+                              (ObstacleShape.Triangle, 0.30f,  0.62f, 54f, 0f),
+                              (ObstacleShape.Triangle, 0.68f, -0.44f, 70f, 0f),
+                              (ObstacleShape.Triangle, 0.78f,  0.50f, 58f, 0f)),
+                desc = "실험실에서 가장 먼 곳. 여기서는 무엇이든 나를 삼킬 수 있다." },
         };
+
+        /// <summary>구역마다 숨겨 둘 히든 아이템 수 (먹으면 영구 재화 +5%).</summary>
+        const int HiddenPerZone = 2;
 
         // ═════════════════════════════════════════════════════════
         //  스킬 — balance_sim.py의 NODES와 1:1 대응
@@ -241,7 +310,7 @@ namespace FishGame.EditorTools
         public static GameDatabase Generate()
         {
             PlaceholderArt.EnsureFolder(FishFolder);
-            PlaceholderArt.EnsureFolder(MapFolder);
+            PlaceholderArt.EnsureFolder(ZoneFolder);
             PlaceholderArt.EnsureFolder(SkillFolder);
             PlaceholderArt.EnsureFolder(ResourcesFolder);
 
@@ -254,6 +323,7 @@ namespace FishGame.EditorTools
             }
 
             DeleteObsoleteSkills();
+            DeleteLegacyMaps();
 
             var fishByFile = new Dictionary<string, FishSpecies>();
             var allFish = new List<FishSpecies>();
@@ -268,12 +338,18 @@ namespace FishGame.EditorTools
                     allFish.Add(asset);
                 }
             }
-            foreach (var def in Bosses)
+            foreach (var def in Rares)
             {
-                // 보스는 100마리를 먹을 일이 없으므로 도감 보너스는 없다 (수집 항목으로만)
-                var asset = CreateFish(def, true, CodexBonusType.None, 0f);
+                // 희귀 대형어 — 보스가 아니므로 잡아도 판이 끝나지 않는다.
+                // 100마리를 먹을 일은 없으니 도감 보너스는 두지 않는다.
+                var asset = CreateFish(def, false, CodexBonusType.None, 0f);
                 fishByFile[def.file] = asset;
                 allFish.Add(asset);
+            }
+            {
+                var bossAsset = CreateFish(Boss, true, CodexBonusType.None, 0f);
+                fishByFile[Boss.file] = bossAsset;
+                allFish.Add(bossAsset);
             }
 
             // 스킬 — 선행 연결은 2패스
@@ -291,11 +367,11 @@ namespace FishGame.EditorTools
                 EditorUtility.SetDirty(node);
             }
 
-            var maps = new List<MapData>();
-            for (int i = 0; i < Maps.Length; i++) maps.Add(CreateMap(i, fishByFile));
+            var zones = new List<ZoneData>();
+            for (int i = 0; i < Zones.Length; i++) zones.Add(CreateZone(i, fishByFile));
 
             var db = LoadOrCreate<GameDatabase>(DatabasePath);
-            db.maps = maps;
+            db.zones = zones;
             db.allFish = allFish;
             db.skills = new List<SkillNode>();
             foreach (var def in Skills) db.skills.Add(skillById[def.id]);
@@ -311,8 +387,17 @@ namespace FishGame.EditorTools
 
             db.timeDrainAccelerationPer60s = 2.2f;
             db.maxTimeDrainMultiplier = 10f;
-            db.bossGateUsesBaseSize = true;
             db.deathCurrencyPenalty = 0.30f;
+
+            // 통로는 '판 중에 커진 현재 크기'로 열린다 — 한 판의 목표가 되도록
+            db.gateUsesCurrentSize = true;
+            db.recordDeepestZone = true;
+            db.hiddenItemCurrencyBonus = 0.05f;
+
+            // 깊이 ↔ 가치 — 맵 전체에 걸친 연속 곡선.
+            // 구역 배율은 구간 페이싱용이고, 매끄러운 상승은 이 곡선이 맡는다.
+            db.globalValueScale = 1f;
+            db.depthRichness = 3f;
             db.eatSizeTolerance = 1.0f;
 
             db.codexMilestone = 100;
@@ -328,8 +413,9 @@ namespace FishGame.EditorTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"[FishGame] 콘텐츠 생성 완료 — 물고기 {MapFish.Length * 5 + Bosses.Length}종, " +
-                      $"맵 {Maps.Length}개, 스킬 {Skills.Length}개\n{DatabasePath}");
+            int fishCount = MapFish.Length * 5 + Rares.Length + 1;   // 잡어 + 희귀 대형어 + 보스 1
+            Debug.Log($"[FishGame] 콘텐츠 생성 완료 — 물고기 {fishCount}종, " +
+                      $"구역 {Zones.Length}개(통합 맵), 스킬 {Skills.Length}개\n{DatabasePath}");
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameDatabase>(DatabasePath);
             return AssetDatabase.LoadAssetAtPath<GameDatabase>(DatabasePath);
         }
@@ -347,6 +433,17 @@ namespace FishGame.EditorTools
             AssetDatabase.CreateAsset(bank, path);
             Debug.Log($"[FishGame] SoundBank 생성 — 클립은 비어 있습니다. " +
                       $"{path} 에 .wav를 넣으면 소리가 납니다.");
+        }
+
+        /// <summary>
+        /// 맵 4개 시절의 MapData 에셋 폴더를 통째로 지운다.
+        /// 남겨두면 GameDatabase가 끊긴 참조를 들고 있게 되고, 인스펙터에서 헷갈린다.
+        /// </summary>
+        static void DeleteLegacyMaps()
+        {
+            if (!AssetDatabase.IsValidFolder(LegacyMapFolder)) return;
+            AssetDatabase.DeleteAsset(LegacyMapFolder);
+            Debug.Log("[FishGame] 구버전 맵 에셋 폴더를 삭제했습니다 (맵 4개 → 통합 맵 1개).");
         }
 
         /// <summary>기획서 1판의 옛 스킬 에셋을 지운다 (id가 바뀌어 더는 쓰이지 않는다).</summary>
@@ -369,7 +466,8 @@ namespace FishGame.EditorTools
             // 옛 물고기 에셋도 정리
             var keepFish = new HashSet<string>();
             foreach (var arr in MapFish) foreach (var d in arr) keepFish.Add(d.file);
-            foreach (var d in Bosses) keepFish.Add(d.file);
+            foreach (var d in Rares) keepFish.Add(d.file);
+            keepFish.Add(Boss.file);
 
             foreach (var guid in AssetDatabase.FindAssets("t:FishSpecies", new[] { FishFolder }))
             {
@@ -426,24 +524,65 @@ namespace FishGame.EditorTools
             return asset;
         }
 
-        static MapData CreateMap(int index, Dictionary<string, FishSpecies> fish)
+        static ZoneData CreateZone(int index, Dictionary<string, FishSpecies> fish)
         {
-            var def = Maps[index];
-            var asset = LoadOrCreate<MapData>($"{MapFolder}/{def.file}.asset");
+            var def = Zones[index];
+            var asset = LoadOrCreate<ZoneData>($"{ZoneFolder}/{def.file}.asset");
 
-            asset.mapIndex = index;
+            asset.zoneIndex = index;
             asset.displayName = def.display;
             asset.description = def.desc;
             asset.waterColor = def.water;
-            asset.boundsSize = def.bounds;
+
+            // ── 실루엣 ──
+            asset.height = def.height;
+            asset.widthProfile = new List<WidthPoint>();
+            foreach (var (t, hw) in def.profile) asset.widthProfile.Add(new WidthPoint(t, hw));
+            asset.outlineSegments = 32;
+
+            // ── 통로 ──
+            asset.hasExit = def.hasExit;
+            asset.exitHalfWidth = def.exitHalfWidth;
+            asset.exitHeight = def.exitHeight;
+            asset.exitRequiredSize = def.exitRequiredSize;
+            asset.exitOffsetX = 0f;
+
+            // ── 스폰 ──
+            float maxHalf = 1f;
+            foreach (var (_, hw) in def.profile) maxHalf = Mathf.Max(maxHalf, hw);
             asset.targetPopulation = def.population;
             asset.spawnInterval = 0.28f;
-            asset.spawnMarginFromPlayer = Mathf.Max(9f, def.bounds.x * 0.16f);
+            asset.spawnMarginFromPlayer = Mathf.Max(9f, maxHalf * 0.32f);
+
+            // ── 가치 ──
             asset.currencyMultiplier = def.currencyMult;
-            asset.requiresClearOfMapIndex = Mathf.Max(0, index - 1);
-            asset.bossGateMinSize = def.bossGate;
-            asset.bossGatePosition = new Vector2(def.bounds.x * 0.40f, 0f);
-            asset.boss = fish[Bosses[index].file];
+
+            asset.hiddenItemCount = HiddenPerZone;
+
+            // ── 장애물 ──
+            asset.obstacles = new List<ZoneObstacle>();
+            if (def.obstacles != null)
+            {
+                foreach (var (shape, t, side, size, rot) in def.obstacles)
+                {
+                    asset.obstacles.Add(new ZoneObstacle
+                    {
+                        shape = shape,
+                        depthT = t,
+                        sideRatio = side,
+                        size = size,
+                        rotation = rot,
+                    });
+                }
+            }
+
+            // ── 보스 — 최하단(바다)에만 ──
+            bool isLast = index == Zones.Length - 1;
+            asset.boss = isLast ? fish[Boss.file] : null;
+            asset.bossFromStructure = isLast;
+            asset.bossStructureRadius = isLast ? 26f : 5f;
+            // 존 천장에서 아래로 이만큼 내려간 곳에 구조물을 둔다
+            asset.bossStructureLocalPos = new Vector2(0f, def.height * 0.46f);
 
             asset.spawnTable = new List<SpawnEntry>();
             for (int i = 0; i < MapFish[index].Length; i++)
@@ -453,6 +592,17 @@ namespace FishGame.EditorTools
                     species = fish[MapFish[index][i].file],
                     weight = SpawnWeights[i],
                     maxAlive = i >= 3 ? 5 : 0,
+                });
+            }
+
+            // 희귀 대형어 — 어항·하수구·강에만, 한 마리씩 아주 드물게
+            if (index < Rares.Length)
+            {
+                asset.spawnTable.Add(new SpawnEntry
+                {
+                    species = fish[Rares[index].file],
+                    weight = 2.5f,
+                    maxAlive = 1,
                 });
             }
 

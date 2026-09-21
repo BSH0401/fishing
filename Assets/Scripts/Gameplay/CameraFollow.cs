@@ -74,14 +74,26 @@ namespace FishGame.Gameplay
             Vector3 desired = target.position + (Vector3)offset;
             desired.z = transform.position.z;
 
-            if (run != null)
+            if (run != null && run.Layout != null)
             {
-                Rect b = run.MapBounds;
                 float halfH = _cam.orthographicSize;
                 float halfW = halfH * _cam.aspect;
 
-                desired.x = b.width  <= halfW * 2f ? b.center.x : Mathf.Clamp(desired.x, b.xMin + halfW, b.xMax - halfW);
-                desired.y = b.height <= halfH * 2f ? b.center.y : Mathf.Clamp(desired.y, b.yMin + halfH, b.yMax - halfH);
+                // 세로: 통합 맵 전체가 범위
+                float top = run.WorldTopY, bottom = run.WorldBottomY;
+                desired.y = (top - bottom) <= halfH * 2f
+                    ? (top + bottom) * 0.5f
+                    : Mathf.Clamp(desired.y, bottom + halfH, top - halfH);
+
+                // 가로: 벽이 기울어져 있으므로 "지금 높이의 폭"으로 잡는다.
+                // 화면 위아래 끝의 폭도 함께 보고 좁은 쪽을 따라야 벽 바깥이 안 비친다.
+                float hw = Mathf.Min(
+                    run.WorldHalfWidthAt(desired.y),
+                    Mathf.Min(run.WorldHalfWidthAt(desired.y + halfH),
+                              run.WorldHalfWidthAt(desired.y - halfH)));
+                float cx = run.WorldCenterXAt(desired.y);
+
+                desired.x = hw <= halfW ? cx : Mathf.Clamp(desired.x, cx - hw + halfW, cx + hw - halfW);
             }
 
             // 히트스톱 중에도 카메라는 살아 있어야 흔들림이 보인다 → unscaled

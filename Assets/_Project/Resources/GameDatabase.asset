@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b98559983a7cb64291b04f9216f1cb6, type: 3}
   m_Name: GameDatabase
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.GameDatabase
-  maps:
-  - {fileID: 11400000, guid: 96314cd587e7f6d4181977c8cfad08d0, type: 2}
-  - {fileID: 11400000, guid: c39c673ab971bc44b93dad1777568ae1, type: 2}
-  - {fileID: 11400000, guid: 1f3fdd9dafd8d404f93e0ded88775703, type: 2}
-  - {fileID: 11400000, guid: 76389a58bb95f3345b04424ad814a333, type: 2}
+  zones:
+  - {fileID: 11400000, guid: 866ff8a5641c52440ad69b1c73935fdd, type: 2}
+  - {fileID: 11400000, guid: 51f23656228407144914e3055fe44521, type: 2}
+  - {fileID: 11400000, guid: ea5d471bc6ef1cb44b8656750097d333, type: 2}
+  - {fileID: 11400000, guid: 7129c073179627e40b4e375cf60e28e2, type: 2}
   skills:
   - {fileID: 11400000, guid: 276eb288055ac3047ab5143195d0c03c, type: 2}
   - {fileID: 11400000, guid: e192686a46743404d995356c2adf33dc, type: 2}
@@ -62,10 +62,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5690ef87f9eb81c4089b6d9dc53afcc8, type: 2}
   - {fileID: 11400000, guid: 0a52cc1d0d87f824e91fae3c822e5544, type: 2}
   - {fileID: 11400000, guid: 614c2ad450159624a95714c4d838370e, type: 2}
-  - {fileID: 11400000, guid: cda0b797a574bfb4eb2b2856f007f464, type: 2}
-  - {fileID: 11400000, guid: e310ec762aea0cb4f851164b602e6d1a, type: 2}
-  - {fileID: 11400000, guid: 51227836fce79f44d9bf14b6fc77bcd0, type: 2}
-  - {fileID: 11400000, guid: 50a65fc4d3b096b438b742bae7d784c6, type: 2}
+  - {fileID: 11400000, guid: f67a69db8b944224e941807230112750, type: 2}
+  - {fileID: 11400000, guid: 05b7802bace724546a51ea7f9b929c3a, type: 2}
+  - {fileID: 11400000, guid: 5384c385f09c14d438d51d34c8265e68, type: 2}
+  - {fileID: 11400000, guid: 38ceab6781c78a440ab3aa45986a46fd, type: 2}
   baseSurvivalTime: 30
   baseSize: 1
   baseMoveSpeed: 6.5
@@ -105,6 +105,8 @@ MonoBehaviour:
   growthMaxMultiplier: 2.5
   timeDrainAccelerationPer60s: 2.2
   maxTimeDrainMultiplier: 10
-  bossGateUsesBaseSize: 1
+  gateUsesCurrentSize: 1
+  recordDeepestZone: 1
+  hiddenItemCurrencyBonus: 0.05
   codexMilestone: 100
   codexMaxTiers: 10

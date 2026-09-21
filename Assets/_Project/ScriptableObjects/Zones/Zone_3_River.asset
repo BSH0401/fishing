@@ -9,16 +9,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb2f97dcbe2fc054fb082cec2de30c70, type: 3}
-  m_Name: Map_3_River
-  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.MapData
-  mapIndex: 2
+  m_Script: {fileID: 11500000, guid: c8f21de6eb9c2564f92acbf6f188e003, type: 3}
+  m_Name: Zone_3_River
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.ZoneData
+  zoneIndex: 2
   displayName: "\uAC15"
   description: "\uBB3C\uC0B4\uC774 \uC138\uB2E4. \uC5EC\uAE30\uC11C\uBD80\uD130\uB294
     \uC774\uBE68\uC744 \uAC00\uC9C4 \uAC83\uB4E4\uC774 \uB9CE\uB2E4."
-  background: {fileID: 0}
+  height: 260
+  widthProfile:
+  - t: 0
+    halfWidth: 22
+  - t: 0.35
+    halfWidth: 120
+  - t: 0.7
+    halfWidth: 142
+  - t: 1
+    halfWidth: 34
+  outlineSegments: 32
+  hasExit: 1
+  exitHalfWidth: 30
+  exitHeight: 40
+  exitOffsetX: 0
+  exitRequiredSize: 21
   waterColor: {r: 0.35, g: 0.66, b: 0.78, a: 1}
-  boundsSize: {x: 290, y: 160}
+  background: {fileID: 0}
+  wallColor: {r: 0.1, g: 0.11, b: 0.14, a: 1}
   spawnTable:
   - species: {fileID: 11400000, guid: 164e15c314a9ad04a9f06669d3a852f1, type: 2}
     weight: 34
@@ -35,11 +51,16 @@ MonoBehaviour:
   - species: {fileID: 11400000, guid: daf627564f9eda34884b4fe21344badc, type: 2}
     weight: 7
     maxAlive: 5
+  - species: {fileID: 11400000, guid: 5384c385f09c14d438d51d34c8265e68, type: 2}
+    weight: 2.5
+    maxAlive: 1
   targetPopulation: 34
   spawnInterval: 0.28
-  spawnMarginFromPlayer: 46.399998
-  boss: {fileID: 11400000, guid: 51227836fce79f44d9bf14b6fc77bcd0, type: 2}
-  bossGateMinSize: 21
-  bossGatePosition: {x: 116, y: 0}
-  requiresClearOfMapIndex: 1
-  currencyMultiplier: 0.2265
+  spawnMarginFromPlayer: 45.44
+  currencyMultiplier: 0.0431
+  depthValueBonus: 0.25
+  hiddenItemCount: 2
+  boss: {fileID: 0}
+  bossFromStructure: 0
+  bossStructureLocalPos: {x: 0, y: 119.6}
+  bossStructureRadius: 5

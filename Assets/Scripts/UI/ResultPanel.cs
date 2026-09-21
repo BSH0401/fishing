@@ -79,7 +79,7 @@ namespace FishGame.UI
             {
                 reasonText.text = reason switch
                 {
-                    RunEndReason.BossDefeated => "길목을 막던 보스를 삼켰다. 위로 올라갈 수 있다.",
+                    RunEndReason.BossDefeated => "심해를 지키던 것을 삼켰다. 탈출이다.",
                     RunEndReason.Eaten        => "더 큰 물고기에게 먹혔다. 재화 일부를 잃었다.",
                     RunEndReason.TimeOut      => "버틸 시간이 다했다. 실험실로 돌아간다.",
                     _                         => "",
@@ -99,21 +99,35 @@ namespace FishGame.UI
 
             if (statsText != null)
             {
+                var gm = GameManager.Instance;
+                var startZone = gm?.Database?.GetZone(result.StartZone);
+                var deepZone = gm?.Database?.GetZone(result.DeepestZone);
+
+                string route = startZone != null && deepZone != null
+                    ? (result.StartZone == result.DeepestZone
+                        ? deepZone.displayName
+                        : $"{startZone.displayName} → {deepZone.displayName}")
+                    : "-";
+
                 statsText.text =
+                    $"도달 구역  {route}\n" +
                     $"잡아먹은 물고기  {result.FishEaten}마리\n" +
-                    $"생존 시간  {NumberFormatter.FormatTime(result.SurvivedSeconds)}";
+                    $"생존 시간  {NumberFormatter.FormatTime(result.SurvivedSeconds)}" +
+                    (result.HiddenItemsFound > 0
+                        ? $"\n히든 아이템  +{result.HiddenItemsFound}개  <size=80%>(재화 +{result.HiddenItemsFound * 5}% 영구)</size>"
+                        : "");
             }
 
             if (unlockBanner != null)
             {
-                unlockBanner.SetActive(result.NewMapUnlocked);
-                if (result.NewMapUnlocked && unlockText != null)
+                unlockBanner.SetActive(result.NewZoneReached);
+                if (result.NewZoneReached && unlockText != null)
                 {
                     var gm = GameManager.Instance;
-                    var next = gm?.Database?.GetMap(result.MapIndex + 1);
-                    unlockText.text = next != null
-                        ? $"새 맵 해금: {next.displayName}"
-                        : "새 맵 해금!";
+                    var reached = gm?.Database?.GetZone(result.DeepestZone);
+                    unlockText.text = reached != null
+                        ? $"새 구역 도달: {reached.displayName}\n<size=75%>다음 판부터 여기서 시작할 수 있다</size>"
+                        : "새 구역 도달!";
                 }
             }
         }

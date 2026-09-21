@@ -51,10 +51,9 @@ namespace FishGame.Gameplay
             float dt = Time.deltaTime;
             transform.position += (Vector3)(_velocity * dt);
 
-            // 맵 밖으로 나가면 소멸
-            var b = run.MapBounds;
+            // 벽 밖으로 나가면 소멸
             Vector2 p = transform.position;
-            if (p.x < b.xMin - 2f || p.x > b.xMax + 2f || p.y < b.yMin - 2f || p.y > b.yMax + 2f)
+            if (!run.InsideWorld(p, -2f))
             {
                 Despawn();
                 return;

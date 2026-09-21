@@ -6,9 +6,15 @@ using UnityEngine;
 namespace FishGame.Gameplay
 {
     /// <summary>
-    /// 맵의 스폰 테이블에 따라 AI 물고기를 채워 넣는다.
+    /// 통합 맵의 물고기를 채워 넣는다.
     /// 프리팹은 1종(AIFish)만 쓰고 스프라이트/크기/패턴은 FishSpecies에서 주입한다.
-    /// 오브젝트 풀을 써서 런타임 Instantiate를 피한다.
+    ///
+    /// 맵이 하나로 합쳐지면서 스폰 규칙이 바뀌었다.
+    /// 예전: "이 맵의 스폰 테이블에서 뽑는다"
+    /// 지금: "먼저 자리를 정하고, 그 자리가 속한 존의 테이블에서 뽑는다"
+    ///
+    /// 자리를 먼저 정하는 이유는 경계 근처에서 두 존의 물고기가 자연스럽게 섞이게 하려는 것이다.
+    /// 통로를 빠져나오는 순간 눈앞의 물고기가 한꺼번에 바뀌면 이어진 공간처럼 느껴지지 않는다.
     /// </summary>
     public class FishSpawner : MonoBehaviour
     {
@@ -17,7 +23,7 @@ namespace FishGame.Gameplay
         [SerializeField] AIFish fishPrefab;
         [SerializeField] Transform poolParent;
         [Tooltip("시작할 때 미리 만들어 둘 개수")]
-        [SerializeField] int prewarmCount = 40;
+        [SerializeField] int prewarmCount = 48;
 
         readonly Stack<AIFish> _pool = new Stack<AIFish>();
         readonly List<AIFish> _active = new List<AIFish>();
@@ -33,8 +39,8 @@ namespace FishGame.Gameplay
         [Tooltip("멀어진 물고기를 정리하는 주기(초)")]
         [SerializeField] float cullInterval = 0.75f;
 
-        MapData _map;
         RunManager _run;
+        WorldLayout _layout;
         float _nextCullAt;
         Coroutine _spawnLoop;
         AIFish _boss;
@@ -55,22 +61,26 @@ namespace FishGame.Gameplay
             return inst;
         }
 
-        public void BeginSpawning(MapData map, RunManager run)
+        // ══════════════════════════════════════════════════════════
+        //  시작 / 정지
+        // ══════════════════════════════════════════════════════════
+        public void BeginSpawning(RunManager run)
         {
             StopSpawning();
             DespawnAll();
 
-            _map = map;
             _run = run;
-            if (_map == null || fishPrefab == null)
+            _layout = run != null ? run.Layout : null;
+
+            if (_layout == null || fishPrefab == null)
             {
-                Debug.LogError("[FishSpawner] MapData 또는 fishPrefab이 없습니다.");
+                Debug.LogError("[FishSpawner] WorldLayout 또는 fishPrefab이 없습니다.");
                 return;
             }
 
             // 시작 시 절반은 즉시 채워서 빈 화면을 피한다
-            int initial = Mathf.Max(1, _map.targetPopulation / 2);
-            for (int i = 0; i < initial; i++) TrySpawnOne(ignorePlayerMargin: false);
+            int initial = Mathf.Max(1, TargetPopulation / 2);
+            for (int i = 0; i < initial; i++) TrySpawnOne();
 
             _spawnLoop = StartCoroutine(SpawnLoop());
         }
@@ -80,35 +90,59 @@ namespace FishGame.Gameplay
             if (_spawnLoop != null) { StopCoroutine(_spawnLoop); _spawnLoop = null; }
         }
 
-        IEnumerator SpawnLoop()
+        ZoneData CurrentZone => _run != null ? _run.CurrentZone : null;
+
+        int TargetPopulation
         {
-            var wait = new WaitForSeconds(_map.spawnInterval);
-            while (true)
+            get
             {
-                if (_run != null && !_run.IsPaused && _active.Count < _map.targetPopulation)
-                    TrySpawnOne(ignorePlayerMargin: false);
-                yield return wait;
+                var z = CurrentZone;
+                return z != null ? z.targetPopulation : 26;
             }
         }
 
-        // ── 스폰 ────────────────────────────────────────────────
-        bool TrySpawnOne(bool ignorePlayerMargin)
+        IEnumerator SpawnLoop()
         {
-            var species = PickSpecies();
+            while (true)
+            {
+                var z = CurrentZone;
+                float interval = z != null ? z.spawnInterval : 0.35f;
+
+                if (_run != null && !_run.IsPaused && _active.Count < TargetPopulation)
+                    TrySpawnOne();
+
+                yield return new WaitForSeconds(interval);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  스폰
+        // ══════════════════════════════════════════════════════════
+        bool TrySpawnOne()
+        {
+            if (!FindSpawnPosition(out Vector2 pos, out int zoneIndex)) return false;
+
+            var species = PickSpecies(zoneIndex);
             if (species == null) return false;
 
-            Vector2 pos = FindSpawnPosition(species, ignorePlayerMargin);
+            // 자리를 먼저 잡았으니 그 종이 들어갈 만큼 벽에서 떨어져 있는지 다시 확인
+            pos = _layout.Clamp(pos, species.size * 0.5f);
+
             Vector2 heading = Random.value < 0.5f ? Vector2.left : Vector2.right;
             heading = (heading + Random.insideUnitCircle * 0.35f).normalized;
 
-            Spawn(species, pos, heading);
+            Spawn(species, pos, zoneIndex, heading);
             return true;
         }
 
-        FishSpecies PickSpecies()
+        /// <summary>그 자리가 속한 존의 스폰 테이블에서 뽑는다.</summary>
+        FishSpecies PickSpecies(int zoneIndex)
         {
+            var zone = _layout.GetZone(zoneIndex);
+            if (zone == null || zone.spawnTable == null) return null;
+
             float total = 0f;
-            foreach (var e in _map.spawnTable)
+            foreach (var e in zone.spawnTable)
             {
                 if (e?.species == null || e.weight <= 0f) continue;
                 if (e.maxAlive > 0 && GetAlive(e.species) >= e.maxAlive) continue;
@@ -117,7 +151,7 @@ namespace FishGame.Gameplay
             if (total <= 0f) return null;
 
             float roll = Random.value * total;
-            foreach (var e in _map.spawnTable)
+            foreach (var e in zone.spawnTable)
             {
                 if (e?.species == null || e.weight <= 0f) continue;
                 if (e.maxAlive > 0 && GetAlive(e.species) >= e.maxAlive) continue;
@@ -129,43 +163,52 @@ namespace FishGame.Gameplay
 
         /// <summary>
         /// 플레이어 화면 바로 바깥의 링 안에서 자리를 찾는다.
-        /// 맵 전체에 균일하게 뿌리면 큰 맵에서 화면이 텅 비어 보인다.
+        /// 맵 전체에 균일하게 뿌리면 큰 존에서 화면이 텅 비어 보인다.
         /// </summary>
-        Vector2 FindSpawnPosition(FishSpecies species, bool ignorePlayerMargin)
+        bool FindSpawnPosition(out Vector2 result, out int zoneIndex)
         {
-            var b = _map.WorldBounds;
-            float m = species.size * 0.5f;
+            result = Vector2.zero;
+            zoneIndex = _run != null ? _run.CurrentZoneIndex : 0;
+
             Vector2 playerPos = _run != null && _run.Player != null
                 ? (Vector2)_run.Player.transform.position : Vector2.zero;
 
             float view = _run != null ? _run.ViewRadius : 10f;
-            float inner = ignorePlayerMargin ? species.size : Mathf.Max(_map.spawnMarginFromPlayer * 0.35f,
-                                                                        view * spawnRingInner);
-            float outer = Mathf.Max(inner + species.size * 2f, view * spawnRingOuter);
+            float inner = view * spawnRingInner;
+            float outer = Mathf.Max(inner + 1f, view * spawnRingOuter);
 
-            for (int attempt = 0; attempt < 16; attempt++)
+            for (int attempt = 0; attempt < 20; attempt++)
             {
                 float angle = Random.value * Mathf.PI * 2f;
                 float dist = Mathf.Lerp(inner, outer, Random.value);
                 Vector2 p = playerPos + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * dist;
 
-                if (p.x >= b.xMin + m && p.x <= b.xMax - m &&
-                    p.y >= b.yMin + m && p.y <= b.yMax - m)
-                    return p;
+                if (!_layout.Contains(p, 1f)) continue;
+                if (Obstacle.Overlaps(p, 1.5f)) continue;   // 구조물 안에서 튀어나오지 않게
+
+                result = p;
+                zoneIndex = _layout.ZoneIndexAt(p.y);
+                return true;
             }
 
-            // 링이 맵 밖으로만 나간다면(구석에 몰린 경우) 맵 안 아무 곳이나
+            // 링이 전부 벽 바깥이면(좁은 통로 안 등) 같은 높이의 안쪽 아무 곳
             for (int attempt = 0; attempt < 8; attempt++)
             {
-                Vector2 p = new Vector2(
-                    Random.Range(b.xMin + m, b.xMax - m),
-                    Random.Range(b.yMin + m, b.yMax - m));
-                if (Vector2.Distance(p, playerPos) >= inner * 0.6f) return p;
+                float y = playerPos.y + Random.Range(-view, view);
+                float cx = _layout.CenterXAt(y);
+                float hw = _layout.HalfWidthAt(y);
+                Vector2 p = new Vector2(cx + Random.Range(-hw * 0.85f, hw * 0.85f), y);
+
+                if (!_layout.Contains(p, 1f)) continue;
+                if (Obstacle.Overlaps(p, 1.5f)) continue;
+                if (Vector2.Distance(p, playerPos) < inner * 0.5f) continue;
+
+                result = p;
+                zoneIndex = _layout.ZoneIndexAt(p.y);
+                return true;
             }
 
-            return new Vector2(
-                Random.Range(b.xMin + m, b.xMax - m),
-                Random.Range(b.yMin + m, b.yMax - m));
+            return false;
         }
 
         /// <summary>화면에서 한참 벗어난 물고기를 회수한다. 풀을 재활용해 밀도를 유지한다.</summary>
@@ -196,23 +239,24 @@ namespace FishGame.Gameplay
             CullDistantFish();
         }
 
-        public AIFish Spawn(FishSpecies species, Vector2 position, Vector2 heading)
+        public AIFish Spawn(FishSpecies species, Vector2 position, int zoneIndex, Vector2 heading)
         {
             var fish = _pool.Count > 0 ? _pool.Pop() : CreateInstance();
             fish.transform.SetPositionAndRotation(position, Quaternion.identity);
             fish.gameObject.SetActive(true);
-            fish.Setup(species, _map.WorldBounds, this, heading);
+            fish.Setup(species, _layout, zoneIndex, this, heading);
 
             _active.Add(fish);
             _aliveCount[species] = GetAlive(species) + 1;
             return fish;
         }
 
-        /// <summary>보스 게이트가 열렸을 때 RunManager가 호출.</summary>
+        /// <summary>바다의 구조물이 깨졌을 때 RunManager가 호출.</summary>
         public void SpawnBoss(FishSpecies bossSpecies, Vector2 position)
         {
-            if (bossSpecies == null || _boss != null) return;
-            _boss = Spawn(bossSpecies, position, Vector2.left);
+            if (bossSpecies == null || _boss != null || _layout == null) return;
+            int zone = _layout.ZoneIndexAt(position.y);
+            _boss = Spawn(bossSpecies, position, zone, Vector2.left);
         }
 
         // ── 디스폰 ──────────────────────────────────────────────

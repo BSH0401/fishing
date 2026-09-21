@@ -13,7 +13,12 @@ namespace FishGame.UI
         [SerializeField] TMP_Text timeText;
         [SerializeField] TMP_Text currencyText;
         [SerializeField] TMP_Text sizeText;
+        [Tooltip("현재 구역 이름")]
         [SerializeField] TMP_Text mapNameText;
+        [Tooltip("수면에서 얼마나 내려왔는지")]
+        [SerializeField] TMP_Text depthText;
+        [Tooltip("통합 맵 전체 대비 깊이 게이지")]
+        [SerializeField] Image depthBar;
         [SerializeField] Image timeBar;
         [SerializeField] Gradient timeBarGradient;
         [Tooltip("제한시간 소모 가속 표시 (x1.0 → x2.4 ...)")]
@@ -62,7 +67,10 @@ namespace FishGame.UI
             _player = _run.Player;
 
             _run.OnFishEaten += HandleFishEaten;
-            _run.OnBossGateOpened += HandleBossGateOpened;
+            _run.OnBossReleased += HandleBossReleased;
+            _run.OnZoneChanged += HandleZoneChanged;
+            _run.OnGateOpened += HandleGateOpened;
+            _run.OnHiddenItemFound += HandleHiddenItemFound;
 
             var s = _run.Stats;
             SetActive(boosterSlot, s.HasBooster);
@@ -72,10 +80,9 @@ namespace FishGame.UI
             SetActive(missileSlot, s.HasMissile);
             SetActive(armorGroup,  s.HasScaleArmor);
 
-            if (mapNameText != null && _run.Map != null) mapNameText.text = _run.Map.displayName;
             if (bossBanner != null) bossBanner.SetActive(false);
 
-            UpdateBossHint();
+            HandleZoneChanged(_run.CurrentZoneIndex);
         }
 
         void OnDestroy()
@@ -83,7 +90,10 @@ namespace FishGame.UI
             FishGame.Core.AudioManager.StopLoop();
             if (_run == null) return;
             _run.OnFishEaten -= HandleFishEaten;
-            _run.OnBossGateOpened -= HandleBossGateOpened;
+            _run.OnBossReleased -= HandleBossReleased;
+            _run.OnZoneChanged -= HandleZoneChanged;
+            _run.OnGateOpened -= HandleGateOpened;
+            _run.OnHiddenItemFound -= HandleHiddenItemFound;
         }
 
         void Update()
@@ -133,8 +143,19 @@ namespace FishGame.UI
                     armorText.text = $"비늘 {_player.ArmorRemaining}/{_player.ArmorMax}";
             }
 
+            if (depthText != null && _run.Layout != null && _player != null)
+            {
+                // 깊이와 함께 "지금 여기서 먹으면 몇 배인지"를 같이 보여준다.
+                // 아래로 내려갈 이유를 숫자로 드러내는 게 이 게임의 핵심이라서.
+                float y = _player.transform.position.y;
+                float depth = _run.WorldTopY - y;
+                float mult = _run.Layout.DepthValueDisplay(y);
+                depthText.text = $"깊이 {depth:0}m  ×{mult:0.0}";
+            }
+            if (depthBar != null) depthBar.fillAmount = _run.Depth01;
+
             UpdateDanger();
-            UpdateBossHint();
+            UpdateGateHint();
         }
 
         /// <summary>제한시간이 임박하면 화면 가장자리를 붉게 맥동시키고 심박음을 올린다.</summary>
@@ -174,20 +195,41 @@ namespace FishGame.UI
         static void SetActive(GameObject go, bool value) { if (go != null) go.SetActive(value); }
         static void SetFill(Image img, float ready01) { if (img != null) img.fillAmount = 1f - ready01; }
 
-        void UpdateBossHint()
+        /// <summary>
+        /// 아래 통로까지 얼마나 남았는지. 한 판의 목표가 '더 깊이'이므로
+        /// 이 한 줄이 HUD에서 제일 중요하다.
+        /// </summary>
+        void UpdateGateHint()
         {
-            if (bossHintText == null || _run?.Map == null) return;
+            if (bossHintText == null || _run == null || _run.Layout == null || !_run.IsRunning) return;
 
-            if (_run.Map.boss == null)
+            // 최하단(바다)에서는 보스 구조물 안내로 바뀐다
+            if (!_run.Layout.HasGate(_run.CurrentZoneIndex))
             {
-                bossHintText.gameObject.SetActive(false);
+                var zone = _run.CurrentZone;
+                bool hasBoss = zone != null && zone.boss != null;
+                bossHintText.gameObject.SetActive(hasBoss);
+                if (hasBoss)
+                    bossHintText.text = _run.BossReleased
+                        ? "보스가 풀려났다!"
+                        : "고리 구조물에 부스터로 돌진 → 보스 등장";
                 return;
             }
 
             bossHintText.gameObject.SetActive(true);
-            bossHintText.text = _run.BossGateOpen
-                ? "보스 등장! 길목으로 이동하세요"
-                : $"보스 도전 조건: 크기 {_run.Map.bossGateMinSize:0.0} (현재 {_run.GateSize:0.0})";
+
+            float need = _run.NextGateRequiredSize;
+            float now = _run.CurrentPlayerSize;
+
+            if (_run.NextGateIsOpen)
+            {
+                var next = _run.Layout.GetZone(_run.CurrentZoneIndex + 1);
+                bossHintText.text = $"통로 개방 — 아래로 내려가면 {(next != null ? next.displayName : "다음 구역")}";
+            }
+            else
+            {
+                bossHintText.text = $"아래 통로: 크기 {now:0.0} / {need:0.0}";
+            }
         }
 
         void HandleFishEaten(float timeGain, double currency)
@@ -197,12 +239,44 @@ namespace FishGame.UI
                 $"+{NumberFormatter.Format(currency)}  +{timeGain:0.0}s");
         }
 
-        void HandleBossGateOpened()
+        void HandleBossReleased()
         {
             FishGame.Gameplay.Juice.Shake(0.5f);
             var bank = FishGame.Core.AudioManager.Instance.Bank;
             if (bank?.bossAppear != null) FishGame.Core.AudioManager.Play(bank.bossAppear);
-            if (bossBanner != null) StartCoroutine(ShowBannerRoutine());
+            ShowBanner("보스가 풀려났다");
+            UpdateGateHint();
+        }
+
+        void HandleZoneChanged(int zoneIndex)
+        {
+            var zone = _run != null ? _run.Layout?.GetZone(zoneIndex) : null;
+            if (mapNameText != null && zone != null) mapNameText.text = zone.displayName;
+            UpdateGateHint();
+        }
+
+        void HandleGateOpened(FishGame.Gameplay.ZoneGate gate)
+        {
+            if (gate == null) return;
+            if (gate.ZoneIndex != _run.CurrentZoneIndex) return;
+            ShowBanner($"통로 개방 — {gate.ToZoneName}");
+            UpdateGateHint();
+        }
+
+        void HandleHiddenItemFound(int countThisRun)
+        {
+            if (floatingText != null && _player != null)
+                floatingText.Spawn(_player.transform.position, "히든 아이템!  재화 +5% 영구");
+            ShowBanner("히든 아이템 발견 — 재화 획득 +5% (영구)");
+        }
+
+        void ShowBanner(string message)
+        {
+            if (bossBanner == null) return;
+            var label = bossBanner.GetComponentInChildren<TMP_Text>();
+            if (label != null) label.text = message;
+            StopCoroutine(nameof(ShowBannerRoutine));
+            StartCoroutine(nameof(ShowBannerRoutine));
         }
 
         System.Collections.IEnumerator ShowBannerRoutine()

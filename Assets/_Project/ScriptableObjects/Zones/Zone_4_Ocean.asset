@@ -9,16 +9,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb2f97dcbe2fc054fb082cec2de30c70, type: 3}
-  m_Name: Map_4_Ocean
-  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.MapData
-  mapIndex: 3
+  m_Script: {fileID: 11500000, guid: c8f21de6eb9c2564f92acbf6f188e003, type: 3}
+  m_Name: Zone_4_Ocean
+  m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.ZoneData
+  zoneIndex: 3
   displayName: "\uBC14\uB2E4"
   description: "\uC2E4\uD5D8\uC2E4\uC5D0\uC11C \uAC00\uC7A5 \uBA3C \uACF3. \uC5EC\uAE30\uC11C\uB294
     \uBB34\uC5C7\uC774\uB4E0 \uB098\uB97C \uC0BC\uD0AC \uC218 \uC788\uB2E4."
-  background: {fileID: 0}
+  height: 520
+  widthProfile:
+  - t: 0
+    halfWidth: 60
+  - t: 0.18
+    halfWidth: 250
+  - t: 0.45
+    halfWidth: 310
+  - t: 1
+    halfWidth: 300
+  outlineSegments: 32
+  hasExit: 0
+  exitHalfWidth: 30
+  exitHeight: 0
+  exitOffsetX: 0
+  exitRequiredSize: 0
   waterColor: {r: 0.16, g: 0.34, b: 0.55, a: 1}
-  boundsSize: {x: 620, y: 340}
+  background: {fileID: 0}
+  wallColor: {r: 0.1, g: 0.11, b: 0.14, a: 1}
   spawnTable:
   - species: {fileID: 11400000, guid: a8ab2e954d2c46b409e581d989aecf79, type: 2}
     weight: 34
@@ -38,8 +54,10 @@ MonoBehaviour:
   targetPopulation: 38
   spawnInterval: 0.28
   spawnMarginFromPlayer: 99.2
-  boss: {fileID: 11400000, guid: 50a65fc4d3b096b438b742bae7d784c6, type: 2}
-  bossGateMinSize: 45
-  bossGatePosition: {x: 248, y: 0}
-  requiresClearOfMapIndex: 2
-  currencyMultiplier: 0.5452
+  currencyMultiplier: 0.0267
+  depthValueBonus: 0.25
+  hiddenItemCount: 2
+  boss: {fileID: 11400000, guid: 38ceab6781c78a440ab3aa45986a46fd, type: 2}
+  bossFromStructure: 1
+  bossStructureLocalPos: {x: 0, y: 239.2}
+  bossStructureRadius: 26
