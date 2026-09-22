@@ -146,11 +146,24 @@ namespace FishGame.Gameplay
             for (int i = 0; i < _all.Count; i++)
             {
                 var o = _all[i];
-                if (o == null) continue;
+                if (o == null || !o.isActiveAndEnabled) continue;
                 float reach = o.AvoidRadius + radius;
                 if ((pos - o.Center).sqrMagnitude < reach * reach) return true;
             }
             return false;
+        }
+
+        /// <summary>그 자리와 겹치는 장애물 하나. 없으면 null.</summary>
+        public static Obstacle FindOverlapping(Vector2 pos, float radius)
+        {
+            for (int i = 0; i < _all.Count; i++)
+            {
+                var o = _all[i];
+                if (o == null || !o.isActiveAndEnabled) continue;
+                float reach = o.AvoidRadius + radius;
+                if ((pos - o.Center).sqrMagnitude < reach * reach) return o;
+            }
+            return null;
         }
 
         /// <summary>새 판을 만들 때 WorldBuilder가 호출 — 파괴된 항목을 정리한다.</summary>

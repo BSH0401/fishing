@@ -127,7 +127,10 @@ namespace FishGame.UI
             {
                 float t = Mathf.Clamp01(_run.TimeRemaining / _run.MaxTime);
                 timeBar.fillAmount = t;
-                if (timeBarGradient != null) timeBar.color = timeBarGradient.Evaluate(t);
+                if (timeBarGradient != null && timeBarGradient.colorKeys.Length > 1)
+                    timeBar.color = timeBarGradient.Evaluate(t);
+                else
+                    timeBar.color = DefaultTimeColor(t);   // 인스펙터에 그라디언트가 비어 있을 때 (씬 생성기가 채우지 않음)
             }
 
             if (_player != null)
@@ -265,9 +268,23 @@ namespace FishGame.UI
 
         void HandleHiddenItemFound(int countThisRun)
         {
+            // 보너스 수치는 DB에서 — 인스펙터에서 바꾸면 문구도 따라간다
+            float bonus = _run != null && _run.Database != null ? _run.Database.hiddenItemCurrencyBonus : 0.05f;
+            string pct = $"{bonus * 100f:0.#}%";
             if (floatingText != null && _player != null)
-                floatingText.Spawn(_player.transform.position, "히든 아이템!  재화 +5% 영구");
-            ShowBanner("히든 아이템 발견 — 재화 획득 +5% (영구)");
+                floatingText.Spawn(_player.transform.position, $"히든 아이템!  재화 +{pct} 영구");
+            ShowBanner($"히든 아이템 발견 — 재화 획득 +{pct} (영구)");
+        }
+
+        /// <summary>남은 시간 색: 넉넉하면 초록, 절반 아래 노랑, 20% 아래 빨강.</summary>
+        static Color DefaultTimeColor(float t)
+        {
+            var green  = new Color(0.35f, 0.85f, 0.45f);
+            var yellow = new Color(1f, 0.82f, 0.25f);
+            var red    = new Color(1f, 0.3f, 0.25f);
+            return t > 0.5f ? Color.Lerp(yellow, green, (t - 0.5f) * 2f)
+                 : t > 0.2f ? Color.Lerp(red, yellow, (t - 0.2f) / 0.3f)
+                 : red;
         }
 
         void ShowBanner(string message)

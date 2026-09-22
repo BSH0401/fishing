@@ -64,6 +64,24 @@ namespace FishGame.Data
         public static bool IsActiveUpgrade(this SkillEffectType t) => (int)t >= 200;
 
         /// <summary>퍼센트(복리)로 적용되는 효과인가?</summary>
+        /// <summary>
+        /// 퍼센트지만 가산으로 쌓이는 효과 (액티브 강화). ×(1 + 값 × 레벨).
+        /// </summary>
+        public static bool IsLinearPercent(this SkillEffectType t)
+        {
+            switch (t)
+            {
+                case SkillEffectType.BoosterRange:
+                case SkillEffectType.VacuumRange:
+                case SkillEffectType.BaitRange:
+                case SkillEffectType.VoltPower:
+                case SkillEffectType.MissilePower:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         public static bool IsMultiplicative(this SkillEffectType t)
         {
             switch (t)
@@ -73,12 +91,8 @@ namespace FishGame.Data
                 case SkillEffectType.Vision:
                 case SkillEffectType.TimeGain:
                 case SkillEffectType.CurrencyGain:
-                case SkillEffectType.BoosterRange:
-                case SkillEffectType.VacuumRange:
-                case SkillEffectType.BaitRange:
-                case SkillEffectType.VoltPower:
-                case SkillEffectType.MissilePower:
                     return true;
+                // 액티브 강화(부스터·청소기·미끼·볼트·미사일)는 가산 — PlayerStats.Build 참고
                 default:
                     return false;
             }

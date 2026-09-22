@@ -97,7 +97,7 @@ namespace FishGame.Utils
                     if (P.AddHiddenItem($"{z.name}#{k}")) added++;
             }
             Commit();
-            return $"히든 아이템 {added}개 획득 — 총 {P.HiddenItemCount}개 (재화 +{P.HiddenItemCount * 5}%)";
+            return $"히든 아이템 {added}개 획득 — 총 {P.HiddenItemCount}개 (재화 +{P.HiddenItemCount * GM.Database.hiddenItemCurrencyBonus * 100f:0.#}%)";
         }
 
         public static string ResetHidden()

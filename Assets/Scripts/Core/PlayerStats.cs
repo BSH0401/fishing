@@ -57,10 +57,16 @@ namespace FishGame.Core
             {
                 if (node == null) continue;
                 int level = progress.GetSkillLevel(node.id);
+                // 예전 세이브에는 지금 최대 레벨보다 높은 값이 남아 있을 수 있다 (치아 교정 15 → 8 등)
+                level = Mathf.Min(level, node.maxLevel);
                 if (level <= 0) continue;
 
                 float v = node.valuePerLevel;
                 float compounded = Pow(1f + v, level);
+                // 액티브 강화는 가산으로 쌓는다. 복리로 두면 +50% × 5레벨이 7.6배가 되어
+                // 볼트 마비가 쿨타임보다 길어지는 등 풀트리에서 스킬이 깨진다.
+                // (가산이면 1 + 0.5 × 5 = 3.5배)
+                float linear = 1f + v * level;
 
                 switch (node.effectType)
                 {
@@ -81,22 +87,22 @@ namespace FishGame.Core
                     case SkillEffectType.CurrencyGain:  s.CurrencyMultiplier *= compounded; break;
 
                     // 액티브 강화
-                    case SkillEffectType.BoosterRange:     s.BoosterDistanceMultiplier *= compounded; break;
+                    case SkillEffectType.BoosterRange:     s.BoosterDistanceMultiplier *= linear;     break;
                     case SkillEffectType.BoosterPower:     s.BoosterPierceAnySize = true;             break;
-                    case SkillEffectType.VacuumRange:      s.VacuumRangeMultiplier *= compounded;     break;
+                    case SkillEffectType.VacuumRange:      s.VacuumRangeMultiplier *= linear;         break;
                     case SkillEffectType.ScaleArmorStack:  armorExtra += level;                       break;
-                    case SkillEffectType.BaitRange:        s.BaitRangeMultiplier *= compounded;       break;
+                    case SkillEffectType.BaitRange:        s.BaitRangeMultiplier *= linear;           break;
                     case SkillEffectType.BaitCount:        baitExtra += level;                        break;
-                    case SkillEffectType.VoltPower:        s.VoltMultiplier *= compounded;            break;
+                    case SkillEffectType.VoltPower:        s.VoltMultiplier *= linear;                break;
                     case SkillEffectType.MissilePower:
-                        s.MissileRangeMultiplier *= compounded;
+                        s.MissileRangeMultiplier *= linear;
                         missileExtra += level;
                         break;
                 }
             }
 
-            // 크기 — 덧붙인 장갑의 복리
-            s.Size = db.baseSize * sizeMult;
+            // 크기 — 덧붙인 장갑의 복리. 절대 상한을 넘지 않는다.
+            s.Size = Mathf.Min(db.maxPlayerSize, db.baseSize * sizeMult);
 
             // 속도 — 크기와 함께 오르되 지수로 완화 (안 그러면 후반에 조작 불가)
             float speedMult = Pow(sizeMult, db.speedScalingExponent);
@@ -109,6 +115,9 @@ namespace FishGame.Core
 
             ApplyCodexBonuses(s, db, progress);
             ApplyHiddenItemBonus(s, db, progress);
+
+            // 입 크기 상한 — 도감 보너스까지 합친 뒤에 건다
+            s.MouthMultiplier = Mathf.Min(db.maxMouthMultiplier, s.MouthMultiplier);
 
             return s;
         }

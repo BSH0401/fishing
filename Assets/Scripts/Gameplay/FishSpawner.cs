@@ -127,6 +127,8 @@ namespace FishGame.Gameplay
 
             // 자리를 먼저 잡았으니 그 종이 들어갈 만큼 벽에서 떨어져 있는지 다시 확인
             pos = _layout.Clamp(pos, species.size * 0.5f);
+            // 큰 종은 벽에서 밀려난 자리가 장애물과 겹칠 수 있다 — 그 크기로 다시 본다
+            if (Obstacle.Overlaps(pos, species.size * 0.5f)) return false;
 
             Vector2 heading = Random.value < 0.5f ? Vector2.left : Vector2.right;
             heading = (heading + Random.insideUnitCircle * 0.35f).normalized;
@@ -252,11 +254,12 @@ namespace FishGame.Gameplay
         }
 
         /// <summary>바다의 구조물이 깨졌을 때 RunManager가 호출.</summary>
-        public void SpawnBoss(FishSpecies bossSpecies, Vector2 position)
+        public AIFish SpawnBoss(FishSpecies bossSpecies, Vector2 position)
         {
-            if (bossSpecies == null || _boss != null || _layout == null) return;
+            if (bossSpecies == null || _boss != null || _layout == null) return _boss;
             int zone = _layout.ZoneIndexAt(position.y);
             _boss = Spawn(bossSpecies, position, zone, Vector2.left);
+            return _boss;
         }
 
         // ── 디스폰 ──────────────────────────────────────────────

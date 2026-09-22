@@ -99,9 +99,33 @@ namespace FishGame.Player
 
         /// <summary>이번 판 시작 시의 크기 (스킬트리로 정해진 값).</summary>
         public float RunStartSize => _runStartSize;
-        /// <summary>이번 판에서 커질 수 있는 최대 크기.</summary>
-        public float MaxRunSize =>
-            _db != null && _db.inRunGrowthEnabled ? _runStartSize * _db.growthMaxMultiplier : _runStartSize;
+
+        /// <summary>
+        /// 이번 판에 커질 수 있는 최대 크기. 판 시작 크기 × 성장 배율이되,
+        /// 절대 상한(GameDatabase.maxPlayerSize)을 넘지 않는다.
+        /// </summary>
+        public float MaxRunSize
+        {
+            get
+            {
+                if (_db == null) return _runStartSize;
+                float grown = _db.inRunGrowthEnabled ? _runStartSize * _db.growthMaxMultiplier : _runStartSize;
+                float cap = _db.maxPlayerSize;
+
+                // 지금 구역의 출구보다 커지면 갇힌다. 내려가기 전까지는 그 이상 자라지 않는다.
+                var zone = _run != null ? _run.CurrentZone : null;
+                if (zone != null) cap = Mathf.Min(cap, zone.MaxEnterableSize);
+
+                return Mathf.Max(_runStartSize, Mathf.Min(cap, grown));
+            }
+        }
+
+        /// <summary>
+        /// 액티브 스킬 범위 배율. 크기 1일 때 1 — 초반 손맛은 그대로 두고,
+        /// 맵이 커지는 만큼 스킬도 같이 커지게 한다.
+        /// </summary>
+        float ActiveScale =>
+            _db != null && _db.activeRangeScalesWithSize ? Mathf.Max(1f, Size) : 1f;
         /// <summary>성장 진행도 0~1. HUD 바에 쓴다.</summary>
         public float GrowthProgress01
         {
@@ -138,12 +162,15 @@ namespace FishGame.Player
             _body.Size * (_db != null ? _db.baseMouthRatio : 0.45f) *
             (_stats != null ? _stats.MouthMultiplier : 1f);
 
+        // 치아 교정은 "입 크기 및 흡입력"이다. 흡입력은 끌어당기는 힘(ApplyVacuum)에 반영하고,
+        // 범위에는 곱하지 않는다 — 곱하면 청소기 강화와 겹쳐 범위가 수십 배가 된다.
         public float VacuumRadius =>
             (_db != null ? _db.vacuumRadius : 5f) *
-            (_stats != null ? _stats.VacuumRangeMultiplier * _stats.MouthMultiplier : 1f);
+            (_stats != null ? _stats.VacuumRangeMultiplier : 1f) * ActiveScale;
 
         public float VoltRadius =>
-            (_db != null ? _db.voltRadius : 6f) * (_stats != null ? _stats.VoltMultiplier : 1f);
+            (_db != null ? _db.voltRadius : 6f) *
+            (_stats != null ? _stats.VoltMultiplier : 1f) * ActiveScale;
 
         // ══════════════════════════════════════════════════════════
         void Awake()
@@ -331,10 +358,28 @@ namespace FishGame.Player
         }
 
         /// <summary>이번 물리 프레임에 장애물 안으로 들어가는가. 한 프레임 앞을 내다본다.</summary>
+        Obstacle _boosterBlocker;
+
+        /// <summary>
+        /// 이번 물리 프레임에 장애물 쪽으로 파고드는가.
+        /// 장애물 옆에 붙어 있다가 반대 방향으로 대쉬하는 경우까지 막으면 안 되므로,
+        /// 속도가 장애물 중심을 향할 때만 막힌 것으로 본다.
+        /// </summary>
         bool BoosterWouldHitObstacle()
         {
             Vector2 next = _rb.position + _boosterVelocity * Time.fixedDeltaTime;
-            return Obstacle.Overlaps(next, _body.Size * bodyRadiusRatio);
+            _boosterBlocker = Obstacle.FindOverlapping(next, _body.Size * bodyRadiusRatio);
+            if (_boosterBlocker == null) return false;
+            return Vector2.Dot(_boosterVelocity, _boosterBlocker.Center - _rb.position) > 0f;
+        }
+
+        /// <summary>부스터를 즉시 끊는다. 보스 구조물을 깬 직후 등 밖에서도 부른다.</summary>
+        public void CancelBooster()
+        {
+            if (_boosterTimer <= 0f) return;
+            _boosterTimer = 0f;
+            _boosterHits.Clear();
+            _motor.OverrideVelocity(_boosterVelocity.normalized * (_stats != null ? _stats.MoveSpeed * 0.3f : 1f));
         }
 
         /// <summary>
@@ -346,7 +391,11 @@ namespace FishGame.Player
             _boosterTimer = 0f;
             _boosterHits.Clear();
 
-            Vector2 back = -_boosterVelocity.normalized;
+            // 들어온 방향의 반대가 아니라 장애물 중심의 반대로 — 비스듬히 박았을 때 벽을 타고 미끄러지게
+            Vector2 back = _boosterBlocker != null
+                ? (_rb.position - _boosterBlocker.Center).normalized
+                : -_boosterVelocity.normalized;
+            if (back.sqrMagnitude < 0.01f) back = -_boosterVelocity.normalized;
             _motor.OverrideVelocity(back * (_stats.MoveSpeed * 0.55f));
 
             Juice.Hit(0.04f, 0.6f);
@@ -361,6 +410,7 @@ namespace FishGame.Player
 
             for (int i = 0; i < count; i++)
             {
+                if (!_run.IsRunning) return;
                 var other = _overlap[i].GetComponentInParent<FishBody>();
                 if (other == null || other == _body || !other.IsAlive) continue;
                 if (!_boosterHits.Add(other)) continue;
@@ -407,8 +457,8 @@ namespace FishGame.Player
                 if (dist < 0.01f) continue;
 
                 // 가까울수록 세게 — 입 앞에서 확 빨려들어간다
-                float strength = Mathf.Lerp(_db.vacuumPullForce, _db.vacuumPullForce * 0.35f,
-                                            Mathf.Clamp01(dist / radius));
+                float pull = _db.vacuumPullForce * ActiveScale * _stats.MouthMultiplier;
+                float strength = Mathf.Lerp(pull, pull * 0.35f, Mathf.Clamp01(dist / radius));
                 orb.linearVelocity = Vector2.MoveTowards(
                     orb.linearVelocity, toPlayer / dist * strength, strength * 5f * dt);
             }
@@ -420,7 +470,7 @@ namespace FishGame.Player
             if (baitPrefab == null || _baitPool.Count == 0) return;
 
             int count = Mathf.Max(1, _stats.BaitCount);
-            float radius = _db.baitRadius * _stats.BaitRangeMultiplier;
+            float radius = _db.baitRadius * _stats.BaitRangeMultiplier * ActiveScale;
 
             for (int i = 0; i < count; i++)
             {
@@ -453,8 +503,10 @@ namespace FishGame.Player
         void FireVolt()
         {
             float radius = VoltRadius;
-            float stunNormal = _db.voltStunNormal * _stats.VoltMultiplier;
-            float stunBoss = _db.voltStunBoss * _stats.VoltMultiplier;
+            // 마비는 다음 볼트 전에 반드시 풀려야 한다 — 안 그러면 주변이 영구 정지
+            float stunCap = _db.voltInterval * _db.voltStunCapRatio;
+            float stunNormal = Mathf.Min(stunCap, _db.voltStunNormal * _stats.VoltMultiplier);
+            float stunBoss = Mathf.Min(stunCap, _db.voltStunBoss * _stats.VoltMultiplier);
 
             int count = Physics2D.OverlapCircle(_rb.position, radius, _filter, _overlap);
             for (int i = 0; i < count; i++)
@@ -489,8 +541,10 @@ namespace FishGame.Player
             float step = count > 1 ? spread / (count - 1) : 0f;
             float start = count > 1 ? baseAngle - spread * 0.5f : baseAngle;
 
-            float hitRadius = _db.missileHitRadius * _stats.MissileRangeMultiplier;
+            float hitRadius = _db.missileHitRadius * _stats.MissileRangeMultiplier * ActiveScale;
             float maxTarget = _body.Size * _db.missileMaxTargetSizeMultiplier;
+            // 속도도 크기에 비례해야 사거리가 맵 크기를 따라간다
+            float speed = _db.missileSpeed * ActiveScale;
 
             for (int i = 0; i < count; i++)
             {
@@ -498,7 +552,7 @@ namespace FishGame.Player
                 Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
 
                 var missile = _missilePool.Get();
-                missile.Launch(MouthPosition, dir, _db.missileSpeed, _db.missileLifetime,
+                missile.Launch(MouthPosition, dir, speed, _db.missileLifetime,
                                hitRadius, maxTarget, fishLayer, _missilePool);
             }
 
@@ -525,6 +579,8 @@ namespace FishGame.Player
                 float otherR = other.BodyRadius;
                 float dist = Vector2.Distance(_rb.position, other.transform.position);
 
+                if (!_run.IsRunning) return;   // 방금 보스를 먹어 판이 끝났다
+
                 if (FishBody.CanEat(_body, other, _db.eatSizeTolerance))
                 {
                     if (Vector2.Distance(mouth, other.transform.position) <= mouthR + otherR)
@@ -547,7 +603,9 @@ namespace FishGame.Player
         /// </summary>
         public void ConsumeByEffect(FishBody prey)
         {
-            if (prey == null || !prey.IsAlive || _run == null) return;
+            // 판이 끝난 뒤(보스를 먹은 같은 프레임 등)에는 더 먹지 않는다.
+            // 안 막으면 보상 없이 크기만 자라고, 뒤에 있던 큰 물고기가 결과 화면 위에서 플레이어를 문다.
+            if (prey == null || !prey.IsAlive || _run == null || !_run.IsRunning || !IsAlive) return;
 
             var ai = prey.GetComponent<AIFish>();
             var species = ai != null ? ai.Species : null;

@@ -9,6 +9,8 @@ namespace FishGame.EditorTools
     {
         public const string FishLayerName = "Fish";
         public const string PlayerLayerName = "Player";
+        /// <summary>벽·통로 게이트·장애물이 쓰는 레이어. WorldBuilder/ZoneGate/Obstacle이 이름으로 찾는다.</summary>
+        public const string WallLayerName = "Wall";
 
         /// <summary>레이어를 추가하고 인덱스를 돌려준다. 이미 있으면 그 인덱스.</summary>
         public static int EnsureLayer(string layerName)
@@ -44,6 +46,8 @@ namespace FishGame.EditorTools
         {
             int fish = EnsureLayer(FishLayerName);
             int player = EnsureLayer(PlayerLayerName);
+            // 예전엔 이 레이어를 만들지 않아서 벽·게이트·장애물이 전부 Default에 있었다
+            int wall = EnsureLayer(WallLayerName);
 
             // 2D 중력 제거 — 물속이라 중력이 필요 없다
             Physics2D.gravity = Vector2.zero;
@@ -51,8 +55,15 @@ namespace FishGame.EditorTools
             // 물고기끼리는 물리 충돌하지 않게 (트리거 판정만 사용)
             if (fish >= 0) Physics2D.IgnoreLayerCollision(fish, fish, true);
             if (fish >= 0 && player >= 0) Physics2D.IgnoreLayerCollision(fish, player, true);
+            // AI 물고기는 조향으로 벽을 피한다. 거대한 벽 콜라이더와 트리거 판정을 매 프레임 할 이유가 없다.
+            if (fish >= 0 && wall >= 0) Physics2D.IgnoreLayerCollision(fish, wall, true);
+            // 플레이어 ↔ 벽은 반드시 충돌해야 한다 (닫힌 통로·장애물이 실제로 막아야 하므로)
+            if (player >= 0 && wall >= 0) Physics2D.IgnoreLayerCollision(player, wall, false);
 
-            Debug.Log("[FishGame] 프로젝트 셋업 완료 — 레이어 추가, 2D 중력 0, 물고기 레이어 충돌 해제");
+            // 물리 설정은 ProjectSettings 에셋이라 명시적으로 저장해야 재시작 후에도 남는다
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("[FishGame] 프로젝트 셋업 완료 — 레이어(Fish/Player/Wall), 2D 중력 0, 충돌 매트릭스");
         }
     }
 }

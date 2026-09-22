@@ -38,7 +38,14 @@ namespace FishGame.UI
         void Update()
         {
             var run = RunManager.Instance;
-            if (run == null || !run.IsRunning) return;
+            if (run == null || !run.IsRunning)
+            {
+                // 일시정지 중에 판이 끝났으면(개발자 모드 등) 패널이 결과 화면 위에 남지 않게
+                if (root != null && root.activeSelf) root.SetActive(false);
+                return;
+            }
+            // 다른 곳에서 일시정지가 풀렸으면 패널도 닫는다
+            if (root != null && root.activeSelf != run.IsPaused) root.SetActive(run.IsPaused);
             if (_pause.WasPressedThisFrame()) SetPaused(!run.IsPaused);
         }
 

@@ -179,7 +179,9 @@ namespace FishGame.Gameplay
             if (_blocker != null) _blocker.enabled = false;
             if (_label != null) _label.text = $"{ToZoneName} →";
 
-            Juice.Hit(0.04f, 0.35f);
+            // 지금 있는 구역의 통로일 때만 화면을 흔든다 (개발자 모드 "통로 모두 열기" 등에서 여러 번 흔들리지 않게)
+            var run = RunManager.Instance;
+            if (run == null || run.CurrentZoneIndex == ZoneIndex) Juice.Hit(0.04f, 0.35f);
             OnOpened?.Invoke(this);
         }
 

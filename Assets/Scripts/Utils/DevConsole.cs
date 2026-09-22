@@ -275,7 +275,9 @@ namespace FishGame.Utils
         {
             var run = RunManager.Instance;
             if (run == null || run.Player == null || run.Player.Body == null) return;
-            run.Player.Body.Size = Mathf.Max(0.1f, size);
+            // 치트로도 절대 상한은 넘기지 않는다 — 실제 게임에서 나올 수 없는 상태를 QA하면 헷갈린다
+            float cap = run.Database != null ? run.Database.maxPlayerSize : 999f;
+            run.Player.Body.Size = Mathf.Clamp(size, 0.1f, cap);
         }
 
         // ══════════════════════════════════════════════════════════

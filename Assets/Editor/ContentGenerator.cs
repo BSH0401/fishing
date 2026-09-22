@@ -166,8 +166,8 @@ namespace FishGame.EditorTools
             new ZoneDef {
                 file = "Zone_1_Tank", display = "어항", currencyMult = 0.1474f,
                 height = 46f,
-                profile = P((0f, 22f), (0.45f, 21f), (0.80f, 13f), (1f, 5.5f)),
-                hasExit = true, exitHalfWidth = 5.5f, exitHeight = 16f, exitRequiredSize = 3.1f,
+                profile = P((0f, 22f), (0.45f, 21f), (0.80f, 14f), (1f, 7f)),
+                hasExit = true, exitHalfWidth = 7f, exitHeight = 16f, exitRequiredSize = 3.1f,
                 population = 26, water = new Color(0.55f, 0.80f, 0.72f),
                 // 어항 장식품 — 성 하나, 집 하나. 사발이 좁아지기 전 넓은 구간에 둔다.
                 obstacles = O((ObstacleShape.Box, 0.34f,  0.46f, 7.5f,  0f),
@@ -178,7 +178,7 @@ namespace FishGame.EditorTools
                 file = "Zone_2_Sewer", display = "하수구", currencyMult = 0.0655f,
                 height = 110f,
                 profile = P((0f, 30f), (0.12f, 52f), (0.88f, 52f), (1f, 34f)),
-                hasExit = true, exitHalfWidth = 12f, exitHeight = 22f, exitRequiredSize = 8.1f,
+                hasExit = true, exitHalfWidth = 15f, exitHeight = 22f, exitRequiredSize = 8.1f,
                 population = 30, water = new Color(0.42f, 0.55f, 0.52f),
                 // 쇠창살 원형 둘 — PPT 그림대로 가운데 높이에 좌우 대칭으로.
                 obstacles = O((ObstacleShape.Disc, 0.42f, -0.42f, 17f, 0f),
@@ -189,7 +189,7 @@ namespace FishGame.EditorTools
                 file = "Zone_3_River", display = "강", currencyMult = 0.0271f,
                 height = 260f,
                 profile = P((0f, 22f), (0.35f, 120f), (0.70f, 142f), (1f, 34f)),
-                hasExit = true, exitHalfWidth = 30f, exitHeight = 40f, exitRequiredSize = 21f,
+                hasExit = true, exitHalfWidth = 32f, exitHeight = 40f, exitRequiredSize = 21f,
                 population = 34, water = new Color(0.35f, 0.66f, 0.78f),
                 // 자갈 무더기 — 위쪽 중앙에 큰 것 하나, 아래쪽에 작은 것 둘.
                 obstacles = O((ObstacleShape.Triangle, 0.22f,  0.00f, 34f, 0f),
@@ -282,7 +282,7 @@ namespace FishGame.EditorTools
             // ── 기본 강화 ────────────────────────────────────────
             S("battery", "커다란 배터리", SkillEffectType.SurvivalTime, 1f, 20, 1f, 0, 1,
               "", "물고기 생존 제한시간 1초 증가."),
-            S("teeth", "치아 교정", SkillEffectType.MouthPower, 0.10f, 15, 1.2f, 2, 0,
+            S("teeth", "치아 교정", SkillEffectType.MouthPower, 0.10f, 8, 1.2f, 2, 0,
               "", "입 크기 및 흡입력 10% 증가."),
             S("camera", "카메라 장착", SkillEffectType.Vision, 0.10f, 8, 1f, 4, 0,
               "", "시야 10% 증가."),
@@ -300,9 +300,9 @@ namespace FishGame.EditorTools
             S("armor_3", "덧붙인 장갑 III", SkillEffectType.BodyScale, 0.10f, 10, 8f, 6, 3,
               "", "몸 크기 및 이동속도 10% 증가.",
               R("acid", 8), R("cell", 5), R("unlock_vacuum", 1)),
-            S("armor_4", "덧붙인 장갑 IV", SkillEffectType.BodyScale, 0.10f, 10, 12f, 9, 3,
+            S("armor_4", "덧붙인 장갑 IV", SkillEffectType.BodyScale, 0.10f, 4, 12f, 9, 3,
               "", "몸 크기 및 이동속도 10% 증가.",
-              R("camera", 5), R("teeth", 12), R("unlock_volt", 1), R("unlock_missile", 1)),
+              R("camera", 5), R("teeth", 8), R("unlock_volt", 1), R("unlock_missile", 1)),
         };
 
         // ═════════════════════════════════════════════════════════
@@ -384,6 +384,12 @@ namespace FishGame.EditorTools
             db.baseVision = 6.5f;
             db.speedScalingExponent = 0.5f;
             db.maxMoveSpeed = 24f;
+
+            // 상한 — 스킬을 다 찍어도 게임이 깨지지 않게
+            db.maxPlayerSize = 56f;          // 보스 43 < 상한 < 강→바다 통로 통과 한계 57.6
+            db.maxMouthMultiplier = 2.6f;    // 치아 8레벨(×2.14) + 도감 보너스 여유
+            db.voltStunCapRatio = 0.6f;      // 마비 ≤ 쿨타임의 60%
+            db.activeRangeScalesWithSize = true;
 
             db.timeDrainAccelerationPer60s = 2.2f;
             db.maxTimeDrainMultiplier = 10f;

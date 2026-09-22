@@ -145,6 +145,8 @@ namespace FishGame.Gameplay
             _stateTimer += Time.fixedDeltaTime;
 
             Vector2 desired = ComputeDesiredVelocity();
+            // 패턴이 낸 속도(매복 돌진·도망 1.3배·미끼 유인)는 상한에서 지워지면 안 된다
+            float patternSpeed = desired.magnitude;
             desired += SeparationForce() * (species.moveSpeed * separationWeight);
             desired += WallAvoidForce() * (species.moveSpeed * wallAvoidWeight);
 
@@ -153,7 +155,7 @@ namespace FishGame.Gameplay
             desired += Obstacle.AvoidForce(_rb.position, species.size * 0.5f, species.size * 1.2f)
                        * (species.moveSpeed * wallAvoidWeight * 1.4f);
 
-            float maxSpeed = species.moveSpeed * _speedScale;
+            float maxSpeed = Mathf.Max(species.moveSpeed * _speedScale, patternSpeed);
             if (desired.sqrMagnitude > maxSpeed * maxSpeed)
                 desired = desired.normalized * maxSpeed;
 
@@ -168,6 +170,10 @@ namespace FishGame.Gameplay
         // ══════════════════════════════════════════════════════════
         //  패턴
         // ══════════════════════════════════════════════════════════
+        static float EatTolerance =>
+            RunManager.Instance != null && RunManager.Instance.Database != null
+                ? RunManager.Instance.Database.eatSizeTolerance : 1f;
+
         Vector2 ComputeDesiredVelocity()
         {
             float speed = species.moveSpeed * _speedScale;
@@ -203,7 +209,8 @@ namespace FishGame.Gameplay
                 {
                     if (playerBody != null && playerBody.IsAlive &&
                         Vector2.Distance(pos, playerT.position) < species.patternParam &&
-                        species.size > playerBody.Size)
+                        species.size > playerBody.Size &&
+                        !FishBody.CanEat(playerBody, _body, EatTolerance))   // 플레이어가 먹을 수 있는 상대는 쫓지 않는다
                     {
                         // 목표의 조금 앞을 노린다 — 뒤꽁무니만 쫓지 않아 자연스럽다
                         Vector2 lead = (Vector2)playerT.position + PredictLead(playerT) ;
@@ -216,7 +223,7 @@ namespace FishGame.Gameplay
                 {
                     if (playerBody != null && playerBody.IsAlive &&
                         Vector2.Distance(pos, playerT.position) < species.patternParam &&
-                        playerBody.Size >= species.size)
+                        FishBody.CanEat(playerBody, _body, EatTolerance))   // 실제 포식 판정과 같은 기준
                     {
                         Vector2 away = (pos - (Vector2)playerT.position).normalized;
                         // 벽으로 몰리지 않게 중심 쪽 성분을 살짝 섞는다

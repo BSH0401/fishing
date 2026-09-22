@@ -69,6 +69,9 @@ namespace FishGame.Gameplay
         PlayerProgress _progress;
         readonly List<ZoneGate> _gates = new List<ZoneGate>();
 
+        /// <summary>보스가 풀려난 직후 움직이지 않는 시간. 어디서 나왔는지 보고 거리를 잴 틈.</summary>
+        const float BossReleaseGraceSeconds = 1.5f;
+
         // ══════════════════════════════════════════════════════════
         //  초기화
         // ══════════════════════════════════════════════════════════
@@ -140,9 +143,17 @@ namespace FishGame.Gameplay
 
             if (player != null)
             {
-                player.transform.position = Layout.SpawnPointForZone(StartZoneIndex);
+                Vector2 start = Layout.SpawnPointForZone(StartZoneIndex);
+                var prb = player.GetComponent<Rigidbody2D>();
+                if (prb != null) { prb.position = start; prb.linearVelocity = Vector2.zero; }
+                player.transform.position = start;
                 player.Initialize(Stats, Database, this);
             }
+
+            // 카메라를 시작 크기에 맞게 즉시 맞춘다. 안 그러면 첫 스폰이 줌아웃 전의
+            // 좁은 화면 기준으로 이뤄져서, 깊은 구역에서 시작할 때 물고기가 플레이어 바로 옆에 몰린다.
+            var follow = worldCamera != null ? worldCamera.GetComponent<CameraFollow>() : null;
+            if (follow != null) follow.SnapToTarget();
 
             ApplyZoneVisuals(CurrentZoneIndex);
 
@@ -347,7 +358,7 @@ namespace FishGame.Gameplay
         /// <summary>히든 아이템을 먹었을 때 HiddenItem이 호출.</summary>
         public void ReportHiddenItem(HiddenItem item)
         {
-            if (item == null || _progress == null) return;
+            if (item == null || _progress == null || !IsRunning) return;
             if (!_progress.AddHiddenItem(item.ItemId)) return;
 
             HiddenItemsThisRun++;
@@ -367,7 +378,27 @@ namespace FishGame.Gameplay
             if (boss == null) return;
 
             BossReleased = true;
-            spawner?.SpawnBoss(boss, structure.transform.position);
+
+            // 구조물은 부스터로 들이받을 때 깨지므로 플레이어는 늘 구조물 한가운데 가까이 있다.
+            // 예전엔 보스를 구조물 중심에 바로 만들어서, 다음 물리 프레임에 즉사하거나(작을 때)
+            // 그 자리에서 보스를 먹어버렸다(클 때) — 추격전이 아예 없었다.
+            // 플레이어 반대편으로 충분히 떨어뜨려 만들고, 잠깐 마비시켜 숨 돌릴 틈을 준다.
+            player?.CancelBooster();
+
+            Vector2 center = structure.transform.position;
+            Vector2 playerPos = player != null ? (Vector2)player.transform.position : center + Vector2.up;
+            Vector2 away = center - playerPos;
+            if (away.sqrMagnitude < 0.01f) away = Vector2.down;
+            away.Normalize();
+
+            float playerR = player != null ? player.Size * 0.5f : 1f;
+            float bossR = boss.size * 0.5f;
+            float gap = bossR + playerR + Mathf.Max(bossR, 8f);
+            Vector2 spawnPos = Layout != null ? Layout.Clamp(playerPos + away * gap, bossR) : playerPos + away * gap;
+
+            var bossFish = spawner != null ? spawner.SpawnBoss(boss, spawnPos) : null;
+            if (bossFish != null && bossFish.Body != null) bossFish.Body.Stun(BossReleaseGraceSeconds);
+
             OnBossReleased?.Invoke();
         }
 
@@ -386,7 +417,16 @@ namespace FishGame.Gameplay
         {
             if (!IsRunning) return;
             IsRunning = false;
-            Time.timeScale = 1f;
+
+            // 일시정지 중에 끝났다면(개발자 모드 "판 끝내기" 등) 일시정지 상태를 풀어 준다
+            if (IsPaused)
+            {
+                IsPaused = false;
+                OnPauseChanged?.Invoke(false);
+            }
+
+            // 먹혔을 때의 히트스톱이 진행 중이면 끊지 않는다 — 끝나면 Juice가 1로 되돌린다
+            if (!Juice.IsHitStopping) Time.timeScale = 1f;
 
             spawner?.StopSpawning();
             Bait.DespawnAll();

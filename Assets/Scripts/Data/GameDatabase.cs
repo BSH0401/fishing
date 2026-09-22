@@ -35,6 +35,19 @@ namespace FishGame.Data
         [Tooltip("이동 속도 상한 (월드 유닛/초)")]
         [Min(1f)] public float maxMoveSpeed = 26f;
 
+        [Header("상한 — 스킬을 다 찍어도 게임이 깨지지 않게")]
+        [Tooltip("플레이어 크기의 절대 상한. 스킬로 올린 기본 크기와 판 중 성장 모두에 적용된다.\n" +
+                 "보스(43)를 먹을 수 있고, 강→바다 통로를 지날 수 있는 선에서 정한다.")]
+        [Min(1f)] public float maxPlayerSize = 56f;
+        [Tooltip("치아 교정(입 크기) 배율 상한. 입 판정이 몸보다 지나치게 커지는 걸 막는다.\n" +
+                 "2.6 = 치아 교정 8레벨(×2.14)에 도감 보너스가 조금 더 얹힐 여유")]
+        [Min(1f)] public float maxMouthMultiplier = 2.6f;
+
+        [Header("액티브 스킬 ↔ 크기")]
+        [Tooltip("청소기·볼트·미끼·미사일의 범위를 플레이어 크기에 비례시킨다.\n" +
+                 "맵이 아래로 갈수록 몇십 배 커지므로, 고정 범위면 후반에 스킬이 몸 안에 파묻힌다.")]
+        public bool activeRangeScalesWithSize = true;
+
         // ══════════════════════════════════════════════════════════
         //  액티브 스킬 기본값
         // ══════════════════════════════════════════════════════════
@@ -78,6 +91,9 @@ namespace FishGame.Data
         [Min(0f)] public float voltStunNormal = 2f;
         [Tooltip("보스 마비 시간")]
         [Min(0f)] public float voltStunBoss = 0.1f;
+        [Tooltip("마비 시간 상한 = 볼트 쿨타임 × 이 값.\n" +
+                 "1 이상이면 다음 볼트 전에 풀리지 않아 주변이 영구 마비된다.")]
+        [Range(0.1f, 1f)] public float voltStunCapRatio = 0.6f;
 
         [Header("미사일 (자동)")]
         [Min(0.5f)] public float missileInterval = 6f;

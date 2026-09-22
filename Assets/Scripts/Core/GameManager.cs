@@ -135,7 +135,27 @@ namespace FishGame.Core
         // ── 시작 구역 선택 / 플레이 시작 ────────────────────────
         public bool CanSelectZone(int index) =>
             database != null && index >= 0 && index < database.ZoneCount &&
-            index <= Progress.DeepestZoneReached;
+            index <= Progress.DeepestZoneReached && ZoneFitsCurrentSize(index);
+
+        /// <summary>
+        /// 지금 기본 크기로 이 구역에서 시작해도 출구로 빠져나갈 수 있는가.
+        /// 스킬을 많이 찍으면 어항 배수구보다 몸이 커져서, 어항에서 시작하면 영영 못 내려간다.
+        /// </summary>
+        public bool ZoneFitsCurrentSize(int index)
+        {
+            var z = database != null ? database.GetZone(index) : null;
+            if (z == null || Stats == null) return true;
+            return Stats.Size <= z.MaxEnterableSize;
+        }
+
+        /// <summary>선택 가능한 가장 얕은 구역. 몸이 커져서 위쪽 구역이 막혔을 때 쓴다.</summary>
+        public int ShallowestEnterableZone()
+        {
+            if (database == null) return 0;
+            for (int i = 0; i < database.ZoneCount; i++)
+                if (ZoneFitsCurrentSize(i)) return i;
+            return database.DeepestZoneIndex;
+        }
 
         public void SelectStartZone(int index)
         {
@@ -148,8 +168,27 @@ namespace FishGame.Core
         public void StartRun()
         {
             RecalculateStats();
+            EnsureStartZoneFits();
             SetState(GameState.Playing);
             SceneManager.LoadScene(gameplayScene);
+        }
+
+        /// <summary>
+        /// 스킬을 찍어 몸이 커지면 골라 둔 시작 구역의 출구보다 커질 수 있다.
+        /// 그대로 시작하면 그 구역에 갇히므로, 들어갈 수 있는 가장 얕은 구역으로 옮긴다.
+        /// 아직 가 본 적 없는 구역이어도 연다 — 몸이 그 구역보다 커졌다는 건 이미 넘어섰다는 뜻이다.
+        /// </summary>
+        void EnsureStartZoneFits()
+        {
+            if (database == null || ZoneFitsCurrentSize(SelectedStartZone)) return;
+
+            int zone = SelectedStartZone;
+            while (zone < database.DeepestZoneIndex && !ZoneFitsCurrentSize(zone)) zone++;
+
+            if (zone > Progress.DeepestZoneReached) Progress.DeepestZoneReached = zone;
+            SelectedStartZone = zone;
+            Progress.SelectedStartZone = zone;
+            SaveNow();
         }
 
         public void GoToMainMenu()
@@ -164,7 +203,7 @@ namespace FishGame.Core
                               float survivedSeconds, bool bossKilled,
                               int deepestZoneThisRun, int hiddenItemsFound)
         {
-            double penalty = reason == RunEndReason.Eaten ? database.deathCurrencyPenalty : 0d;
+            double penalty = reason == RunEndReason.Eaten && database != null ? database.deathCurrencyPenalty : 0d;
 
             double earned = Math.Max(0d, rawCurrency * (1d - penalty));
 
@@ -201,9 +240,13 @@ namespace FishGame.Core
                 BossKilled       = bossKilled,
             };
 
+            // 이번 판에 주운 히든 아이템(+재화%)·새 구역이 다음 판 스탯과 UI에 바로 반영되게
+            RecalculateStats();
+
             SaveNow();
             SetState(GameState.Result);
             OnRunFinished?.Invoke(LastResult);
+            OnProgressChanged?.Invoke();
         }
 
         /// <summary>세이브를 지우고 메모리상의 진행도까지 초기화한다.</summary>

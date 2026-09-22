@@ -73,7 +73,7 @@ NODES = [
 
     # --- 기본 강화 ---
     ("battery",  "add",  1.00, 20, 1.0, []),   # 커다란 배터리 : 제한시간 +1초
-    ("teeth",    "mult", 0.10, 15, 1.2, []),   # 치아 교정     : 입·흡입력 +10%
+    ("teeth",    "mult", 0.10,  8, 1.2, []),   # 치아 교정     : 입·흡입력 +10%
     ("camera",   "mult", 0.10,  8, 1.0, []),   # 카메라 장착   : 시야 +10%
     ("cell",     "mult", 0.05, 12, 1.0, []),   # 물고기 전지   : 시간 회복 +5%
     ("acid",     "mult", 0.10, 20, 1.5, []),   # 위액 산성도   : 재화 +10%
@@ -82,7 +82,7 @@ NODES = [
     ("armor_1", "mult", 0.10, 12,  3.0, []),
     ("armor_2", "mult", 0.10, 10,  5.0, [("battery", 8), ("teeth", 5)]),
     ("armor_3", "mult", 0.10, 10,  8.0, [("acid", 8), ("cell", 5), ("unlock_vacuum", 1)]),
-    ("armor_4", "mult", 0.10, 10, 12.0, [("camera", 5), ("teeth", 12),
+    ("armor_4", "mult", 0.10,  4, 12.0, [("camera", 5), ("teeth", 8),
                                          ("unlock_volt", 1), ("unlock_missile", 1)]),
 
     # --- 액티브 강화 ---
@@ -119,10 +119,10 @@ UNLOCK_PRIORITY = {
 # 구역 배율은 구간 페이싱을 잡는 손잡이다(tune.py가 정한다).
 # 깊이에 따른 매끄러운 상승은 아래 DEPTH_RICHNESS 곡선이 따로 맡는다.
 ZONES = [
-    ("어항",   0.1500,  3.1,  0.877,  0.385, 1.029, 0.30,  46.0, 16.0),
-    ("하수구", 0.1200,  8.1,  2.866,  1.566, 1.234, 1.00, 110.0, 22.0),
-    ("강",     0.0900, 21.0,  7.676,  6.528, 1.537, 2.70, 260.0, 40.0),
-    ("바다",   0.0600,  0.0, 17.800, 19.640, 1.740, 6.50, 520.0,  0.0),
+    ("어항",   0.1474,  3.1,  0.877,  0.385, 1.029, 0.30,  46.0, 16.0),
+    ("하수구", 0.0655,  8.1,  2.866,  1.566, 1.234, 1.00, 110.0, 22.0),
+    ("강",     0.0271, 21.0,  7.676,  6.528, 1.537, 2.70, 260.0, 40.0),
+    ("바다",   0.0124,  0.0, 17.800, 19.640, 1.740, 6.50, 520.0,  0.0),
 ]
 
 # ── 깊이 ↔ 가치 (WorldLayout.ValueMultiplierAt와 같은 식) ──────
@@ -167,6 +167,19 @@ BOSS_REWARD_MULT = 12
 GROWTH_ENABLED = True
 GROWTH_EFFICIENCY = 0.15
 GROWTH_MAX_MULT = 2.5
+
+# ── 상한 (GameDatabase와 동일) ─────────────────────────────────
+MAX_PLAYER_SIZE = 56.0        # 절대 크기 상한
+MAX_MOUTH_MULT = 2.6          # 치아 교정 효과 상한
+# 액티브 강화는 가산으로 쌓인다 (복리 아님) — PlayerStats.Build와 같게
+LINEAR_NODES = {"booster_range", "vacuum_range", "bait_range", "volt_power", "missile_power"}
+# 구역 출구로 빠져나갈 수 있는 최대 몸 크기 = 통로 반폭 × 2 × 0.9
+ZONE_EXIT_HALF_WIDTH = [7.0, 15.0, 32.0, None]
+
+
+def zone_size_cap(zone_idx):
+    hw = ZONE_EXIT_HALF_WIDTH[zone_idx]
+    return MAX_PLAYER_SIZE if hw is None else min(MAX_PLAYER_SIZE, hw * 2 * 0.9)
 
 # ── 물고기 도감 ────────────────────────────────────────────────
 # 종을 100마리 먹을 때마다 그 종의 효과가 한 단계씩 (최대 10단계)
@@ -214,6 +227,8 @@ class Build:
     # ── 스탯 ───────────────────────────────────────────────
     def mult(self, nid):
         _, kind, v, mx, cm, pre = NODE_BY_ID[nid]
+        if nid in LINEAR_NODES:
+            return 1.0 + v * self.lv[nid]
         return (1.0 + v) ** self.lv[nid]
 
     def has(self, nid):
@@ -222,7 +237,7 @@ class Build:
     @property
     def armor_levels(self): return sum(self.lv[a] for a in ARMOR_TIERS)
     @property
-    def size(self):      return BASE_SIZE * (1.10 ** self.armor_levels)
+    def size(self):      return min(MAX_PLAYER_SIZE, BASE_SIZE * (1.10 ** self.armor_levels))
     @property
     def speed(self):
         base = BASE_SPEED * ((1.10 ** self.armor_levels) ** SPEED_EXP)
@@ -230,7 +245,7 @@ class Build:
     @property
     def max_time(self):  return BASE_TIME + self.lv["battery"] + self.codex_bonus("maxt")
     @property
-    def mouth(self):     return self.mult("teeth") * (1 + self.codex_bonus("mouth"))
+    def mouth(self):     return min(MAX_MOUTH_MULT, self.mult("teeth") * (1 + self.codex_bonus("mouth")))
     @property
     def time_mult(self): return self.mult("cell") * (1 + self.codex_bonus("time"))
     @property
@@ -334,7 +349,7 @@ def simulate_run(build, rng):
 
     # 인게임 성장: 판 시작 크기에서 출발해 먹을수록 커진다
     size = build.size
-    max_size = size * GROWTH_MAX_MULT if GROWTH_ENABLED else size
+    run_cap = size * GROWTH_MAX_MULT if GROWTH_ENABLED else size
 
     deepest = zone
     time_in_zone = 0.0
@@ -396,9 +411,12 @@ def simulate_run(build, rng):
         t = min(build.max_time, t + fish_time * build.time_mult * kills)
 
         # ── 성장 ──
-        if GROWTH_ENABLED and size < max_size:
+        if GROWTH_ENABLED:
             eaten_size = min(fish_size, size)      # 실제로 먹을 수 있는 크기 근사
-            size = min(max_size, (size * size + eaten_size * eaten_size * GROWTH_EFFICIENCY) ** 0.5)
+            # 판 중 성장 상한 = min(시작×2.5, 절대 상한, 지금 구역 출구 한계)
+            max_size = max(build.size, min(run_cap, zone_size_cap(zone)))
+            if size < max_size:
+                size = min(max_size, (size * size + eaten_size * eaten_size * GROWTH_EFFICIENCY) ** 0.5)
 
     build.add_codex_kills(zone, kills_in_zone)
     return money, elapsed, deepest, False
@@ -542,9 +560,90 @@ def trials(n):
     print(f"  찍은 노드   중앙 {statistics.median(nodes):.0f}개")
 
 
+# ══════════════════════════════════════════════════════════════
+#  스킬 전부 찍은 상태 점검 — `python3 balance_sim.py --full`
+# ══════════════════════════════════════════════════════════════
+def full_tree_build():
+    b = Build()
+    for nid, kind, v, mx, cm, pre in NODES:
+        b.lv[nid] = mx
+    b.nodes_bought = sum(n[3] for n in NODES)
+    b.hidden = HIDDEN_TOTAL
+    b.deepest = len(ZONES) - 1
+    for zi in range(len(ZONES)):
+        for rank in range(len(SPAWN_WEIGHTS)):
+            b.codex[(zi, rank)] = CODEX_MILESTONE * CODEX_MAX_TIERS
+    return b
+
+
+def full_tree(runs=300):
+    b = full_tree_build()
+    print("■ 스킬 전부 + 도감 전부 + 히든 8개")
+    print(f"  총 노드 {b.nodes_bought}개")
+    print(f"  기본 크기 {BASE_SIZE * 1.10 ** b.armor_levels:.1f} → 상한 적용 {b.size:.1f}   "
+          f"(장갑 {b.armor_levels}레벨)")
+    print("  판 중 최대 크기 (시작×2.5 / 절대 상한 / 구역 출구 한계 중 최소):")
+    for zi, z in enumerate(ZONES):
+        cap = max(b.size, min(b.size * GROWTH_MAX_MULT, zone_size_cap(zi)))
+        fits = b.size <= zone_size_cap(zi)
+        print(f"    {z[0]:<6} {cap:6.1f}   {'시작 가능' if fits else '시작 불가 (출구보다 몸이 큼)'}")
+    print(f"  이동 속도 {b.speed:.1f}   입 배율 {b.mouth:.2f} (상한 {MAX_MOUTH_MULT})   "
+          f"제한시간 {b.max_time:.0f}초")
+    print(f"  재화 배율 ×{b.money_mult:.1f}   시간 회복 ×{b.time_mult:.2f}")
+    vm = b.mult("volt_power")
+    print(f"  볼트 마비 {min(2.0 * vm, 10 * 0.6):.1f}초 / 쿨 10초 (상한 6초)   "
+          f"청소기 반경 = 몸 반경의 {5 * b.mult('vacuum_range') / 0.5:.0f}배")
+
+    rng = random.Random(1)
+    lens, boss, deaths, money = [], 0, 0, []
+    for _ in range(runs):
+        bb = full_tree_build()
+        m, e, deepest, killed = simulate_run(bb, rng)
+        lens.append(e); money.append(m)
+        boss += killed
+        if not killed and e < 25: deaths += 1
+    lens.sort()
+    print(f"\n  {runs}판 시뮬레이션 (바다 시작):")
+    print(f"    한 판 길이 중앙 {statistics.median(lens):.0f}초 (최소 {lens[0]:.0f} / 최대 {lens[-1]:.0f})")
+    print(f"    보스 처치율 {boss / runs * 100:.0f}%")
+
+
+def post_clear(seed=7, hour_cap=60):
+    """클리어 후에도 계속 해서 트리를 다 채우려면 얼마나 걸리나."""
+    build, runs, total, ms, _ = play_through(seed)
+    rng = random.Random(seed + 1)
+    currency = 0.0
+    all_nodes = sum(n[3] for n in NODES)
+    clear_h, clear_nodes = total / 3600, build.nodes_bought
+    marks = {}
+    while build.nodes_bought < all_nodes and total / 3600 < clear_h + hour_cap:
+        m, e, _, _ = simulate_run(build, rng)
+        currency += m
+        total += e + MENU_SECONDS_PER_RUN
+        # 남는 노드는 가장 싼 것부터
+        while True:
+            opts = [(build.price(n[0]), n[0]) for n in NODES if build.can_buy(n[0])]
+            if not opts: break
+            p, nid = min(opts)
+            if p > currency: break
+            currency -= p; build.lv[nid] += 1; build.nodes_bought += 1
+        pct = build.nodes_bought * 100 // all_nodes
+        for mark in (60, 70, 80, 90, 100):
+            if pct >= mark and mark not in marks:
+                marks[mark] = total / 3600 - clear_h
+    print(f"\n■ 클리어 후 트리 채우기  (클리어 시점 {clear_nodes}/{all_nodes}노드, {clear_h:.2f}h)")
+    for mark in (60, 70, 80, 90, 100):
+        v = marks.get(mark)
+        print(f"    {mark:>3}%  {'+%.1fh' % v if v is not None else f'{hour_cap}h 안에 도달 못 함'}")
+    print(f"    다음 노드 가격 {build.price(min((n for n in NODES if build.can_buy(n[0])), key=lambda n: build.price(n[0]))[0]) if any(build.can_buy(n[0]) for n in NODES) else 0:,}")
+
+
 if __name__ == "__main__":
     if "--curve" in sys.argv:
         curve()
+    elif "--full" in sys.argv:
+        full_tree()
+        post_clear()
     elif "--trials" in sys.argv:
         trials(int(sys.argv[sys.argv.index("--trials") + 1]))
     else:

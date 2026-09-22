@@ -58,7 +58,10 @@ namespace FishGame.Data
         /// </summary>
         public double GetCost(int totalNodesPurchased)
         {
-            return Math.Ceiling(SkillCostCurve.CostOfNode(totalNodesPurchased + 1) * costMultiplier);
+            // float 1.2f는 double로 1.2000000476…이라 100 × 1.2 가 121로 올림되던 문제.
+            // 소수 6자리에서 한 번 반올림해 부동소수 오차를 걷어낸 뒤 올린다.
+            double mult = (double)(decimal)costMultiplier;
+            return Math.Ceiling(Math.Round(SkillCostCurve.CostOfNode(totalNodesPurchased + 1) * mult, 6));
         }
 
         /// <summary>UI 표기용 누적 효과 문자열.</summary>
@@ -71,6 +74,8 @@ namespace FishGame.Data
                 double mult = Math.Pow(1d + valuePerLevel, level);
                 return $"×{mult:0.##}";
             }
+            if (effectType.IsLinearPercent())
+                return $"×{1d + valuePerLevel * level:0.##}";
             return $"+{valuePerLevel * level:0.##}";
         }
 

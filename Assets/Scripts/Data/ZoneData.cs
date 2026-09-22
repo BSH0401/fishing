@@ -202,7 +202,15 @@ namespace FishGame.Data
                 : widthProfile[widthProfile.Count - 1].halfWidth;
         }
 
-        /// <summary>이 존에서 가장 넓은 지점의 반폭. 카메라 한계·스폰 범위에 쓴다.</summary>
+        /// <summary>이 구역에서 가장 넓은 지점의 반폭. 카메라 한계·스폰 범위에 쓴다.</summary>
+        /// <summary>
+        /// 아래 통로로 빠져나갈 수 있는 가장 큰 몸 크기. 통로가 없으면(바다) 무제한.
+        ///
+        /// 몸 반경 = 크기 × 0.5 이고 벽에 스치지 않게 10% 여유를 둔다.
+        /// 이보다 크면 이 구역에 갇힌다 — 그래서 이 구역에서 시작할 수도, 이 이상 자랄 수도 없다.
+        /// </summary>
+        public float MaxEnterableSize => hasExit ? exitHalfWidth * 2f * 0.9f : float.MaxValue;
+
         public float MaxHalfWidth
         {
             get

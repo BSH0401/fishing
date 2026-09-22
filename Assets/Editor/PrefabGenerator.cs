@@ -83,9 +83,14 @@ namespace FishGame.EditorTools
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
+            // 플레이어 콜라이더는 트리거가 아니어야 한다.
+            // 트리거면 물리 반응이 없어서 닫힌 통로와 장애물을 그대로 통과했다.
+            // 물고기와의 충돌은 레이어 매트릭스(Fish↔Player 무시)로 끄고, 포식 판정은
+            // OverlapCircle(트리거 포함)로 하므로 여기서 트리거일 필요가 없다.
+            // 보스 구조물·히든 아이템 쪽이 트리거라 OnTriggerEnter2D는 그대로 온다.
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = 0.42f;
-            col.isTrigger = true;
+            col.isTrigger = false;
 
             go.AddComponent<FishBody>();
             go.AddComponent<FishMotor>();
@@ -108,8 +113,12 @@ namespace FishGame.EditorTools
             var so = new SerializedObject(player);
             so.FindProperty("eatEffect").objectReferenceValue = eatFx;
             so.FindProperty("boosterEffect").objectReferenceValue = boostFx;
-            so.FindProperty("fishLayer").intValue =
-                1 << ProjectSetupUtility.EnsureLayer(ProjectSetupUtility.FishLayerName);
+            // 레이어 추가에 실패하면 -1이 오고, 1 << -1 은 31번 레이어가 되어 아무것도 못 먹는다
+            int fishLayerIndex = ProjectSetupUtility.EnsureLayer(ProjectSetupUtility.FishLayerName);
+            if (fishLayerIndex < 0)
+                Debug.LogError("[FishGame] 'Fish' 레이어가 없어 플레이어가 물고기를 먹을 수 없습니다. " +
+                               "Project Settings ▸ Tags and Layers 에서 빈 슬롯을 만든 뒤 다시 실행하세요.");
+            so.FindProperty("fishLayer").intValue = fishLayerIndex >= 0 ? 1 << fishLayerIndex : 0;
             so.FindProperty("vacuumIndicator").objectReferenceValue = vacuum.transform;
             so.FindProperty("voltIndicator").objectReferenceValue = volt.transform;
             so.FindProperty("armorIndicator").objectReferenceValue = armor;

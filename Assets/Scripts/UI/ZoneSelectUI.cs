@@ -96,6 +96,14 @@ namespace FishGame.UI
 
                 if (!unlocked)
                 {
+                    bool reached = index <= _game.Progress.DeepestZoneReached;
+                    if (reached && !_game.ZoneFitsCurrentSize(index))
+                    {
+                        // 가 본 구역인데 몸이 출구보다 커져서 못 들어가는 경우
+                        label.text = $"{index + 1}. {name}\n<size=70%>몸이 너무 커서 출구를 못 지남</size>";
+                        continue;
+                    }
+
                     // 바로 다음 구역만 "필요 크기"를 알려준다. 그 아래는 감춘다.
                     bool isNext = index == _game.Progress.DeepestZoneReached + 1;
                     var prev = _game.Database.GetZone(index - 1);

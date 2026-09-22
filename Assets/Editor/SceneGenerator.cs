@@ -27,9 +27,34 @@ namespace FishGame.EditorTools
         static readonly Color Panel = new Color(0.10f, 0.13f, 0.17f, 0.92f);
         static readonly Color Accent = new Color(0.36f, 0.80f, 0.68f);
 
+        /// <summary>
+        /// GameDatabase를 디스크에서 새로 읽는다.
+        ///
+        /// NewScene(Single)은 어떤 씬도 참조하지 않는 에셋을 메모리에서 내린다.
+        /// 그래서 씬을 만들기 전에 읽어 둔 참조를 씬을 만든 뒤에 대입하면, 이미 죽은 참조가 들어가
+        /// {fileID: 0}으로 저장됐다 — GameManager·RunManager의 Database가 항상 비어 있던 원인.
+        /// 반드시 NewScene 뒤에 이걸로 다시 읽어서 대입한다.
+        /// </summary>
+        static GameDatabase LoadDatabase() =>
+            AssetDatabase.LoadAssetAtPath<GameDatabase>(ContentGenerator.DatabasePath)
+            ?? AssetDatabase.LoadAssetAtPath<GameDatabase>($"{SoFolder}/GameDatabase.asset");
+
+        /// <summary>대입이 실제로 들어갔는지 확인한다. 조용히 비는 걸 다시는 놓치지 않으려고.</summary>
+        static void VerifyReference(SerializedObject so, string prop, string owner)
+        {
+            so.Update();
+            var p = so.FindProperty(prop);
+            if (p == null || p.objectReferenceValue == null)
+                Debug.LogError($"[FishGame] {owner}.{prop} 연결에 실패했습니다. 씬을 저장한 뒤 " +
+                               "[FishGame ▸ 4. 열린 씬의 Database 참조 복구]를 실행하세요.");
+        }
+
         [MenuItem("FishGame/3. 씬 생성", false, 3)]
         public static void GenerateScenes()
         {
+            // 사용자가 열어 둔 씬에 저장 안 한 변경이 있으면 먼저 물어본다 — 새 씬을 만들면 날아간다
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
             PlaceholderArt.EnsureFolder(SceneFolder);
 
             var db = AssetDatabase.LoadAssetAtPath<GameDatabase>(ContentGenerator.DatabasePath)
@@ -262,9 +287,10 @@ namespace FishGame.EditorTools
             runSo.FindProperty("spawner").objectReferenceValue = spawner;
             runSo.FindProperty("worldBuilder").objectReferenceValue = worldBuilder;
             runSo.FindProperty("worldCamera").objectReferenceValue = cam;
-            runSo.FindProperty("fallbackDatabase").objectReferenceValue = db;
+            runSo.FindProperty("fallbackDatabase").objectReferenceValue = LoadDatabase();
             runSo.FindProperty("fallbackStartZone").intValue = 0;
             runSo.ApplyModifiedPropertiesWithoutUndo();
+            VerifyReference(runSo, "fallbackDatabase", "RunManager");
 
             // ── HUD 배선 ──
             var hudSo = new SerializedObject(hud);
@@ -319,10 +345,11 @@ namespace FishGame.EditorTools
             var gmGo = new GameObject("GameManager");
             var gm = gmGo.AddComponent<GameManager>();
             var gmSo = new SerializedObject(gm);
-            gmSo.FindProperty("database").objectReferenceValue = db;
+            gmSo.FindProperty("database").objectReferenceValue = LoadDatabase();
             gmSo.FindProperty("mainMenuScene").stringValue = "MainMenu";
             gmSo.FindProperty("gameplayScene").stringValue = "Gameplay";
             gmSo.ApplyModifiedPropertiesWithoutUndo();
+            VerifyReference(gmSo, "database", "GameManager");
 
             var canvas = CreateCanvas("Menu Canvas", out var canvasRt);
             CreateEventSystem();

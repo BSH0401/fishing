@@ -92,6 +92,9 @@ namespace FishGame.Gameplay
             j.StartCoroutine(j.HitStopRoutine(seconds));
         }
 
+        /// <summary>지금 히트스톱으로 시간이 멈춰 있는가. 멈춤이 끝나면 Juice가 스스로 timeScale을 되돌린다.</summary>
+        public static bool IsHitStopping => _instance != null && _instance._hitStopping;
+
         /// <summary>히트스톱 + 흔들림을 한 번에.</summary>
         public static void Hit(float stopSeconds, float shakeAmount)
         {
