@@ -16,6 +16,8 @@ namespace FishGame.UI
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button resetSaveButton;
+        [SerializeField] Button settingsButton;
+        [SerializeField] Button titleButton;
 
         [Header("표시")]
         [SerializeField] TMP_Text currencyText;
@@ -40,6 +42,21 @@ namespace FishGame.UI
 
             if (playButton != null) playButton.onClick.AddListener(() => _game.StartRun());
             if (quitButton != null) quitButton.onClick.AddListener(QuitGame);
+            if (settingsButton != null)
+            {
+                LabStyle.Button(settingsButton);
+                settingsButton.onClick.AddListener(() => SettingsPanel.Open());
+            }
+            if (titleButton != null)
+            {
+                LabStyle.Button(titleButton);
+                titleButton.onClick.AddListener(() => _game.GoToTitle());
+            }
+
+            ApplyLabStyle();
+
+            var bank = AudioManager.Instance.Bank;
+            AudioManager.PlayMusic(bank != null ? bank.menuMusic : null);
 
             if (resetConfirmPanel != null) resetConfirmPanel.SetActive(false);
             if (resetSaveButton != null)
@@ -62,6 +79,39 @@ namespace FishGame.UI
             if (currencyText == null) return false;
             var tree = FindAnyObjectByType<SkillTreeUI>();
             return tree != null && tree.CurrencyLabel == currencyText;
+        }
+
+        /// <summary>
+        /// 씬 생성기가 만든 기본 회색 판·버튼(오른쪽 패널, 탈출 시작, 세이브 초기화, 도감, 확인 창)을
+        /// 스킬트리·설정 창과 같은 수중 실험실 스타일로 맞춘다.
+        /// </summary>
+        void ApplyLabStyle()
+        {
+            if (playButton != null)
+            {
+                LabStyle.Button(playButton, primary: true);
+                var side = playButton.transform.parent != null ? playButton.transform.parent.GetComponent<Image>() : null;
+                if (side != null && side.transform != transform) LabStyle.Panel(side);
+            }
+
+            if (resetSaveButton != null)
+            {
+                // 되돌릴 수 없는 버튼이라 붉은 기운을 남긴다
+                var img = resetSaveButton.targetGraphic as Image ?? resetSaveButton.GetComponent<Image>();
+                LabStyle.Panel(img, corners: false, fill: new Color(0.20f, 0.07f, 0.09f, 0.92f),
+                               border: new Color(1f, 0.45f, 0.42f, 0.55f));
+                var t = resetSaveButton.GetComponentInChildren<TMP_Text>();
+                if (t != null) t.color = new Color(1f, 0.72f, 0.68f);
+            }
+
+            if (resetConfirmPanel != null)
+            {
+                LabStyle.Panel(resetConfirmPanel.GetComponent<Image>(), fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
+                LabStyle.Button(resetConfirmNo);
+                LabStyle.Button(resetConfirmYes);
+                var yesLabel = resetConfirmYes != null ? resetConfirmYes.GetComponentInChildren<TMP_Text>() : null;
+                if (yesLabel != null) yesLabel.color = new Color(1f, 0.62f, 0.58f);
+            }
         }
 
         void OnDestroy()

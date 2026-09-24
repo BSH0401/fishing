@@ -79,10 +79,11 @@ namespace FishGame.EditorTools
 
             BuildGameplayScene(db, playerPrefab, fishPrefab);
             BuildMainMenuScene(db);
+            BuildTitleScene();
             RegisterScenesInBuildSettings();
 
-            EditorSceneManager.OpenScene($"{SceneFolder}/MainMenu.unity");
-            Debug.Log("[FishGame] 씬 생성 완료 — MainMenu / Gameplay");
+            EditorSceneManager.OpenScene($"{SceneFolder}/Title.unity");
+            Debug.Log("[FishGame] 씬 생성 완료 — Title / MainMenu / Gameplay (시작 씬: Title)");
         }
 
         // ═════════════════════════════════════════════════════════
@@ -263,19 +264,22 @@ namespace FishGame.EditorTools
 
             // 일시정지
             var pauseRoot = Panel_(canvasRt, "PausePanel", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                                   Vector2.zero, new Vector2(420f, 260f));
+                                   Vector2.zero, new Vector2(420f, 325f));
             ((RectTransform)pauseRoot.transform).pivot = new Vector2(0.5f, 0.5f);
             Label((RectTransform)pauseRoot.transform, "Title", "일시정지", 36,
                   new Vector2(0f, -30f), 400f, TextAlignmentOptions.Center);
             var resumeBtn = TextButton((RectTransform)pauseRoot.transform, "ResumeButton", "계속하기",
                                        new Vector2(0f, -110f), new Vector2(280f, 52f));
-            var giveUpBtn = TextButton((RectTransform)pauseRoot.transform, "GiveUpButton", "포기하고 나가기",
+            var pauseSettingsBtn = TextButton((RectTransform)pauseRoot.transform, "SettingsButton", "설정",
                                        new Vector2(0f, -175f), new Vector2(280f, 52f));
+            var giveUpBtn = TextButton((RectTransform)pauseRoot.transform, "GiveUpButton", "포기하고 나가기",
+                                       new Vector2(0f, -240f), new Vector2(280f, 52f));
             var pause = canvas.gameObject.AddComponent<PauseMenu>();
             var pauseSo = new SerializedObject(pause);
             pauseSo.FindProperty("root").objectReferenceValue = pauseRoot;
             pauseSo.FindProperty("resumeButton").objectReferenceValue = resumeBtn;
             pauseSo.FindProperty("giveUpButton").objectReferenceValue = giveUpBtn;
+            pauseSo.FindProperty("settingsButton").objectReferenceValue = pauseSettingsBtn;
             pauseSo.ApplyModifiedPropertiesWithoutUndo();
             pauseRoot.SetActive(false);
 
@@ -346,6 +350,7 @@ namespace FishGame.EditorTools
             var gm = gmGo.AddComponent<GameManager>();
             var gmSo = new SerializedObject(gm);
             gmSo.FindProperty("database").objectReferenceValue = LoadDatabase();
+            gmSo.FindProperty("titleScene").stringValue = "Title";
             gmSo.FindProperty("mainMenuScene").stringValue = "MainMenu";
             gmSo.FindProperty("gameplayScene").stringValue = "Gameplay";
             gmSo.ApplyModifiedPropertiesWithoutUndo();
@@ -365,8 +370,21 @@ namespace FishGame.EditorTools
             var curRt = currency.rectTransform;
             curRt.anchorMin = curRt.anchorMax = new Vector2(1f, 1f);
             curRt.pivot = new Vector2(1f, 1f);
-            curRt.anchoredPosition = new Vector2(-36f, -32f);
+            curRt.anchoredPosition = new Vector2(-300f, -32f);
             currency.color = new Color(0.98f, 0.86f, 0.42f);
+
+            // 오른쪽 위: 설정 · 타이틀로
+            var settingsBtn = TextButton(canvasRt, "SettingsButton", "설정", Vector2.zero, new Vector2(120f, 46f));
+            var setRt = (RectTransform)settingsBtn.transform;
+            setRt.anchorMin = setRt.anchorMax = new Vector2(1f, 1f);
+            setRt.pivot = new Vector2(1f, 1f);
+            setRt.anchoredPosition = new Vector2(-36f, -28f);
+
+            var titleBtn = TextButton(canvasRt, "TitleButton", "타이틀", Vector2.zero, new Vector2(120f, 46f));
+            var tbRt = (RectTransform)titleBtn.transform;
+            tbRt.anchorMin = tbRt.anchorMax = new Vector2(1f, 1f);
+            tbRt.pivot = new Vector2(1f, 1f);
+            tbRt.anchoredPosition = new Vector2(-168f, -28f);
 
             // ── 스킬트리 (스크롤 영역) ──
             var scrollGo = PrefabGenerator.NewUI("SkillTreeScroll", Vector2.zero, canvasRt);
@@ -427,6 +445,22 @@ namespace FishGame.EditorTools
                 "<color=#6F8C96>━ 잠김</color>      이어진 칸 중 하나를 찍으면 열립니다" +
                 "      <color=#8A9199>휠 확대·축소 · 드래그 이동</color>",
                 15, new Vector2(12f, -4f), 1150f, TextAlignmentOptions.Left);
+
+            // 16:10처럼 좁은 화면에서 오른쪽 패널 밑으로 파고들지 않게 — 도감 버튼 뒤부터 오른쪽 패널 앞까지 늘어난다
+            var legendRt = (RectTransform)legend.transform;
+            legendRt.anchorMin = new Vector2(0f, 0f);
+            legendRt.anchorMax = new Vector2(1f, 0f);
+            legendRt.offsetMin = new Vector2(384f, 36f);
+            legendRt.offsetMax = new Vector2(-376f, 98f);
+            var legendTextRt = legendText.rectTransform;
+            legendTextRt.anchorMin = new Vector2(0f, 1f);
+            legendTextRt.anchorMax = new Vector2(1f, 1f);
+            legendTextRt.offsetMin = new Vector2(12f, -4f - 22.5f);
+            legendTextRt.offsetMax = new Vector2(-12f, -4f);
+            legendText.enableAutoSizing = true;
+            legendText.fontSizeMin = 11f;
+            legendText.fontSizeMax = 15f;
+            legendText.textWrappingMode = TextWrappingModes.NoWrap;   // 줄바꿈 대신 글자를 줄인다
 
             var legendRow = PrefabGenerator.NewUI("Shapes", new Vector2(1150f, 26f), (RectTransform)legend.transform);
             var legendRowRt = (RectTransform)legendRow.transform;
@@ -505,29 +539,31 @@ namespace FishGame.EditorTools
 
             // ── 우측 하단: 스탯 + 맵 선택 + 시작 ──
             var side = Panel_(canvasRt, "SidePanel", new Vector2(1f, 0f), new Vector2(1f, 0f),
-                              new Vector2(-36f, 36f), new Vector2(320f, 480f));
+                              new Vector2(-36f, 36f), new Vector2(320f, 500f));
             var sideRt = (RectTransform)side.transform;
             sideRt.pivot = new Vector2(1f, 0f);
 
-            var loadout = Label(sideRt, "Loadout", "", 18, new Vector2(16f, -16f), 288f, TextAlignmentOptions.TopLeft);
-            loadout.rectTransform.sizeDelta = new Vector2(288f, 110f);
+            var loadout = Label(sideRt, "Loadout", "", 18, new Vector2(16f, -14f), 288f, TextAlignmentOptions.TopLeft);
+            loadout.rectTransform.sizeDelta = new Vector2(288f, 100f);
 
-            var mapListRoot = PrefabGenerator.NewUI("MapList", new Vector2(288f, 180f), sideRt);
+            var mapListRoot = PrefabGenerator.NewUI("MapList", new Vector2(288f, 194f), sideRt);   // 구역 4개 × 44 + 간격
             var mapListRt = (RectTransform)mapListRoot.transform;
             mapListRt.anchorMin = mapListRt.anchorMax = new Vector2(0f, 1f);
             mapListRt.pivot = new Vector2(0f, 1f);
-            mapListRt.anchoredPosition = new Vector2(16f, -134f);
+            mapListRt.anchoredPosition = new Vector2(16f, -122f);
             var vLayout = mapListRoot.AddComponent<VerticalLayoutGroup>();
             vLayout.spacing = 6f;
             vLayout.childForceExpandHeight = false;
             vLayout.childForceExpandWidth = true;
+            vLayout.childControlHeight = true;   // 버튼 높이는 LayoutElement(44)가 정한다
+            vLayout.childControlWidth = true;
 
             var playBtn = TextButton(sideRt, "PlayButton", "탈출 시작",
-                                     new Vector2(0f, -330f), new Vector2(288f, 60f));
+                                     new Vector2(0f, -328f), new Vector2(288f, 58f));
             playBtn.GetComponent<Image>().color = Accent;
 
             var stats = Label(sideRt, "Stats", "", 16, new Vector2(16f, -400f), 288f, TextAlignmentOptions.TopLeft);
-            stats.rectTransform.sizeDelta = new Vector2(288f, 70f);
+            stats.rectTransform.sizeDelta = new Vector2(288f, 84f);
             stats.color = new Color(0.68f, 0.74f, 0.79f);
 
             var zoneUi = canvas.gameObject.AddComponent<ZoneSelectUI>();
@@ -598,6 +634,7 @@ namespace FishGame.EditorTools
             codexContentRt.anchorMax = new Vector2(1f, 1f);
             codexContentRt.pivot = new Vector2(0.5f, 1f);
             codexContentRt.anchoredPosition = Vector2.zero;
+            codexContentRt.sizeDelta = new Vector2(0f, 100f);   // 가로로 늘어나는 앵커라 폭은 0이어야 보기 영역과 같다
             codexRect.content = codexContentRt;
 
             var codexLayout = codexContent.AddComponent<VerticalLayoutGroup>();
@@ -605,6 +642,8 @@ namespace FishGame.EditorTools
             codexLayout.padding = new RectOffset(4, 4, 4, 4);
             codexLayout.childForceExpandHeight = false;
             codexLayout.childForceExpandWidth = true;
+            codexLayout.childControlWidth = true;    // 줄 폭을 목록 폭에 맞춘다 (안 그러면 560 고정 폭이 왼쪽으로 삐져 잘렸다)
+            codexLayout.childControlHeight = true;
             var codexFitter = codexContent.AddComponent<ContentSizeFitter>();
             codexFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
@@ -628,6 +667,8 @@ namespace FishGame.EditorTools
             var menuSo = new SerializedObject(menuUi);
             menuSo.FindProperty("playButton").objectReferenceValue = playBtn;
             menuSo.FindProperty("resetSaveButton").objectReferenceValue = resetBtn;
+            menuSo.FindProperty("settingsButton").objectReferenceValue = settingsBtn;
+            menuSo.FindProperty("titleButton").objectReferenceValue = titleBtn;
             menuSo.FindProperty("currencyText").objectReferenceValue = currency;
             menuSo.FindProperty("statsText").objectReferenceValue = stats;
             menuSo.FindProperty("loadoutText").objectReferenceValue = loadout;
@@ -637,6 +678,40 @@ namespace FishGame.EditorTools
             menuSo.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.SaveScene(scene, $"{SceneFolder}/MainMenu.unity");
+        }
+
+        // ═════════════════════════════════════════════════════════
+        //  Title — 화면은 TitleScreen이 실행 중에 전부 만든다
+        // ═════════════════════════════════════════════════════════
+        static void BuildTitleScene()
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            var cam = camGo.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.02f, 0.06f, 0.09f);
+            camGo.transform.position = new Vector3(0f, 0f, -10f);
+            camGo.AddComponent<AudioListener>();
+
+            // 게임을 켜면 여기서 GameManager가 먼저 뜬다 (DontDestroyOnLoad — 메인 씬의 것은 알아서 빠진다)
+            var gmGo = new GameObject("GameManager");
+            var gm = gmGo.AddComponent<GameManager>();
+            var gmSo = new SerializedObject(gm);
+            gmSo.FindProperty("database").objectReferenceValue = LoadDatabase();
+            gmSo.FindProperty("titleScene").stringValue = "Title";
+            gmSo.FindProperty("mainMenuScene").stringValue = "MainMenu";
+            gmSo.FindProperty("gameplayScene").stringValue = "Gameplay";
+            gmSo.ApplyModifiedPropertiesWithoutUndo();
+            VerifyReference(gmSo, "database", "GameManager");
+
+            var canvas = CreateCanvas("Title Canvas", out _);
+            CreateEventSystem();
+            canvas.gameObject.AddComponent<TitleScreen>();
+
+            EditorSceneManager.SaveScene(scene, $"{SceneFolder}/Title.unity");
         }
 
         // ═════════════════════════════════════════════════════════
@@ -786,6 +861,7 @@ namespace FishGame.EditorTools
         {
             var scenes = new[]
             {
+                new EditorBuildSettingsScene($"{SceneFolder}/Title.unity", true),      // 0번 = 게임을 켜면 처음 뜨는 씬
                 new EditorBuildSettingsScene($"{SceneFolder}/MainMenu.unity", true),
                 new EditorBuildSettingsScene($"{SceneFolder}/Gameplay.unity", true),
             };

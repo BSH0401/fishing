@@ -46,6 +46,8 @@ namespace FishGame.Core
         [SerializeField] GameDatabase database;
 
         [Header("씬 이름")]
+        [Tooltip("타이틀 씬 이름. 빌드 설정에 없으면 '타이틀로'는 메인 화면으로 대신 간다.")]
+        [SerializeField] string titleScene = "Title";
         [SerializeField] string mainMenuScene = "MainMenu";
         [SerializeField] string gameplayScene = "Gameplay";
 
@@ -98,6 +100,32 @@ namespace FishGame.Core
             PrepareSkillTree();
             SelectedStartZone = Progress.SelectedStartZone;
             RecalculateStats();
+            AvoidDeadlyStartZone();
+        }
+
+        /// <summary>
+        /// 이 구역에서 시작하면 바로 잡아먹힐 만큼 지금 몸이 작은가.
+        /// (FinishRun의 자동 선택·balance_sim.py의 pick_start_zone과 같은 기준: 구역 평균 크기의 42%)
+        /// </summary>
+        public bool IsZoneDangerous(int index)
+        {
+            var z = database != null ? database.GetZone(index) : null;
+            if (z == null || Stats == null || index <= 0) return false;
+            return Stats.Size < z.AverageSpawnSize * 0.42f;
+        }
+
+        /// <summary>
+        /// 불러온 세이브의 시작 구역이 지금 몸으로는 즉사하는 곳이면 (스킬 초기화·환불 뒤 등)
+        /// 버틸 수 있는 가장 깊은 구역으로 한 번 옮긴다. 메뉴에서 직접 다시 고르는 건 막지 않는다.
+        /// </summary>
+        void AvoidDeadlyStartZone()
+        {
+            if (database == null || !IsZoneDangerous(SelectedStartZone)) return;
+            int zone = SelectedStartZone;
+            while (zone > 0 && (IsZoneDangerous(zone) || !ZoneFitsCurrentSize(zone))) zone--;
+            if (!ZoneFitsCurrentSize(zone)) zone = ShallowestEnterableZone();
+            SelectedStartZone = zone;
+            Progress.SelectedStartZone = zone;
         }
 
         /// <summary>
@@ -217,6 +245,15 @@ namespace FishGame.Core
             SelectedStartZone = zone;
             Progress.SelectedStartZone = zone;
             SaveNow();
+        }
+
+        /// <summary>타이틀 화면으로. 타이틀 씬이 빌드에 없으면 메인 화면으로 간다.</summary>
+        public void GoToTitle()
+        {
+            SaveNow();
+            if (!Application.CanStreamedLevelBeLoaded(titleScene)) { GoToMainMenu(); return; }
+            SetState(GameState.MainMenu);
+            SceneManager.LoadScene(titleScene);
         }
 
         public void GoToMainMenu()

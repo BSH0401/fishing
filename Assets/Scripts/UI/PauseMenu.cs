@@ -12,6 +12,7 @@ namespace FishGame.UI
         [SerializeField] GameObject root;
         [SerializeField] Button resumeButton;
         [SerializeField] Button giveUpButton;
+        [SerializeField] Button settingsButton;
 
         InputAction _pause;
 
@@ -22,9 +23,15 @@ namespace FishGame.UI
                 Debug.LogError("[PauseMenu] root가 자기 자신입니다. 컴포넌트를 Canvas 같은 " +
                                "항상 켜져 있는 오브젝트로 옮기고, root에는 일시정지 패널을 넣으세요.");
 
+            if (root != null) LabStyle.Panel(root.GetComponent<Image>(), fill: new Color(0.03f, 0.10f, 0.13f, 0.95f));
+            LabStyle.Button(resumeButton, primary: true);
+            LabStyle.Button(settingsButton);
+            LabStyle.Button(giveUpButton);
+
             if (root != null) root.SetActive(false);
             if (resumeButton != null) resumeButton.onClick.AddListener(() => SetPaused(false));
             if (giveUpButton != null) giveUpButton.onClick.AddListener(GiveUp);
+            if (settingsButton != null) settingsButton.onClick.AddListener(() => SettingsPanel.Open());
 
             _pause = new InputAction("Pause", InputActionType.Button);
             _pause.AddBinding("<Keyboard>/escape");
@@ -46,6 +53,8 @@ namespace FishGame.UI
             }
             // 다른 곳에서 일시정지가 풀렸으면 패널도 닫는다
             if (root != null && root.activeSelf != run.IsPaused) root.SetActive(run.IsPaused);
+            // 설정 창이 떠 있으면 ESC는 설정 창이 먼저 쓴다 (닫는 그 ESC로 일시정지까지 풀리지 않게)
+            if (SettingsPanel.IsOpen || SettingsPanel.ClosedThisFrame) return;
             if (_pause.WasPressedThisFrame()) SetPaused(!run.IsPaused);
         }
 

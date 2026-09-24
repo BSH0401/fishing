@@ -40,6 +40,10 @@ namespace FishGame.Data
         public AudioClip purchaseFail;
         public AudioClip buttonClick;
 
+        [Header("배경음 (비워 두면 조용히 넘어간다)")]
+        public AudioClip menuMusic;
+        public AudioClip gameplayMusic;
+
         [Header("믹싱")]
         [Range(0f, 1f)] public float masterVolume = 0.8f;
         [Tooltip("같은 소리가 겹칠 때 음정을 이만큼 흔들어 단조로움을 없앤다")]

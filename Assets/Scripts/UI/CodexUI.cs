@@ -32,6 +32,10 @@ namespace FishGame.UI
 
         void Awake()
         {
+            // 메인 화면의 다른 창과 같은 수중 실험실 스타일
+            if (root != null) LabStyle.Panel(root.GetComponent<Image>(), fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
+            LabStyle.Button(openButton);
+            LabStyle.Button(closeButton, primary: true);
             if (root != null) root.SetActive(false);
             if (openButton != null) openButton.onClick.AddListener(Open);
             if (closeButton != null) closeButton.onClick.AddListener(Close);
@@ -73,6 +77,21 @@ namespace FishGame.UI
 
             foreach (Transform c in listContainer) Destroy(c.gameObject);
             _rows.Clear();
+
+            // 예전에 생성한 씬은 목록이 보기 영역보다 600 넓고 줄 폭을 맞추지 않아, 줄 왼쪽(아이콘·이름)이 잘려 보였다
+            listContainer.anchorMin = new Vector2(0f, 1f);
+            listContainer.anchorMax = new Vector2(1f, 1f);
+            listContainer.pivot = new Vector2(0.5f, 1f);
+            listContainer.sizeDelta = new Vector2(0f, listContainer.sizeDelta.y);
+            listContainer.anchoredPosition = Vector2.zero;
+            var layout = listContainer.GetComponent<VerticalLayoutGroup>();
+            if (layout != null)
+            {
+                layout.childControlWidth = true;
+                layout.childControlHeight = true;
+                layout.childForceExpandWidth = true;
+                layout.childForceExpandHeight = false;
+            }
 
             foreach (var fish in _game.Database.allFish)
             {

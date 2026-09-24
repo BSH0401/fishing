@@ -33,6 +33,11 @@ namespace FishGame.UI
                 Debug.LogError("[ResultPanel] root가 자기 자신입니다. 컴포넌트를 Canvas 같은 " +
                                "항상 켜져 있는 오브젝트로 옮기고, root에는 결과 패널을 넣으세요.");
 
+            // 메인 화면·설정 창과 같은 수중 실험실 스타일
+            if (root != null) LabStyle.Panel(root.GetComponent<Image>(), fill: new Color(0.03f, 0.10f, 0.13f, 0.95f));
+            LabStyle.Button(retryButton, primary: true);
+            LabStyle.Button(mainMenuButton);
+
             if (root != null) root.SetActive(false);
             if (mainMenuButton != null) mainMenuButton.onClick.AddListener(OnMainMenu);
             if (retryButton != null) retryButton.onClick.AddListener(OnRetry);

@@ -186,8 +186,22 @@ namespace FishGame.Player
             _input = new FishInput();
         }
 
-        void OnEnable() => _input.Enable();
-        void OnDisable() => _input.Disable();
+        void OnEnable()
+        {
+            _input.Enable();
+            GameSettings.Changed += ApplyControlSetting;
+            ApplyControlSetting();
+        }
+
+        void OnDisable()
+        {
+            _input.Disable();
+            GameSettings.Changed -= ApplyControlSetting;
+        }
+
+        /// <summary>설정 화면의 '조작 방식'을 따른다 (판 중에 바꿔도 바로 적용).</summary>
+        void ApplyControlSetting() =>
+            controlScheme = GameSettings.Data.controlScheme == 1 ? ControlScheme.MouseFollow : ControlScheme.Keyboard;
         void OnDestroy() => _input.Dispose();
 
         /// <summary>RunManager가 판 시작 시 호출.</summary>

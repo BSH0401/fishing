@@ -135,6 +135,9 @@ namespace FishGame.Gameplay
 
             Bait.DespawnAll();
 
+            var bank = AudioManager.Instance.Bank;
+            AudioManager.PlayMusic(bank != null ? bank.gameplayMusic : null);
+
             StartZoneIndex = Mathf.Clamp(StartZoneIndex, 0, Database.ZoneCount - 1);
             CurrentZoneIndex = StartZoneIndex;
             DeepestZoneThisRun = StartZoneIndex;

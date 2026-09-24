@@ -547,6 +547,26 @@ namespace FishGame.UI
                 var lle = label.gameObject.AddComponent<LayoutElement>();
                 lle.preferredWidth = label.GetPreferredValues(label.text).x + 2f;
             }
+            _legendWidth = -1f;   // 다음 프레임에 폭을 다시 맞춘다
+        }
+
+        float _legendWidth = -1f;
+
+        /// <summary>
+        /// 16:10처럼 화면이 16:9보다 좁으면 범례 한 줄이 오른쪽 패널 밑으로 파고든다.
+        /// 범례 판의 폭이 바뀔 때만 한 줄 전체를 판 안에 들어가게 줄인다.
+        /// </summary>
+        void FitLegend()
+        {
+            if (legendContainer == null || !(legendContainer.parent is RectTransform frame)) return;
+            float avail = frame.rect.width - 24f;
+            if (avail <= 0f || Mathf.Abs(avail - _legendWidth) < 0.5f) return;
+            _legendWidth = avail;
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(legendContainer);
+            float need = LayoutUtility.GetPreferredWidth(legendContainer);
+            float s = need > avail ? avail / need : 1f;
+            legendContainer.localScale = new Vector3(s, s, 1f);
         }
 
         static string ShortName(SkillNode node)
@@ -683,6 +703,7 @@ namespace FishGame.UI
         void Update()
         {
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+            FitLegend();
 
             if (_zooming && scrollContent != null)
             {

@@ -27,7 +27,14 @@ namespace FishGame.UI
             img.color = fill ?? Fill;
 
             var t = img.transform;
-            if (t.Find("LabBorder") != null) return;
+            var existing = t.Find("LabBorder");
+            if (existing != null)
+            {
+                // 이미 입혔으면 테두리 색만 맞춘다 (탭 선택처럼 상태가 바뀔 때)
+                var eb = existing.GetComponent<Image>();
+                if (eb != null) eb.color = border ?? Border;
+                return;
+            }
 
             var b = NewChild(t, "LabBorder");
             Stretch(b.rectTransform, 0f);

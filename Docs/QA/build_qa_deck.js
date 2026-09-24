@@ -179,18 +179,23 @@ plan.push((s, p, t) => {
     showTitle: false, plotArea: { fill: { type: "none" } },
   });
   // 오른쪽: 회차 카드
-  const cx = 6.867, cw = 5.8, ch = 1.1, gap = 0.16;
+  const cx = 6.867, cw = 5.8, gap = 0.14, n = data.rounds.length;
+  // 회차가 늘면 카드를 낮춘다 (5.05" 안에 모두 들어가게). 낮은 카드에서는 세부 줄을 뺀다.
+  const ch = Math.min(1.1, (5.05 - gap * (n - 1)) / n);
+  const compact = ch < 1.02;
   data.rounds.forEach((r, i) => {
     const cy = 1.75 + i * (ch + gap);
     const c = sevCount(r.items);
     s.addShape(pres.shapes.RECTANGLE, { x: cx, y: cy, w: cw, h: ch, fill: { color: C.canvas }, line: { color: C.hairline, width: 0.75 } });
-    text(s, `${r.id}  ${r.date}`, { x: cx + 0.3, y: cy + 0.12, w: 3, h: 0.26, fontFace: F.semi, fontSize: 12, bold: true, color: C.primary, charSpacing: 0, valign: "middle" });
-    text(s, r.title, { x: cx + 0.3, y: cy + 0.4, w: cw - 2.2, h: 0.42, fontFace: F.semi, fontSize: 19, color: C.ink, valign: "middle" });
-    text(s, `이슈 ${r.items.length}건  ·  높음 ${c.High} · 중간 ${c.Med} · 낮음 ${c.Low}`,
-         { x: cx + 0.3, y: cy + 0.8, w: cw - 0.6, h: 0.24, fontSize: 11.5, color: C.ink48, valign: "middle" });
+    const idLine = compact ? `${r.id}  ${r.date}   ·   높음 ${c.High} · 중간 ${c.Med} · 낮음 ${c.Low}` : `${r.id}  ${r.date}`;
+    text(s, idLine, { x: cx + 0.3, y: cy + 0.1, w: cw - 2.2, h: 0.26, fontFace: F.semi, fontSize: 12, bold: true, color: C.primary, charSpacing: 0, valign: "middle" });
+    text(s, r.title, { x: cx + 0.3, y: cy + (compact ? 0.36 : 0.4), w: cw - 2.2, h: 0.42, fontFace: F.semi, fontSize: compact ? 18 : 19, color: C.ink, valign: "middle" });
+    if (!compact)
+      text(s, `이슈 ${r.items.length}건  ·  높음 ${c.High} · 중간 ${c.Med} · 낮음 ${c.Low}`,
+           { x: cx + 0.3, y: cy + 0.8, w: cw - 0.6, h: 0.24, fontSize: 11.5, color: C.ink48, valign: "middle" });
     text(s, `${r.items.filter((x) => x.status === "수정").length}/${r.items.length}`,
-         { x: cx + cw - 1.8, y: cy + 0.3, w: 1.5, h: 0.5, fontFace: F.semi, fontSize: 24, color: C.ink, align: "right", valign: "middle" });
-    text(s, "수정", { x: cx + cw - 1.8, y: cy + 0.78, w: 1.5, h: 0.24, fontSize: 11, color: C.ink48, align: "right", valign: "middle" });
+         { x: cx + cw - 1.8, y: cy + ch / 2 - 0.3, w: 1.5, h: 0.45, fontFace: F.semi, fontSize: 24, color: C.ink, align: "right", valign: "middle" });
+    text(s, "수정", { x: cx + cw - 1.8, y: cy + ch / 2 + 0.14, w: 1.5, h: 0.22, fontSize: 11, color: C.ink48, align: "right", valign: "middle" });
   });
   footer(s, p, t);
 });
@@ -283,7 +288,7 @@ data.rounds.forEach((r) => {
       if (pi === pages.length - 1 && 1.75 + pageHeight(pg) + 0.25 + 1.05 <= 6.95) {
         const need = data.risks.filter((x) => x.status === "확인 필요").length;
         dataStrip(s, 5.75, [
-          { value: `${data.risks.length}건`, label: "남은 위험" },
+          { value: `${openRisks}건`, label: "남은 위험" },
           { value: `${need}건`, label: "플레이테스트로 확인 필요" },
           { value: `${data.risks.filter((x) => x.status === "미정").length}건`, label: "조치 방법 미정" },
           { value: data.updated, label: "마지막 갱신" },

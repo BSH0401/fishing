@@ -21,10 +21,8 @@ namespace FishGame.UI
         [Tooltip("선택한 구역의 설명을 보여줄 텍스트 (선택)")]
         [SerializeField] TMP_Text descriptionText;
 
-        [Header("색")]
-        [SerializeField] Color selectedColor = new Color(0.35f, 0.78f, 0.45f);
-        [SerializeField] Color unlockedColor = Color.white;
-        [SerializeField] Color lockedColor = new Color(0.35f, 0.35f, 0.38f);
+        const float ButtonHeight = 44f;
+        static readonly Color LockedText = new Color(0.45f, 0.55f, 0.58f, 1f);
 
         readonly List<(Button button, int index)> _buttons = new List<(Button, int)>();
         GameManager _game;
@@ -64,6 +62,12 @@ namespace FishGame.UI
                 var btn = Instantiate(buttonPrefab, container);
                 btn.name = $"Zone_{index}";
 
+                // 수중 실험실 스타일 — 오른쪽 패널 안에 구역 4개가 다 들어가게 조금 낮춘다
+                var le = btn.GetComponent<LayoutElement>();
+                if (le != null) { le.preferredHeight = ButtonHeight; le.minHeight = ButtonHeight; }
+                var lbl = btn.GetComponentInChildren<TMP_Text>();
+                if (lbl != null) { lbl.fontSize = 17f; lbl.lineSpacing = -12f; }
+
                 btn.onClick.AddListener(() =>
                 {
                     _game.SelectStartZone(index);
@@ -84,12 +88,11 @@ namespace FishGame.UI
                 bool selected = index == _game.SelectedStartZone;
 
                 btn.interactable = unlocked;
-                var img = btn.GetComponent<Image>();
-                if (img != null)
-                    img.color = !unlocked ? lockedColor : (selected ? selectedColor : unlockedColor);
+                LabStyle.Button(btn, primary: unlocked && selected);
 
                 var label = btn.GetComponentInChildren<TMP_Text>();
                 if (label == null) continue;
+                if (!unlocked) label.color = LockedText;
 
                 var zone = _game.Database.GetZone(index);
                 string name = zone != null ? zone.displayName : "?";
@@ -113,7 +116,9 @@ namespace FishGame.UI
                 }
                 else
                 {
-                    label.text = $"{index + 1}. {name}\n<size=70%>깊이 {DepthLabel(index)}</size>";
+                    // 스킬 초기화 등으로 몸이 작아졌는데 깊은 구역을 고르면 시작하자마자 잡아먹힌다 — 미리 알린다
+                    string warn = _game.IsZoneDangerous(index) ? "  <color=#FF8A7A>위험 — 몸이 작음</color>" : "";
+                    label.text = $"{index + 1}. {name}\n<size=70%>깊이 {DepthLabel(index)}{warn}</size>";
                 }
             }
 
