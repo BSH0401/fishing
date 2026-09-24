@@ -4,21 +4,14 @@ using UnityEngine;
 
 namespace FishGame.Data
 {
-    /// <summary>선행 조건 하나 — "이 노드가 이 레벨 이상".</summary>
-    [Serializable]
-    public class SkillRequirement
-    {
-        public SkillNode node;
-        [Min(1)] public int level = 1;
-    }
-
     /// <summary>
-    /// 스킬트리 노드 1개.
+    /// 강화 종류 1개 (커다란 배터리, 덧붙인 장갑, 치아 교정 …).
     ///
-    /// ★ 코스트는 노드별이 아니라 "지금까지 찍은 총 노드 수"로 정해진다 (기획서 2판).
-    ///     N번째로 찍는 노드의 값 = round(1.12^(N-1))
-    ///     단, 반올림 때문에 값이 정체되면 강제로 +1 (SkillCostCurve 참고)
-    /// 그래서 어떤 노드를 먼저 찍든 N번째 노드의 가격은 같다.
+    /// 트리 위의 칸(SkillTreeSlot)들이 이 종류를 가리킨다. 같은 종류의 칸을 k개 찍으면 k레벨이다.
+    /// 그래서 maxLevel = 트리에 놓인 그 종류의 칸 수 (생성기가 맞춰 준다).
+    ///
+    /// ★ 가격은 칸별이 아니라 "지금까지 찍은 총 칸 수"로 정해진다 (SkillCostCurve).
+    ///   어떤 칸을 먼저 찍든 N번째 칸의 기본 가격은 같고, costMultiplier만 종류별로 다르다.
     /// </summary>
     [CreateAssetMenu(fileName = "Skill_", menuName = "FishGame/Skill Node", order = 2)]
     public class SkillNode : ScriptableObject
@@ -32,17 +25,11 @@ namespace FishGame.Data
         [TextArea(2, 4)] public string description = "";
         public Sprite icon;
 
-        [Header("트리 구조")]
-        [Tooltip("이 조건들을 모두 만족해야 구매 가능")]
-        public List<SkillRequirement> prerequisites = new List<SkillRequirement>();
-        [Tooltip("스킬트리 UI 상의 격자 좌표 (x=열, y=행)")]
-        public Vector2Int gridPosition = Vector2Int.zero;
-
         [Header("효과")]
         public SkillEffectType effectType = SkillEffectType.SurvivalTime;
-        [Tooltip("레벨 1당 값. 복리 효과는 0.10 = 레벨마다 ×1.10.")]
+        [Tooltip("칸 하나당 값. 복리 효과는 0.10 = 칸마다 ×1.10.")]
         public float valuePerLevel = 0.10f;
-        [Tooltip("최대 레벨. 해금(Unlock) 노드는 강제로 1이 된다.")]
+        [Tooltip("최대 레벨 = 트리에 놓인 이 종류의 칸 수. 생성기가 자동으로 맞춘다.")]
         [Min(1)] public int maxLevel = 50;
 
         [Header("코스트 보정")]
@@ -67,7 +54,9 @@ namespace FishGame.Data
         /// <summary>UI 표기용 누적 효과 문자열.</summary>
         public string FormatEffect(int level)
         {
-            if (effectType.IsUnlock()) return level > 0 ? "해금됨" : "미해금";
+            // 부스터 위력 강화는 강화 칸이지만 효과가 켜고 끄는 것뿐이다 (+0 → +1로 보이던 문제)
+            if (effectType.IsUnlock() || effectType == SkillEffectType.BoosterPower)
+                return level > 0 ? "해금됨" : "미해금";
 
             if (effectType.IsMultiplicative())
             {
@@ -87,20 +76,47 @@ namespace FishGame.Data
     }
 
     /// <summary>
-    /// 전역 노드 코스트 곡선. 기획서의 의사코드를 그대로 옮긴 것.
+    /// 전역 코스트 곡선. 기획서의 의사코드에 후반 완화 구간을 더했다.
     ///
-    ///   currentCost = round(1.12^(N-1))
+    ///   지수 e(N) = N-1                                  (N ≤ softcap)
+    ///            = softcap-1 + (N-softcap)·ln(G2)/ln(G1)  (N > softcap)
+    ///   currentCost = round(G1^e(N))
     ///   if (currentCost &lt;= previousCost) currentCost = previousCost + 1
     ///
-    /// 초반에는 반올림 때문에 1,1,1,1... 로 정체되므로 +1 보정이 들어간다.
-    /// 결과: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, ... 이후 지수적으로 상승.
+    /// 칸이 231개라 한 가지 성장률로는 "클리어 4.5시간"과 "풀트리 달성"을 함께 맞출 수 없다.
+    /// 그래서 softcap번째 칸부터 성장률을 낮춘다 (G2 = 1이면 그 뒤로는 +1씩만 오른다).
+    /// 값은 GameDatabase에 있고, GameManager가 시작할 때 Configure로 넘겨준다.
     /// </summary>
     public static class SkillCostCurve
     {
-        const double Growth = 1.12d;
-        const int CacheSize = 512;
+        const int CacheSize = 1024;
 
+        static double _growth = 1.10d;
+        static double _growthLate = 1.0d;
+        static int _softcap = 100;
         static double[] _cache;
+
+        public static double Growth => _growth;
+        public static double GrowthLate => _growthLate;
+        public static int Softcap => _softcap;
+
+        public static void Configure(double growth, double growthLate, int softcap)
+        {
+            growth = Math.Max(1.0001d, growth);
+            growthLate = Math.Max(1d, growthLate);
+            softcap = Math.Max(1, softcap);
+            if (growth == _growth && growthLate == _growthLate && softcap == _softcap && _cache != null) return;
+            _growth = growth;
+            _growthLate = growthLate;
+            _softcap = softcap;
+            _cache = null;
+        }
+
+        static double Exponent(int n)
+        {
+            if (n <= _softcap) return n - 1;
+            return (_softcap - 1) + (n - _softcap) * (Math.Log(_growthLate) / Math.Log(_growth));
+        }
 
         static void Build()
         {
@@ -108,29 +124,44 @@ namespace FishGame.Data
             double previous = 0d;
             for (int n = 1; n <= CacheSize; n++)
             {
-                double current = Math.Round(Math.Pow(Growth, n - 1), MidpointRounding.AwayFromZero);
+                double current = Math.Round(Math.Pow(_growth, Exponent(n)), MidpointRounding.AwayFromZero);
                 if (current <= previous) current = previous + 1d;
                 _cache[n] = current;
                 previous = current;
             }
         }
 
-        /// <summary>N번째(1부터)로 찍는 노드의 기본 가격.</summary>
+        /// <summary>N번째(1부터)로 찍는 칸의 기본 가격.</summary>
         public static double CostOfNode(int n)
         {
             if (n < 1) n = 1;
             if (_cache == null) Build();
             if (n <= CacheSize) return _cache[n];
-
-            // 캐시를 넘어가면 순수 지수식으로 (이 구간에선 정체가 없다)
-            return Math.Round(Math.Pow(Growth, n - 1), MidpointRounding.AwayFromZero);
+            double far = Math.Round(Math.Pow(_growth, Exponent(n)), MidpointRounding.AwayFromZero);
+            return Math.Max(far, _cache[CacheSize] + (n - CacheSize));   // 캐시 끝에서도 계속 오르게
         }
 
-        /// <summary>노드 n개를 찍는 데 드는 누적 비용 (밸런싱 검증용).</summary>
+        /// <summary>칸 n개를 찍는 데 드는 누적 기본 비용 (밸런싱 검증용).</summary>
         public static double CumulativeCost(int nodeCount)
         {
             double sum = 0d;
             for (int i = 1; i <= nodeCount; i++) sum += CostOfNode(i);
+            return sum;
+        }
+
+        /// <summary>
+        /// 옛 곡선(1.12 단일 성장률)의 누적 비용. 예전 세이브를 새 트리로 옮길 때 환불액 계산에만 쓴다.
+        /// </summary>
+        public static double LegacyCumulativeCost(int nodeCount)
+        {
+            double sum = 0d, previous = 0d;
+            for (int n = 1; n <= nodeCount; n++)
+            {
+                double current = Math.Round(Math.Pow(1.12d, n - 1), MidpointRounding.AwayFromZero);
+                if (current <= previous) current = previous + 1d;
+                sum += current;
+                previous = current;
+            }
             return sum;
         }
     }

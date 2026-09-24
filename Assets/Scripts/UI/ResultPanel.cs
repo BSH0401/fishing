@@ -114,7 +114,7 @@ namespace FishGame.UI
                     $"잡아먹은 물고기  {result.FishEaten}마리\n" +
                     $"생존 시간  {NumberFormatter.FormatTime(result.SurvivedSeconds)}" +
                     (result.HiddenItemsFound > 0
-                        ? $"\n히든 아이템  +{result.HiddenItemsFound}개  <size=80%>(재화 +{result.HiddenItemsFound * 5}% 영구)</size>"
+                        ? $"\n히든 아이템  +{result.HiddenItemsFound}개  <size=80%>(재화 +{result.HiddenItemsFound * (gm?.Database != null ? gm.Database.hiddenItemCurrencyBonus : 0.05f) * 100f:0.#}% 영구)</size>"
                         : "");
             }
 
@@ -125,8 +125,12 @@ namespace FishGame.UI
                 {
                     var gm = GameManager.Instance;
                     var reached = gm?.Database?.GetZone(result.DeepestZone);
+                    bool autoSelected = gm != null && gm.SelectedStartZone == result.DeepestZone;
+                    string hint = autoSelected
+                        ? "다음 판은 여기서 시작합니다 (메뉴에서 바꿀 수 있음)"
+                        : "조금 더 커지면 메뉴에서 이 구역을 시작 구역으로 고를 수 있습니다";
                     unlockText.text = reached != null
-                        ? $"새 구역 도달: {reached.displayName}\n<size=75%>다음 판부터 여기서 시작할 수 있다</size>"
+                        ? $"새 구역 도달: {reached.displayName}\n<size=75%>{hint}</size>"
                         : "새 구역 도달!";
                 }
             }

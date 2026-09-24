@@ -23,12 +23,12 @@ MonoBehaviour:
   - t: 0.45
     halfWidth: 21
   - t: 0.8
-    halfWidth: 13
+    halfWidth: 14
   - t: 1
-    halfWidth: 5.5
+    halfWidth: 7
   outlineSegments: 32
   hasExit: 1
-  exitHalfWidth: 5.5
+  exitHalfWidth: 7
   exitHeight: 16
   exitOffsetX: 0
   exitRequiredSize: 3.1
@@ -57,7 +57,7 @@ MonoBehaviour:
   targetPopulation: 26
   spawnInterval: 0.28
   spawnMarginFromPlayer: 9
-  currencyMultiplier: 0.1474
+  currencyMultiplier: 0.2891
   obstacles:
   - shape: 0
     depthT: 0.34

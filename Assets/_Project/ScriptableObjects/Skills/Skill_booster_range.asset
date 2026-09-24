@@ -15,13 +15,9 @@ MonoBehaviour:
   id: booster_range
   displayName: "\uBD80\uC2A4\uD130 \uAC70\uB9AC \uAC15\uD654"
   tooltip: 
-  description: "\uBD80\uC2A4\uD130 \uC774\uB3D9 \uAC70\uB9AC +30%."
+  description: "\uBD80\uC2A4\uD130 \uC774\uB3D9 \uAC70\uB9AC +50%."
   icon: {fileID: 0}
-  prerequisites:
-  - node: {fileID: 11400000, guid: 276eb288055ac3047ab5143195d0c03c, type: 2}
-    level: 1
-  gridPosition: {x: 0, y: -4}
   effectType: 200
-  valuePerLevel: 0.3
-  maxLevel: 5
+  valuePerLevel: 0.5
+  maxLevel: 3
   costMultiplier: 1

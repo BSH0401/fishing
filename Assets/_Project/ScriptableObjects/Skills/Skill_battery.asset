@@ -18,9 +18,7 @@ MonoBehaviour:
   description: "\uBB3C\uACE0\uAE30 \uC0DD\uC874 \uC81C\uD55C\uC2DC\uAC04 1\uCD08
     \uC99D\uAC00."
   icon: {fileID: 0}
-  prerequisites: []
-  gridPosition: {x: 0, y: 1}
   effectType: 100
   valuePerLevel: 1
-  maxLevel: 20
+  maxLevel: 24
   costMultiplier: 1

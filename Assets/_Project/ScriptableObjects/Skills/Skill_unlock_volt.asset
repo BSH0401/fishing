@@ -19,9 +19,7 @@ MonoBehaviour:
     \uC804\uAE30 \uCDA9\uACA9\uC744 \uC77C\uC73C\uCF1C \uB9C8\uBE44\uC2DC\uD0B5\uB2C8\uB2E4.
     (\uC77C\uBC18 2\uCD08 / \uBCF4\uC2A4 0.1\uCD08)"
   icon: {fileID: 0}
-  prerequisites: []
-  gridPosition: {x: 8, y: -3}
   effectType: 4
   valuePerLevel: 1
   maxLevel: 1
-  costMultiplier: 12
+  costMultiplier: 8

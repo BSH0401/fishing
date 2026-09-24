@@ -15,13 +15,9 @@ MonoBehaviour:
   id: vacuum_range
   displayName: "\uCCAD\uC18C\uAE30 \uBC94\uC704 \uAC15\uD654"
   tooltip: 
-  description: "\uCCAD\uC18C\uAE30 \uD6A8\uACFC \uBC94\uC704 +50%."
+  description: "\uCCAD\uC18C\uAE30 \uD6A8\uACFC \uBC94\uC704 +60%."
   icon: {fileID: 0}
-  prerequisites:
-  - node: {fileID: 11400000, guid: e192686a46743404d995356c2adf33dc, type: 2}
-    level: 1
-  gridPosition: {x: 2, y: -4}
   effectType: 202
-  valuePerLevel: 0.5
-  maxLevel: 5
+  valuePerLevel: 0.6
+  maxLevel: 4
   costMultiplier: 1

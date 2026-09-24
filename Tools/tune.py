@@ -29,11 +29,11 @@ def set_trim(k, v):
 def milestone_hours(k):
     vals = []
     for sd in SEEDS:
-        _, runs, total, ms, _ = B.play_through(sd)
+        _, runs, total, ms, _, _ = B.play_through(sd)
         if k < 3:
             if len(ms) > k and ms[k][0] >= 0:
                 vals.append(ms[k][2])
-            elif runs >= 8000:
+            elif runs >= 20000:
                 vals.append(99.0)
         else:
             vals.append(total / 3600 if (ms and ms[-1][0] < 0) else 99.0)

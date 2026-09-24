@@ -39,28 +39,20 @@ namespace FishGame.Utils
         {
             if (!Ready()) return null;
 
-            int total = 0;
-            foreach (var node in GM.Database.skills)
-            {
-                if (node == null) continue;
-                P.SetSkillLevel(node.id, node.maxLevel);
-                total += node.maxLevel;
-            }
-            // 코스트 곡선이 "지금까지 찍은 총 노드 수"를 보므로 같이 맞춰야
-            // 이후에 뭔가 더 찍을 때 가격이 엉뚱하게 나오지 않는다.
-            P.totalNodesPurchased = total;
+            // 트리의 모든 칸을 공짜로 찍는다. 레벨·총 칸 수는 칸 목록에서 다시 계산된다.
+            foreach (var slot in GM.Database.skillTree)
+                if (slot != null && !slot.IsRoot) P.AddSlot(slot.id);
+            SkillTreeManager.SyncLevels(GM.Database, P);
             Commit();
-            return $"스킬 전부 최대 — 노드 {total}개";
+            return $"스킬트리 전부 찍음 — 칸 {P.totalNodesPurchased}개";
         }
 
         public static string ResetSkills()
         {
             if (!Ready()) return null;
-            P.skillLevels.Clear();
-            P.totalNodesPurchased = 0;
-            P.OnAfterLoad();          // 캐시 무효화
+            P.ClearSkills();
             Commit();
-            return "스킬을 초기화했습니다 (재화는 그대로)";
+            return "스킬트리를 초기화했습니다 (재화는 그대로)";
         }
 
         // ── 구역 ────────────────────────────────────────────────

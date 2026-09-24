@@ -13,7 +13,8 @@ namespace FishGame.EditorTools
     /// 맵 4개가 세로로 이어진 하나의 맵이 되었다.
     /// 통로는 "판 중에 먹어서 커진 현재 크기"로 열리고, 아래로 갈수록 값이 오른다.
     ///
-    /// 검증 결과: 25회 시행 전부 완주, 총 플레이타임 4.42 ~ 4.62시간 (중앙 4.51h)
+    /// 검증 결과 (도면형 스킬트리 231칸, 종 단위 수입 모델): 25회 시행 전부 완주,
+    ///   보스 클리어 4.34 ~ 4.65시간 (중앙 4.49h), 풀트리 완성은 클리어 후 +5.5시간
     /// (도감 보너스 + 인게임 성장 + 히든 아이템 8개 포함)
     ///
     /// 메뉴: FishGame ▸ 1. 콘텐츠 에셋 생성
@@ -164,7 +165,7 @@ namespace FishGame.EditorTools
         static readonly ZoneDef[] Zones =
         {
             new ZoneDef {
-                file = "Zone_1_Tank", display = "어항", currencyMult = 0.1474f,
+                file = "Zone_1_Tank", display = "어항", currencyMult = 0.4286f,
                 height = 46f,
                 profile = P((0f, 22f), (0.45f, 21f), (0.80f, 14f), (1f, 7f)),
                 hasExit = true, exitHalfWidth = 7f, exitHeight = 16f, exitRequiredSize = 3.1f,
@@ -175,7 +176,7 @@ namespace FishGame.EditorTools
                 desc = "탈출은 여기서 시작된다. 바닥의 배수구가 유일한 출구다." },
 
             new ZoneDef {
-                file = "Zone_2_Sewer", display = "하수구", currencyMult = 0.0655f,
+                file = "Zone_2_Sewer", display = "하수구", currencyMult = 0.5162f,
                 height = 110f,
                 profile = P((0f, 30f), (0.12f, 52f), (0.88f, 52f), (1f, 34f)),
                 hasExit = true, exitHalfWidth = 15f, exitHeight = 22f, exitRequiredSize = 8.1f,
@@ -186,7 +187,7 @@ namespace FishGame.EditorTools
                 desc = "탁한 물살과 쇠창살. 여기서 살아남으면 강 냄새가 난다." },
 
             new ZoneDef {
-                file = "Zone_3_River", display = "강", currencyMult = 0.0271f,
+                file = "Zone_3_River", display = "강", currencyMult = 0.1979f,
                 height = 260f,
                 profile = P((0f, 22f), (0.35f, 120f), (0.70f, 142f), (1f, 34f)),
                 hasExit = true, exitHalfWidth = 32f, exitHeight = 40f, exitRequiredSize = 21f,
@@ -198,7 +199,7 @@ namespace FishGame.EditorTools
                 desc = "물살이 세다. 여기서부터는 이빨을 가진 것들이 많다." },
 
             new ZoneDef {
-                file = "Zone_4_Ocean", display = "바다", currencyMult = 0.0124f,
+                file = "Zone_4_Ocean", display = "바다", currencyMult = 0.2094f,
                 height = 520f,
                 profile = P((0f, 60f), (0.18f, 250f), (0.45f, 310f), (1f, 300f)),
                 hasExit = false, exitHalfWidth = 30f, exitHeight = 0f, exitRequiredSize = 0f,
@@ -217,92 +218,81 @@ namespace FishGame.EditorTools
         // ═════════════════════════════════════════════════════════
         //  스킬 — balance_sim.py의 NODES와 1:1 대응
         // ═════════════════════════════════════════════════════════
-        struct Req { public string id; public int level; }
-        static Req R(string id, int level) => new Req { id = id, level = level };
-
+        // ── 강화 종류 ────────────────────────────────────────────
+        // 트리의 칸(도형)은 SkillTreeLayoutData에 있고, 여기서는 도형 종류별 효과만 정한다.
+        // 칸 하나 = 1레벨이라, 예전 "레벨당 값"을 칸 수에 맞게 나눴다.
+        // (최대 레벨은 도면에 놓인 칸 수로 자동 설정 — 아래 주석의 개수는 참고용)
+        // balance_sim.py의 TYPES와 같아야 한다.
         struct SkillDef
         {
             public string id, display, tooltip, desc;
             public SkillEffectType effect;
             public float value, costMultiplier;
-            public int maxLevel;
-            public Vector2Int grid;
-            public Req[] prereq;
         }
 
-        static SkillDef S(string id, string display, SkillEffectType effect, float value, int maxLevel,
-                          float costMult, int gx, int gy, string tooltip, string desc, params Req[] prereq)
+        static SkillDef S(string id, string display, SkillEffectType effect, float value, float costMult,
+                          string tooltip, string desc)
             => new SkillDef
             {
-                id = id, display = display, effect = effect, value = value, maxLevel = maxLevel,
-                costMultiplier = costMult, grid = new Vector2Int(gx, gy),
-                tooltip = tooltip, desc = desc, prereq = prereq
+                id = id, display = display, effect = effect, value = value,
+                costMultiplier = costMult, tooltip = tooltip, desc = desc
             };
 
         static readonly SkillDef[] Skills =
         {
-            // ── 액티브 해금 ──────────────────────────────────────
-            S("unlock_booster", "부스터", SkillEffectType.UnlockBooster, 1, 1, 3f, 0, -3,
+            // ── 액티브 해금 (알약 모양 칸) ──────────────────────
+            S("unlock_booster", "부스터", SkillEffectType.UnlockBooster, 1, 3f,
               "우클릭을 눌러 빨리 달리고 경로의 적을 먹습니다.",
               "앞으로 짧게 대쉬합니다. 대쉬 경로에 있는 물고기는 크기와 상관없이 먹힙니다."),
-            S("unlock_vacuum", "청소기", SkillEffectType.UnlockVacuum, 1, 1, 5f, 2, -3,
+            S("unlock_vacuum", "청소기", SkillEffectType.UnlockVacuum, 1, 5f,
               "물고기를 빨아들입니다.",
               "좌클릭을 누르고 있는 동안 범위 내 소형 물고기를 끌어당깁니다."),
-            S("unlock_armor", "비늘 경화", SkillEffectType.UnlockScaleArmor, 1, 1, 7f, 4, -3,
+            S("unlock_armor", "비늘 경화", SkillEffectType.UnlockScaleArmor, 1, 6f,
               "적의 공격을 1회 막습니다.",
               "먹힐 뻔한 순간을 1회 막고 짧게 무적이 됩니다."),
-            S("unlock_bait", "황금 미끼", SkillEffectType.UnlockGoldenBait, 1, 1, 9f, 6, -3,
+            S("unlock_bait", "황금 미끼", SkillEffectType.UnlockGoldenBait, 1, 6f,
               "황금 미끼를 뿌립니다.",
               "일정 시간마다 자동으로 미끼를 뿌립니다. 주변 물고기가 미끼로 달려듭니다."),
-            S("unlock_volt", "10만 볼트", SkillEffectType.UnlockVolt, 1, 1, 12f, 8, -3,
+            S("unlock_volt", "10만 볼트", SkillEffectType.UnlockVolt, 1, 8f,
               "전기 쇼크를 일으킵니다.",
               "일정 시간마다 자동으로 주변에 전기 충격을 일으켜 마비시킵니다. (일반 2초 / 보스 0.1초)"),
-            S("unlock_missile", "미사일", SkillEffectType.UnlockMissile, 1, 1, 16f, 10, -3,
+            S("unlock_missile", "미사일", SkillEffectType.UnlockMissile, 1, 10f,
               "미사일을 발사합니다.",
               "일정 시간마다 바라보는 방향으로 발사합니다. 맞은 적은 즉시 먹힌 것으로 처리됩니다."),
 
             // ── 액티브 강화 ──────────────────────────────────────
-            S("booster_range", "부스터 거리 강화", SkillEffectType.BoosterRange, 0.30f, 5, 1f, 0, -4,
-              "", "부스터 이동 거리 +30%.", R("unlock_booster", 1)),
-            S("booster_power", "부스터 위력 강화", SkillEffectType.BoosterPower, 1, 1, 14f, 0, -5,
-              "", "부스터를 사용할 때 자기보다 더 큰 물고기도 먹을 수 있습니다.", R("unlock_booster", 1)),
-            S("vacuum_range", "청소기 범위 강화", SkillEffectType.VacuumRange, 0.50f, 5, 1f, 2, -4,
-              "", "청소기 효과 범위 +50%.", R("unlock_vacuum", 1)),
-            S("armor_stack", "비늘 경화 강화", SkillEffectType.ScaleArmorStack, 1, 2, 6f, 4, -4,
-              "", "방어 횟수 +1 (최대 3회).", R("unlock_armor", 1)),
-            S("bait_range", "황금 미끼 범위 강화", SkillEffectType.BaitRange, 0.50f, 4, 1f, 6, -4,
-              "", "미끼 효과 범위 +50%.", R("unlock_bait", 1)),
-            S("bait_count", "황금 미끼 추가", SkillEffectType.BaitCount, 1, 3, 5f, 6, -5,
-              "", "미끼 개수 +1.", R("unlock_bait", 1)),
-            S("volt_power", "10만 볼트 강화", SkillEffectType.VoltPower, 0.50f, 5, 1f, 8, -4,
-              "", "전기 충격 범위와 마비 시간 +50%.", R("unlock_volt", 1)),
-            S("missile_power", "미사일 발사 강화", SkillEffectType.MissilePower, 0.50f, 5, 3f, 10, -4,
-              "", "미사일 범위 +50%, 개수 +1.", R("unlock_missile", 1)),
+            S("booster_range", "부스터 거리 강화", SkillEffectType.BoosterRange, 0.50f, 1f,          // 〰 ×3
+              "", "부스터 이동 거리 +50%."),
+            S("booster_power", "부스터 위력 강화", SkillEffectType.BoosterPower, 1, 6f,               // ✶ ×1
+              "", "부스터를 사용할 때 자기보다 더 큰 물고기도 먹을 수 있습니다."),
+            S("vacuum_range", "청소기 범위 강화", SkillEffectType.VacuumRange, 0.60f, 1f,             // ◸ ×4
+              "", "청소기 효과 범위 +60%."),
+            S("armor_stack", "비늘 경화 강화", SkillEffectType.ScaleArmorStack, 1, 3f,                // D ×2
+              "", "방어 횟수 +1 (최대 3회)."),
+            S("bait_range", "황금 미끼 범위 강화", SkillEffectType.BaitRange, 0.50f, 1f,              // ☁ ×4
+              "", "미끼 효과 범위 +50%."),
+            S("bait_count", "황금 미끼 추가", SkillEffectType.BaitCount, 1, 2f,                       // 문서 ×4
+              "", "미끼 개수 +1."),
+            S("volt_power", "10만 볼트 강화", SkillEffectType.VoltPower, 0.60f, 1f,                   // 원통 ×4
+              "", "전기 충격 범위와 마비 시간 +60%."),
+            S("missile_power", "미사일 강화", SkillEffectType.MissilePower, 0.60f, 2f,                // 메모 ×4
+              "", "미사일 범위 +60%, 개수 +1."),
 
             // ── 기본 강화 ────────────────────────────────────────
-            S("battery", "커다란 배터리", SkillEffectType.SurvivalTime, 1f, 20, 1f, 0, 1,
+            S("battery", "커다란 배터리", SkillEffectType.SurvivalTime, 1f, 1f,                       // □ ×24
               "", "물고기 생존 제한시간 1초 증가."),
-            S("teeth", "치아 교정", SkillEffectType.MouthPower, 0.10f, 8, 1.2f, 2, 0,
-              "", "입 크기 및 흡입력 10% 증가."),
-            S("camera", "카메라 장착", SkillEffectType.Vision, 0.10f, 8, 1f, 4, 0,
-              "", "시야 10% 증가."),
-            S("cell", "물고기 전지", SkillEffectType.TimeGain, 0.05f, 12, 1f, 2, 1,
-              "", "물고기를 먹을 때 얻는 제한시간 5% 증가."),
-            S("acid", "위액 산성도 증가", SkillEffectType.CurrencyGain, 0.10f, 20, 1.5f, 4, 1,
-              "", "물고기를 먹을 때 얻는 재화량 10% 증가."),
+            S("teeth", "치아 교정", SkillEffectType.MouthPower, 0.02f, 1f,                            // ◇ ×47
+              "", "입 크기 및 흡입력 2% 증가."),
+            S("camera", "카메라 장착", SkillEffectType.Vision, 0.035f, 1f,                            // ▱ ×22
+              "", "시야 3.5% 증가."),
+            S("cell", "물고기 전지", SkillEffectType.TimeGain, 0.025f, 1f,                            // △ ×25
+              "", "물고기를 먹을 때 얻는 제한시간 2.5% 증가."),
+            S("acid", "위액 산성도 증가", SkillEffectType.CurrencyGain, 0.04f, 1.2f,                  // ⏢ ×47
+              "", "물고기를 먹을 때 얻는 재화량 4% 증가."),
 
             // ── 덧붙인 장갑 (진행의 축) ──────────────────────────
-            S("armor_1", "덧붙인 장갑 I", SkillEffectType.BodyScale, 0.10f, 12, 3f, 0, 3,
+            S("armor", "덧붙인 장갑", SkillEffectType.BodyScale, 0.10f, 2f,                           // ○ ×34
               "", "몸 크기 및 이동속도 10% 증가."),
-            S("armor_2", "덧붙인 장갑 II", SkillEffectType.BodyScale, 0.10f, 10, 5f, 3, 3,
-              "", "몸 크기 및 이동속도 10% 증가.",
-              R("battery", 8), R("teeth", 5)),
-            S("armor_3", "덧붙인 장갑 III", SkillEffectType.BodyScale, 0.10f, 10, 8f, 6, 3,
-              "", "몸 크기 및 이동속도 10% 증가.",
-              R("acid", 8), R("cell", 5), R("unlock_vacuum", 1)),
-            S("armor_4", "덧붙인 장갑 IV", SkillEffectType.BodyScale, 0.10f, 4, 12f, 9, 3,
-              "", "몸 크기 및 이동속도 10% 증가.",
-              R("camera", 5), R("teeth", 8), R("unlock_volt", 1), R("unlock_missile", 1)),
         };
 
         // ═════════════════════════════════════════════════════════
@@ -352,20 +342,9 @@ namespace FishGame.EditorTools
                 allFish.Add(bossAsset);
             }
 
-            // 스킬 — 선행 연결은 2패스
+            // 스킬 — 강화 종류 에셋
             var skillById = new Dictionary<string, SkillNode>();
             foreach (var def in Skills) skillById[def.id] = CreateSkill(def);
-            foreach (var def in Skills)
-            {
-                var node = skillById[def.id];
-                node.prerequisites.Clear();
-                foreach (var r in def.prereq)
-                {
-                    if (!skillById.TryGetValue(r.id, out var pre)) continue;
-                    node.prerequisites.Add(new SkillRequirement { node = pre, level = r.level });
-                }
-                EditorUtility.SetDirty(node);
-            }
 
             var zones = new List<ZoneData>();
             for (int i = 0; i < Zones.Length; i++) zones.Add(CreateZone(i, fishByFile));
@@ -375,6 +354,7 @@ namespace FishGame.EditorTools
             db.allFish = allFish;
             db.skills = new List<SkillNode>();
             foreach (var def in Skills) db.skills.Add(skillById[def.id]);
+            BuildSkillTree(db, skillById);
 
             // 기본 스탯 — balance_sim.py와 동일하게 유지할 것
             db.baseSurvivalTime = 30f;
@@ -387,7 +367,7 @@ namespace FishGame.EditorTools
 
             // 상한 — 스킬을 다 찍어도 게임이 깨지지 않게
             db.maxPlayerSize = 56f;          // 보스 43 < 상한 < 강→바다 통로 통과 한계 57.6
-            db.maxMouthMultiplier = 2.6f;    // 치아 8레벨(×2.14) + 도감 보너스 여유
+            db.maxMouthMultiplier = 2.6f;    // 치아 47칸(×2.54) + 도감 보너스 여유
             db.voltStunCapRatio = 0.6f;      // 마비 ≤ 쿨타임의 60%
             db.activeRangeScalesWithSize = true;
 
@@ -405,6 +385,11 @@ namespace FishGame.EditorTools
             db.globalValueScale = 1f;
             db.depthRichness = 3f;
             db.eatSizeTolerance = 1.0f;
+
+            // 스킬 비용 곡선 — 100번째 칸까지 1.10배씩, 그 뒤로는 사실상 고정 (tune.py)
+            db.skillCostGrowth = 1.10f;
+            db.skillCostSoftcap = 100;
+            db.skillCostGrowthLate = 1.0f;
 
             db.codexMilestone = 100;
             db.codexMaxTiers = 10;
@@ -523,11 +508,50 @@ namespace FishGame.EditorTools
             asset.description = def.desc;
             asset.effectType = def.effect;
             asset.valuePerLevel = def.value;
-            asset.maxLevel = def.maxLevel;
             asset.costMultiplier = def.costMultiplier;
-            asset.gridPosition = def.grid;
+
+            // 최대 레벨 = 도면에 놓인 이 종류의 칸 수
+            int count = 0;
+            foreach (var slot in SkillTreeLayoutData.Slots) if (slot.type == def.id) count++;
+            asset.maxLevel = Mathf.Max(1, count);
+            if (count == 0) Debug.LogWarning($"[FishGame] 스킬 '{def.id}'의 칸이 도면에 없습니다.");
             EditorUtility.SetDirty(asset);
             return asset;
+        }
+
+        /// <summary>도면 데이터로 GameDatabase.skillTree를 채운다.</summary>
+        static void BuildSkillTree(GameDatabase db, Dictionary<string, SkillNode> skillById)
+        {
+            var slots = SkillTreeLayoutData.Slots;
+            db.skillTree = new List<SkillTreeSlot>(slots.Length);
+            db.skillTreeRoot = SkillTreeLayoutData.Root;
+
+            for (int i = 0; i < slots.Length; i++)
+            {
+                var d = slots[i];
+                SkillNode skill = null;
+                if (i != SkillTreeLayoutData.Root && !skillById.TryGetValue(d.type, out skill))
+                    Debug.LogError($"[FishGame] 칸 {d.id}의 종류 '{d.type}'에 맞는 스킬이 없습니다.");
+                db.skillTree.Add(new SkillTreeSlot
+                {
+                    id = d.id,
+                    skill = skill,
+                    isRoot = i == SkillTreeLayoutData.Root,
+                    position = new Vector2(d.x, d.y),
+                    links = new List<int>(),
+                });
+            }
+
+            var e = SkillTreeLayoutData.Edges;
+            for (int k = 0; k + 1 < e.Length; k += 2)
+            {
+                int a = e[k], b = e[k + 1];
+                if (a < 0 || b < 0 || a >= slots.Length || b >= slots.Length || a == b) continue;
+                if (!db.skillTree[a].links.Contains(b)) db.skillTree[a].links.Add(b);
+                if (!db.skillTree[b].links.Contains(a)) db.skillTree[b].links.Add(a);
+            }
+
+            Debug.Log($"[FishGame] 스킬트리 칸 {slots.Length - 1}개 · 연결선 {e.Length / 2}개");
         }
 
         static ZoneData CreateZone(int index, Dictionary<string, FishSpecies> fish)

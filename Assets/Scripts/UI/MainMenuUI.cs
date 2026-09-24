@@ -53,6 +53,17 @@ namespace FishGame.UI
             Refresh();
         }
 
+        /// <summary>
+        /// 씬 생성기가 같은 재화 글자를 SkillTreeUI에도 물린다. SkillTreeUI가 "다음 칸 가격"까지 붙여 쓰는데
+        /// 여기서 매번 숫자만으로 덮어써 그 정보가 보이지 않았다 — 트리가 맡고 있으면 손대지 않는다.
+        /// </summary>
+        bool CurrencyOwnedByTree()
+        {
+            if (currencyText == null) return false;
+            var tree = FindAnyObjectByType<SkillTreeUI>();
+            return tree != null && tree.CurrencyLabel == currencyText;
+        }
+
         void OnDestroy()
         {
             if (_game != null) _game.OnProgressChanged -= Refresh;
@@ -63,13 +74,13 @@ namespace FishGame.UI
             var p = _game.Progress;
             var s = _game.Stats;
 
-            if (currencyText != null)
+            if (currencyText != null && !CurrencyOwnedByTree())
                 currencyText.text = NumberFormatter.Format(p.currency);
 
             if (statsText != null)
             {
                 statsText.text =
-                    $"총 플레이  {p.totalRuns}회   찍은 노드  {p.totalNodesPurchased}개\n" +
+                    $"총 플레이  {p.totalRuns}회   찍은 칸  {p.totalNodesPurchased}개\n" +
                     $"총 포식  {p.totalFishEaten}마리   도감  {p.codex.Count}종\n" +
                     $"최고 생존  {NumberFormatter.FormatTime(p.bestSurvivalSeconds)}";
             }

@@ -37,10 +37,1169 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
   - {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
   - {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
-  - {fileID: 11400000, guid: b04cead872b865b41a0d8a23c27e0a47, type: 2}
-  - {fileID: 11400000, guid: c00b63c10d54a7a4aa8440f4d3582c11, type: 2}
-  - {fileID: 11400000, guid: f1bce54c21c35f24e81db76d94ea0ee4, type: 2}
-  - {fileID: 11400000, guid: 2bf956bc665562746946a5e3d423f8a8, type: 2}
+  - {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+  skillTree:
+  - id: n000
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 254, y: 955}
+    links: 0100000003000000
+    isRoot: 0
+  - id: n001
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 296, y: 955}
+    links: 000000000200000004000000
+    isRoot: 0
+  - id: n002
+    skill: {fileID: 11400000, guid: 1bbfc01182175eb4ca19ff84c34b8da4, type: 2}
+    position: {x: 355, y: 955}
+    links: 0100000005000000
+    isRoot: 0
+  - id: n003
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 249, y: 902.5}
+    links: 000000000400000008000000
+    isRoot: 0
+  - id: n004
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 296, y: 900}
+    links: 01000000030000000500000006000000
+    isRoot: 0
+  - id: n005
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 347, y: 900}
+    links: 020000000400000007000000
+    isRoot: 0
+  - id: n006
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 296, y: 850}
+    links: 040000000700000008000000
+    isRoot: 0
+  - id: n007
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 350, y: 850}
+    links: 0500000006000000
+    isRoot: 0
+  - id: n008
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 247, y: 849.5}
+    links: 03000000060000000b000000
+    isRoot: 0
+  - id: n009
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 103, y: 820}
+    links: 0a0000000c000000
+    isRoot: 0
+  - id: n010
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 152, y: 820}
+    links: 090000000b0000000d000000
+    isRoot: 0
+  - id: n011
+    skill: {fileID: 11400000, guid: 1bbfc01182175eb4ca19ff84c34b8da4, type: 2}
+    position: {x: 206, y: 820}
+    links: 080000000a0000000e000000
+    isRoot: 0
+  - id: n012
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 105, y: 767.5}
+    links: 090000000d0000000f000000
+    isRoot: 0
+  - id: n013
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 152, y: 765}
+    links: 0a0000000c0000000e00000010000000
+    isRoot: 0
+  - id: n014
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 207, y: 765}
+    links: 0b0000000d00000011000000
+    isRoot: 0
+  - id: n015
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 103, y: 714.5}
+    links: 0c00000010000000
+    isRoot: 0
+  - id: n016
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 152, y: 714.5}
+    links: 0d0000000f00000011000000
+    isRoot: 0
+  - id: n017
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 207, y: 715}
+    links: 0e0000001000000015000000
+    isRoot: 0
+  - id: n018
+    skill: {fileID: 11400000, guid: 994ba83d5aba22c4598b8061d67d3746, type: 2}
+    position: {x: -217, y: 690}
+    links: 1300000018000000
+    isRoot: 0
+  - id: n019
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -170, y: 690}
+    links: 120000001400000019000000
+    isRoot: 0
+  - id: n020
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -116, y: 690}
+    links: 130000001a000000
+    isRoot: 0
+  - id: n021
+    skill: {fileID: 11400000, guid: 1bbfc01182175eb4ca19ff84c34b8da4, type: 2}
+    position: {x: 249, y: 687}
+    links: 11000000160000001b000000
+    isRoot: 0
+  - id: n022
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 291, y: 685}
+    links: 15000000170000001d000000
+    isRoot: 0
+  - id: n023
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 342, y: 685}
+    links: 160000001c000000
+    isRoot: 0
+  - id: n024
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -219, y: 635}
+    links: 12000000190000001e000000
+    isRoot: 0
+  - id: n025
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -170, y: 635}
+    links: 13000000180000001a0000001f000000
+    isRoot: 0
+  - id: n026
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -121, y: 635}
+    links: 140000001900000020000000
+    isRoot: 0
+  - id: n027
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 241, y: 632.5}
+    links: 150000001d00000023000000
+    isRoot: 0
+  - id: n028
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 342, y: 632.5}
+    links: 170000001d00000022000000
+    isRoot: 0
+  - id: n029
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 288, y: 630}
+    links: 160000001b0000001c00000021000000
+    isRoot: 0
+  - id: n030
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -214, y: 585}
+    links: 180000001f00000024000000
+    isRoot: 0
+  - id: n031
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -170, y: 585}
+    links: 190000001e0000002000000025000000
+    isRoot: 0
+  - id: n032
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -116, y: 585}
+    links: 1a0000001f00000026000000
+    isRoot: 0
+  - id: n033
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 288, y: 580}
+    links: 1d0000002200000023000000
+    isRoot: 0
+  - id: n034
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 342, y: 580}
+    links: 1c00000021000000
+    isRoot: 0
+  - id: n035
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 239, y: 579.5}
+    links: 1b0000002100000029000000
+    isRoot: 0
+  - id: n036
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -219, y: 540}
+    links: 1e000000250000002a000000
+    isRoot: 0
+  - id: n037
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -170, y: 540}
+    links: 1f00000024000000260000002c000000
+    isRoot: 0
+  - id: n038
+    skill: {fileID: 11400000, guid: 994ba83d5aba22c4598b8061d67d3746, type: 2}
+    position: {x: -116, y: 540}
+    links: 20000000250000002b000000
+    isRoot: 0
+  - id: n039
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 121, y: 525}
+    links: 280000002d000000
+    isRoot: 0
+  - id: n040
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 165, y: 525}
+    links: 27000000290000002f000000
+    isRoot: 0
+  - id: n041
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 219, y: 525}
+    links: 23000000280000002e000000
+    isRoot: 0
+  - id: n042
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -217, y: 487.5}
+    links: 240000002c00000030000000
+    isRoot: 0
+  - id: n043
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -116, y: 487.5}
+    links: 260000002c00000032000000
+    isRoot: 0
+  - id: n044
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -170, y: 485}
+    links: 250000002a0000002b00000031000000
+    isRoot: 0
+  - id: n045
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 118, y: 472.5}
+    links: 270000002f00000034000000
+    isRoot: 0
+  - id: n046
+    skill: {fileID: 11400000, guid: 1bbfc01182175eb4ca19ff84c34b8da4, type: 2}
+    position: {x: 217, y: 472}
+    links: 290000002f00000033000000
+    isRoot: 0
+  - id: n047
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 165, y: 470}
+    links: 280000002d0000002e00000035000000
+    isRoot: 0
+  - id: n048
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -219, y: 434.5}
+    links: 2a00000031000000
+    isRoot: 0
+  - id: n049
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -170, y: 435}
+    links: 2c000000300000003200000036000000
+    isRoot: 0
+  - id: n050
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -116, y: 434.5}
+    links: 2b00000031000000
+    isRoot: 0
+  - id: n051
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 219, y: 420}
+    links: 2e00000035000000
+    isRoot: 0
+  - id: n052
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 116, y: 419.5}
+    links: 2d00000035000000
+    isRoot: 0
+  - id: n053
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 165, y: 419.5}
+    links: 2f000000330000003400000037000000
+    isRoot: 0
+  - id: unlock_armor
+    skill: {fileID: 11400000, guid: 0bd031e68cec9b0479bbd0b6482b92ae, type: 2}
+    position: {x: -169, y: 380}
+    links: 3100000039000000
+    isRoot: 0
+  - id: unlock_volt
+    skill: {fileID: 11400000, guid: 723f43c288a2dca4db87c0a69410cd46, type: 2}
+    position: {x: 162, y: 380}
+    links: 350000003c000000
+    isRoot: 0
+  - id: n054
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -219, y: 325}
+    links: 390000003e000000
+    isRoot: 0
+  - id: n055
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -170, y: 325}
+    links: 36000000380000003a0000003f000000
+    isRoot: 0
+  - id: n056
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -116, y: 325}
+    links: 3900000040000000
+    isRoot: 0
+  - id: n057
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 113, y: 325}
+    links: 3c00000041000000
+    isRoot: 0
+  - id: n058
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 162, y: 325}
+    links: 370000003b0000003d00000042000000
+    isRoot: 0
+  - id: n059
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 216, y: 325}
+    links: 3c00000043000000
+    isRoot: 0
+  - id: n060
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -219, y: 270}
+    links: 380000003f00000044000000
+    isRoot: 0
+  - id: n061
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -170, y: 270}
+    links: 390000003e0000004000000045000000
+    isRoot: 0
+  - id: n062
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -116, y: 270}
+    links: 3a0000003f00000046000000
+    isRoot: 0
+  - id: n063
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 113, y: 270}
+    links: 3b000000420000004a000000
+    isRoot: 0
+  - id: n064
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 162, y: 270}
+    links: 3c00000041000000430000004b000000
+    isRoot: 0
+  - id: n065
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 211, y: 270}
+    links: 3d000000420000004c000000
+    isRoot: 0
+  - id: n066
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -214, y: 220}
+    links: 3e00000045000000
+    isRoot: 0
+  - id: n067
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -170, y: 220}
+    links: 3f0000004400000046000000
+    isRoot: 0
+  - id: n068
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -116, y: 220}
+    links: 400000004500000047000000
+    isRoot: 0
+  - id: n069
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -49, y: 220}
+    links: 46000000480000004d000000
+    isRoot: 0
+  - id: n070
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 0, y: 220}
+    links: 47000000490000004e000000
+    isRoot: 0
+  - id: n071
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 54, y: 220}
+    links: 480000004a0000004f000000
+    isRoot: 0
+  - id: n072
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 118, y: 220}
+    links: 41000000490000004b000000
+    isRoot: 0
+  - id: n073
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 162, y: 220}
+    links: 420000004a0000004c000000
+    isRoot: 0
+  - id: n074
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 216, y: 220}
+    links: 430000004b000000
+    isRoot: 0
+  - id: n075
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -49, y: 165}
+    links: 470000004e00000053000000
+    isRoot: 0
+  - id: n076
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 0, y: 165}
+    links: 480000004d0000004f00000054000000
+    isRoot: 0
+  - id: n077
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 54, y: 165}
+    links: 490000004e00000055000000
+    isRoot: 0
+  - id: n078
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -499, y: 160}
+    links: 5100000056000000
+    isRoot: 0
+  - id: n079
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -450, y: 160}
+    links: 500000005200000057000000
+    isRoot: 0
+  - id: n080
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -396, y: 160}
+    links: 5100000058000000
+    isRoot: 0
+  - id: n081
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -44, y: 115}
+    links: 4d00000054000000
+    isRoot: 0
+  - id: n082
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 0, y: 115}
+    links: 4e00000053000000550000006e000000
+    isRoot: 0
+  - id: n083
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 54, y: 115}
+    links: 4f00000054000000
+    isRoot: 0
+  - id: n084
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -499, y: 107}
+    links: 500000005700000059000000
+    isRoot: 0
+  - id: n085
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -450, y: 105}
+    links: 5100000056000000580000005a000000
+    isRoot: 0
+  - id: n086
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -396, y: 105}
+    links: 52000000570000005b000000
+    isRoot: 0
+  - id: n087
+    skill: {fileID: 11400000, guid: 7048b6b809a8ebe4cb01729aa66acf52, type: 2}
+    position: {x: -499, y: 55}
+    links: 560000005a00000073000000
+    isRoot: 0
+  - id: n088
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -450, y: 55}
+    links: 57000000590000005b000000
+    isRoot: 0
+  - id: n089
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -396, y: 55}
+    links: 580000005a0000005c000000
+    isRoot: 0
+  - id: n090
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -327, y: 55}
+    links: 5b0000005d0000006a000000
+    isRoot: 0
+  - id: n091
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -278, y: 55}
+    links: 5c0000005e0000006b000000
+    isRoot: 0
+  - id: n092
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -224, y: 55}
+    links: 5d0000006c000000
+    isRoot: 0
+  - id: n093
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 241, y: 55}
+    links: 6000000067000000
+    isRoot: 0
+  - id: n094
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 290, y: 55}
+    links: 5f0000006100000068000000
+    isRoot: 0
+  - id: n095
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 344, y: 55}
+    links: 6000000069000000
+    isRoot: 0
+  - id: n096
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 404, y: 55}
+    links: 6300000065000000
+    isRoot: 0
+  - id: n097
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 453, y: 55}
+    links: 620000006400000070000000
+    isRoot: 0
+  - id: n098
+    skill: {fileID: 11400000, guid: fd7281fbf72350745b19d75517bc1431, type: 2}
+    position: {x: 507, y: 55}
+    links: 6300000066000000
+    isRoot: 0
+  - id: n099
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 406, y: 2.5}
+    links: 6200000069000000700000007f000000
+    isRoot: 0
+  - id: n100
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 507, y: 2.5}
+    links: 64000000700000007e000000
+    isRoot: 0
+  - id: n101
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 241, y: 2}
+    links: 5f000000680000006f0000007a000000
+    isRoot: 0
+  - id: n102
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 290, y: 2}
+    links: 6000000067000000690000007b000000
+    isRoot: 0
+  - id: n103
+    skill: {fileID: 11400000, guid: fd7281fbf72350745b19d75517bc1431, type: 2}
+    position: {x: 346, y: 2}
+    links: 6100000065000000680000007c000000
+    isRoot: 0
+  - id: n104
+    skill: {fileID: 11400000, guid: 7048b6b809a8ebe4cb01729aa66acf52, type: 2}
+    position: {x: -332, y: 0}
+    links: 5c0000006b0000006d0000007600000077000000
+    isRoot: 0
+  - id: n105
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -278, y: 0}
+    links: 5d0000006a0000006c00000078000000
+    isRoot: 0
+  - id: n106
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -229, y: 0}
+    links: 5e0000006b00000079000000
+    isRoot: 0
+  - id: unlock_booster
+    skill: {fileID: 11400000, guid: 276eb288055ac3047ab5143195d0c03c, type: 2}
+    position: {x: -149, y: 0}
+    links: 6a0000006e000000
+    isRoot: 0
+  - id: start
+    skill: {fileID: 0}
+    position: {x: 0, y: 0}
+    links: 540000006d0000006f00000091000000
+    isRoot: 1
+  - id: unlock_bait
+    skill: {fileID: 11400000, guid: e9f67a8f83617bd4a9922db20fb8bf4b, type: 2}
+    position: {x: 149, y: 0}
+    links: 670000006e000000
+    isRoot: 0
+  - id: n107
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 453, y: 0}
+    links: 6300000065000000660000007d000000
+    isRoot: 0
+  - id: n108
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -669, y: -5}
+    links: 7200000082000000
+    isRoot: 0
+  - id: n109
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -620, y: -5}
+    links: 710000007300000083000000
+    isRoot: 0
+  - id: n110
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -566, y: -5}
+    links: 590000007200000084000000
+    isRoot: 0
+  - id: n111
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -499, y: -5}
+    links: 7500000080000000
+    isRoot: 0
+  - id: n112
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -450, y: -5}
+    links: 740000007600000081000000
+    isRoot: 0
+  - id: n113
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -396, y: -5}
+    links: 6a0000007500000085000000
+    isRoot: 0
+  - id: n114
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -322, y: -50}
+    links: 6a0000007800000085000000
+    isRoot: 0
+  - id: n115
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -278, y: -50}
+    links: 6b0000007700000079000000
+    isRoot: 0
+  - id: n116
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -224, y: -50}
+    links: 6c00000078000000
+    isRoot: 0
+  - id: n117
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 246, y: -50}
+    links: 670000007b000000
+    isRoot: 0
+  - id: n118
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 290, y: -50}
+    links: 680000007a0000007c00000092000000
+    isRoot: 0
+  - id: n119
+    skill: {fileID: 11400000, guid: 08ce2c184f67a234da875df2f4efb7f1, type: 2}
+    position: {x: 346, y: -50}
+    links: 690000007b000000
+    isRoot: 0
+  - id: n120
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 453, y: -50}
+    links: 700000007e0000007f00000089000000
+    isRoot: 0
+  - id: n121
+    skill: {fileID: 11400000, guid: 08ce2c184f67a234da875df2f4efb7f1, type: 2}
+    position: {x: 507, y: -50}
+    links: 660000007d000000
+    isRoot: 0
+  - id: n122
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 404, y: -50.5}
+    links: 650000007d000000
+    isRoot: 0
+  - id: n123
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -499, y: -58}
+    links: 7400000081000000840000008e000000
+    isRoot: 0
+  - id: n124
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -450, y: -58}
+    links: 7500000080000000850000008f000000
+    isRoot: 0
+  - id: n125
+    skill: {fileID: 11400000, guid: ecc245ad4a38acf47bb4f8e2c629ee5b, type: 2}
+    position: {x: -669, y: -60}
+    links: 71000000830000008b000000
+    isRoot: 0
+  - id: n126
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -620, y: -60}
+    links: 7200000082000000840000008c000000
+    isRoot: 0
+  - id: n127
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -566, y: -60}
+    links: 7300000080000000830000008d000000
+    isRoot: 0
+  - id: n128
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -401, y: -60}
+    links: 76000000770000008100000090000000
+    isRoot: 0
+  - id: n129
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 243, y: -105}
+    links: 9200000093000000
+    isRoot: 0
+  - id: n130
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 345, y: -105}
+    links: 9200000095000000
+    isRoot: 0
+  - id: n131
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 404, y: -107.5}
+    links: 8900000096000000
+    isRoot: 0
+  - id: n132
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 453, y: -107.5}
+    links: 7d000000880000008a00000097000000
+    isRoot: 0
+  - id: n133
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 507, y: -107.5}
+    links: 8900000098000000
+    isRoot: 0
+  - id: n134
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -664, y: -110}
+    links: 820000008c000000
+    isRoot: 0
+  - id: n135
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -620, y: -110}
+    links: 830000008b0000008d000000
+    isRoot: 0
+  - id: n136
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -566, y: -110}
+    links: 840000008c000000
+    isRoot: 0
+  - id: n137
+    skill: {fileID: 11400000, guid: 7048b6b809a8ebe4cb01729aa66acf52, type: 2}
+    position: {x: -504, y: -110}
+    links: 800000008f000000
+    isRoot: 0
+  - id: n138
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -450, y: -110}
+    links: 810000008e00000090000000
+    isRoot: 0
+  - id: n139
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -396, y: -110}
+    links: 850000008f000000
+    isRoot: 0
+  - id: unlock_vacuum
+    skill: {fileID: 11400000, guid: e192686a46743404d995356c2adf33dc, type: 2}
+    position: {x: 0, y: -110}
+    links: 6e0000009a000000
+    isRoot: 0
+  - id: n140
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 293, y: -110}
+    links: 7b000000860000008700000094000000
+    isRoot: 0
+  - id: n141
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 243, y: -160}
+    links: 86000000940000009c000000
+    isRoot: 0
+  - id: n142
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 292, y: -160}
+    links: 9200000093000000950000009d000000
+    isRoot: 0
+  - id: n143
+    skill: {fileID: 11400000, guid: 08ce2c184f67a234da875df2f4efb7f1, type: 2}
+    position: {x: 348, y: -162.5}
+    links: 8700000094000000960000009e000000
+    isRoot: 0
+  - id: n144
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 404, y: -162.5}
+    links: 8800000095000000970000009f000000
+    isRoot: 0
+  - id: n145
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 453, y: -162.5}
+    links: 890000009600000098000000a0000000
+    isRoot: 0
+  - id: n146
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 507, y: -162.5}
+    links: 8a00000097000000a1000000
+    isRoot: 0
+  - id: n147
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -49, y: -165}
+    links: 9a000000a4000000
+    isRoot: 0
+  - id: n148
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 0, y: -165}
+    links: 91000000990000009b000000a5000000
+    isRoot: 0
+  - id: n149
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 54, y: -165}
+    links: 9a000000a6000000
+    isRoot: 0
+  - id: n150
+    skill: {fileID: 11400000, guid: fd7281fbf72350745b19d75517bc1431, type: 2}
+    position: {x: 243, y: -210}
+    links: 930000009d000000
+    isRoot: 0
+  - id: n151
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 292, y: -210}
+    links: 940000009c0000009e000000
+    isRoot: 0
+  - id: n152
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 346, y: -210}
+    links: 950000009d000000
+    isRoot: 0
+  - id: n153
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 409, y: -212.5}
+    links: 96000000a0000000
+    isRoot: 0
+  - id: n154
+    skill: {fileID: 11400000, guid: 08ce2c184f67a234da875df2f4efb7f1, type: 2}
+    position: {x: 453, y: -212.5}
+    links: 970000009f000000a1000000
+    isRoot: 0
+  - id: n155
+    skill: {fileID: 11400000, guid: fd7281fbf72350745b19d75517bc1431, type: 2}
+    position: {x: 507, y: -212.5}
+    links: 98000000a0000000
+    isRoot: 0
+  - id: n156
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -199, y: -220}
+    links: a7000000ae000000
+    isRoot: 0
+  - id: n157
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -97, y: -220}
+    links: a4000000a7000000b0000000
+    isRoot: 0
+  - id: n158
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -49, y: -220}
+    links: 99000000a3000000a5000000a8000000
+    isRoot: 0
+  - id: n159
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 0, y: -220}
+    links: 9a000000a4000000a6000000a9000000
+    isRoot: 0
+  - id: n160
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 49, y: -220}
+    links: 9b000000a5000000aa000000
+    isRoot: 0
+  - id: n161
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -149, y: -225}
+    links: a2000000a3000000af000000
+    isRoot: 0
+  - id: n162
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -44, y: -270}
+    links: a4000000a9000000b0000000
+    isRoot: 0
+  - id: n163
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 0, y: -270}
+    links: a5000000a8000000aa000000
+    isRoot: 0
+  - id: n164
+    skill: {fileID: 11400000, guid: 3b6cf2ff0ded3084d8a9337b69336a95, type: 2}
+    position: {x: 49, y: -270}
+    links: a6000000a9000000ab000000
+    isRoot: 0
+  - id: n165
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 93, y: -272.5}
+    links: aa000000ac000000b4000000
+    isRoot: 0
+  - id: n166
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 142, y: -272.5}
+    links: ab000000ad000000b5000000
+    isRoot: 0
+  - id: n167
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 196, y: -272.5}
+    links: ac000000b6000000
+    isRoot: 0
+  - id: n168
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -199, y: -275}
+    links: a2000000af000000b1000000
+    isRoot: 0
+  - id: n169
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -150, y: -275}
+    links: a7000000ae000000b0000000b2000000
+    isRoot: 0
+  - id: n170
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -96, y: -275}
+    links: a3000000a8000000af000000b3000000
+    isRoot: 0
+  - id: n171
+    skill: {fileID: 11400000, guid: 3b6cf2ff0ded3084d8a9337b69336a95, type: 2}
+    position: {x: -199, y: -320}
+    links: ae000000b2000000
+    isRoot: 0
+  - id: n172
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -150, y: -325}
+    links: af000000b1000000b3000000
+    isRoot: 0
+  - id: n173
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -96, y: -325}
+    links: b0000000b2000000b8000000
+    isRoot: 0
+  - id: n174
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 93, y: -327.5}
+    links: ab000000b5000000bb000000
+    isRoot: 0
+  - id: n175
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 142, y: -327.5}
+    links: ac000000b4000000b6000000bc000000
+    isRoot: 0
+  - id: n176
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 196, y: -327.5}
+    links: ad000000b5000000b7000000
+    isRoot: 0
+  - id: n177
+    skill: {fileID: 11400000, guid: 3b6cf2ff0ded3084d8a9337b69336a95, type: 2}
+    position: {x: 196, y: -372.5}
+    links: b6000000bc000000
+    isRoot: 0
+  - id: n178
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -68, y: -377.5}
+    links: b3000000b9000000bd000000
+    isRoot: 0
+  - id: n179
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -19, y: -377.5}
+    links: b8000000ba000000bf000000
+    isRoot: 0
+  - id: n180
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 35, y: -377.5}
+    links: b9000000bb000000be000000
+    isRoot: 0
+  - id: n181
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 98, y: -377.5}
+    links: b4000000ba000000bc000000
+    isRoot: 0
+  - id: n182
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 142, y: -377.5}
+    links: b5000000b7000000bb000000
+    isRoot: 0
+  - id: n183
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -66, y: -430}
+    links: b8000000bf000000c0000000
+    isRoot: 0
+  - id: n184
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 35, y: -430}
+    links: ba000000bf000000c2000000
+    isRoot: 0
+  - id: n185
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -19, y: -432.5}
+    links: b9000000bd000000be000000c1000000
+    isRoot: 0
+  - id: n186
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -68, y: -483}
+    links: bd000000c1000000
+    isRoot: 0
+  - id: n187
+    skill: {fileID: 11400000, guid: 3b6cf2ff0ded3084d8a9337b69336a95, type: 2}
+    position: {x: -20, y: -482.5}
+    links: bf000000c0000000c2000000c3000000
+    isRoot: 0
+  - id: n188
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 35, y: -482.5}
+    links: be000000c1000000
+    isRoot: 0
+  - id: unlock_missile
+    skill: {fileID: 11400000, guid: 9a129405e8f998b4b9bd1d5c463dca24, type: 2}
+    position: {x: -19, y: -550}
+    links: c1000000cb000000
+    isRoot: 0
+  - id: n189
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 281, y: -592}
+    links: c5000000c9000000cd000000
+    isRoot: 0
+  - id: n190
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 330, y: -592}
+    links: c4000000c6000000d4000000
+    isRoot: 0
+  - id: n191
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 384, y: -592}
+    links: c5000000ce000000
+    isRoot: 0
+  - id: n192
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 110, y: -592.5}
+    links: c8000000cc000000d1000000
+    isRoot: 0
+  - id: n193
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 159, y: -592.5}
+    links: c7000000c9000000d2000000
+    isRoot: 0
+  - id: n194
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 213, y: -592.5}
+    links: c4000000c8000000d3000000
+    isRoot: 0
+  - id: n195
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -68, y: -594}
+    links: cb000000cf000000
+    isRoot: 0
+  - id: n196
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -19, y: -594}
+    links: c3000000ca000000cc000000d0000000
+    isRoot: 0
+  - id: n197
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: 35, y: -594}
+    links: c7000000cb000000d5000000
+    isRoot: 0
+  - id: n198
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 283, y: -644.5}
+    links: c4000000d4000000d9000000
+    isRoot: 0
+  - id: n199
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 384, y: -644.5}
+    links: c6000000d4000000dd000000
+    isRoot: 0
+  - id: n200
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -68, y: -647}
+    links: ca000000d0000000de000000
+    isRoot: 0
+  - id: n201
+    skill: {fileID: 11400000, guid: ffda6b02cbf996c44b414092b597451f, type: 2}
+    position: {x: -19, y: -647}
+    links: cb000000cf000000d5000000db000000
+    isRoot: 0
+  - id: n202
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 110, y: -647.5}
+    links: c7000000d2000000d5000000d6000000
+    isRoot: 0
+  - id: n203
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 159, y: -647.5}
+    links: c8000000d1000000d3000000d7000000
+    isRoot: 0
+  - id: n204
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 208, y: -647.5}
+    links: c9000000d2000000d8000000
+    isRoot: 0
+  - id: n205
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 330, y: -647}
+    links: c5000000cd000000ce000000da000000
+    isRoot: 0
+  - id: n206
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 30, y: -649}
+    links: cc000000d0000000d1000000dc000000
+    isRoot: 0
+  - id: n207
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 115, y: -697.5}
+    links: d1000000d7000000dc000000
+    isRoot: 0
+  - id: n208
+    skill: {fileID: 11400000, guid: ffda6b02cbf996c44b414092b597451f, type: 2}
+    position: {x: 164, y: -697.5}
+    links: d2000000d6000000d8000000
+    isRoot: 0
+  - id: n209
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 213, y: -697.5}
+    links: d3000000d7000000d9000000
+    isRoot: 0
+  - id: n210
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: 281, y: -697.5}
+    links: cd000000d8000000da000000
+    isRoot: 0
+  - id: n211
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 330, y: -697}
+    links: d4000000d9000000dd000000
+    isRoot: 0
+  - id: n212
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: -19, y: -699}
+    links: d0000000dc000000de000000e0000000
+    isRoot: 0
+  - id: n213
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: 35, y: -699}
+    links: d5000000d6000000db000000
+    isRoot: 0
+  - id: n214
+    skill: {fileID: 11400000, guid: ffda6b02cbf996c44b414092b597451f, type: 2}
+    position: {x: 389, y: -699}
+    links: ce000000da000000
+    isRoot: 0
+  - id: n215
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -68, y: -700}
+    links: cf000000db000000
+    isRoot: 0
+  - id: n216
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: -68, y: -750.5}
+    links: e0000000e2000000
+    isRoot: 0
+  - id: n217
+    skill: {fileID: 11400000, guid: 5fc2a2c5539547e4fb289c28e217b5c6, type: 2}
+    position: {x: -19, y: -750.5}
+    links: db000000df000000e1000000e3000000
+    isRoot: 0
+  - id: n218
+    skill: {fileID: 11400000, guid: 48bec6ceca959ad439ae9cf629da213d, type: 2}
+    position: {x: 35, y: -750.5}
+    links: e0000000e4000000
+    isRoot: 0
+  - id: n219
+    skill: {fileID: 11400000, guid: d9254e13a5b278d46b88a9f9f3cac1b1, type: 2}
+    position: {x: -68, y: -803.5}
+    links: df000000e3000000e5000000
+    isRoot: 0
+  - id: n220
+    skill: {fileID: 11400000, guid: ec91839be749a0c47aae993a6650cfd9, type: 2}
+    position: {x: -19, y: -805.5}
+    links: e0000000e2000000e4000000e6000000
+    isRoot: 0
+  - id: n221
+    skill: {fileID: 11400000, guid: 5ce0b867bbf68cf408e7b7304929cef1, type: 2}
+    position: {x: 35, y: -805.5}
+    links: e1000000e3000000e7000000
+    isRoot: 0
+  - id: n222
+    skill: {fileID: 11400000, guid: ffda6b02cbf996c44b414092b597451f, type: 2}
+    position: {x: -66, y: -855.5}
+    links: e2000000e6000000
+    isRoot: 0
+  - id: n223
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: -19, y: -855.5}
+    links: e3000000e5000000e7000000
+    isRoot: 0
+  - id: n224
+    skill: {fileID: 11400000, guid: 3d3043de9c8897842b63c87b29ca29d0, type: 2}
+    position: {x: 35, y: -855.5}
+    links: e4000000e6000000
+    isRoot: 0
+  skillTreeRoot: 110
   allFish:
   - {fileID: 11400000, guid: bc31949e8279dfd4e88253b1521ee21c, type: 2}
   - {fileID: 11400000, guid: 72653278472025f4489c4e1bdfcce218, type: 2}
@@ -73,6 +1232,9 @@ MonoBehaviour:
   baseVision: 6.5
   speedScalingExponent: 0.5
   maxMoveSpeed: 24
+  maxPlayerSize: 56
+  maxMouthMultiplier: 2.6
+  activeRangeScalesWithSize: 1
   boosterDistance: 4.5
   boosterDuration: 0.18
   boosterCooldown: 3.5
@@ -92,6 +1254,7 @@ MonoBehaviour:
   voltRadius: 6
   voltStunNormal: 2
   voltStunBoss: 0.1
+  voltStunCapRatio: 0.6
   missileInterval: 6
   missileSpeed: 14
   missileLifetime: 3
@@ -110,5 +1273,8 @@ MonoBehaviour:
   gateUsesCurrentSize: 1
   recordDeepestZone: 1
   hiddenItemCurrencyBonus: 0.05
+  skillCostGrowth: 1.1
+  skillCostSoftcap: 100
+  skillCostGrowthLate: 1
   codexMilestone: 100
   codexMaxTiers: 10

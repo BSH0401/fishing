@@ -421,7 +421,9 @@ namespace FishGame.Player
                     float limit = _body.Size * _db.boosterEatSizeMultiplier;
                     if (other.Size > limit) continue;
                 }
-                if (other.IsBoss && !_stats.BoosterPierceAnySize) continue;
+                // 보스는 부스터로 삼킬 수 없다 — 크기 43을 넘겨서 직접 물어야 클리어.
+                // (위력 강화로 보스까지 먹히면 바다에 들어가자마자 클리어가 되어 밸런스가 무너진다)
+                if (other.IsBoss) continue;
 
                 ConsumeByEffect(other);
             }
@@ -593,7 +595,14 @@ namespace FishGame.Player
                 {
                     // 마비된 물고기는 물지 못한다
                     if (other.IsStunned) continue;
-                    if (dist <= bodyR + otherR * 0.8f) { TakeHit(other); return; }
+                    if (dist <= bodyR + otherR * 0.8f)
+                    {
+                        // 무적 중에는 물려도 무시하고 나머지 판정을 계속한다.
+                        // 여기서 return하면 포식자가 붙어 있는 동안 잔챙이를 하나도 못 먹는다.
+                        if (IsInvulnerable || FishGame.Utils.DevFlags.GodMode) continue;
+                        TakeHit(other);
+                        return;
+                    }
                 }
             }
         }
@@ -615,7 +624,7 @@ namespace FishGame.Player
             float sizeRatio = Mathf.Clamp01(preySize / Mathf.Max(0.01f, _body.Size));
 
             prey.Consume(_body);
-            _run.ReportFishEaten(species, wasBoss);
+            _run.ReportFishEaten(species, wasBoss, ai != null ? ai.HomeZone : -1);
             Grow(preySize);
 
             // ── 타격감 ──
@@ -670,7 +679,7 @@ namespace FishGame.Player
 
                 Vector2 away = (_rb.position - (Vector2)attacker.transform.position).normalized;
                 if (away.sqrMagnitude < 0.01f) away = Vector2.up;
-                _motor.OverrideVelocity(away * _db.armorKnockback, alignHeading: false);
+                _motor.OverrideVelocity(away * (_db.armorKnockback * ActiveScale), alignHeading: false);   // 몸이 커도 밀려나는 게 보이게
 
                 Juice.Hit(0.09f, 0.55f);
                 _body.Pop(0.22f);

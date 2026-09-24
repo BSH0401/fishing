@@ -14,7 +14,12 @@ namespace FishGame.Data
         [Header("콘텐츠")]
         [Tooltip("위에서 아래 순서로 넣을 것 (0 어항 → 3 바다). 하나의 통합 맵을 이룬다.")]
         public List<ZoneData> zones = new List<ZoneData>();
+        [Tooltip("강화 종류 목록 (배터리·장갑·치아…). 스탯 계산은 이 목록을 돈다.")]
         public List<SkillNode> skills = new List<SkillNode>();
+        [Tooltip("스킬트리 도면의 칸들. 생성기가 기획 도면에서 채운다.")]
+        public List<SkillTreeSlot> skillTree = new List<SkillTreeSlot>();
+        [Tooltip("skillTree에서 시작 칸의 인덱스")]
+        public int skillTreeRoot = 0;
         [Tooltip("도감·스탯 계산에 쓰는 전체 물고기 목록 (보스 포함). 생성기가 채운다.")]
         public List<FishSpecies> allFish = new List<FishSpecies>();
 
@@ -40,7 +45,7 @@ namespace FishGame.Data
                  "보스(43)를 먹을 수 있고, 강→바다 통로를 지날 수 있는 선에서 정한다.")]
         [Min(1f)] public float maxPlayerSize = 56f;
         [Tooltip("치아 교정(입 크기) 배율 상한. 입 판정이 몸보다 지나치게 커지는 걸 막는다.\n" +
-                 "2.6 = 치아 교정 8레벨(×2.14)에 도감 보너스가 조금 더 얹힐 여유")]
+                 "2.6 = 치아 교정 47칸(×2.54)에 도감 보너스가 조금 더 얹힐 여유")]
         [Min(1f)] public float maxMouthMultiplier = 2.6f;
 
         [Header("액티브 스킬 ↔ 크기")]
@@ -151,6 +156,16 @@ namespace FishGame.Data
         [Tooltip("하나 먹을 때마다 재화 획득에 더해지는 비율 (가산). 0.05 = +5%")]
         [Range(0f, 0.5f)] public float hiddenItemCurrencyBonus = 0.05f;
 
+        [Header("스킬 비용 곡선")]
+        [Tooltip("N번째 칸의 가격 = round(성장률 ^ (N-1)). 정체되면 +1.\n" +
+                 "Tools/tune.py가 클리어 4.5시간에 맞춘 값.")]
+        [Min(1.001f)] public float skillCostGrowth = 1.10f;
+        [Tooltip("이 칸 수부터는 아래 '후반 성장률'로 오른다. 칸이 231개라 한 가지 성장률로는 " +
+                 "클리어 시간과 풀트리 달성을 동시에 맞출 수 없다.")]
+        [Min(1)] public int skillCostSoftcap = 100;
+        [Tooltip("softcap 이후 성장률. 1이면 가격이 사실상 고정된다 (+1씩).")]
+        [Min(1f)] public float skillCostGrowthLate = 1.0f;
+
         [Header("물고기 도감")]
         [Tooltip("한 종을 이만큼 먹을 때마다 그 종에서 얻는 재화가 늘어난다.")]
         [Min(1)] public int codexMilestone = 100;
@@ -168,6 +183,50 @@ namespace FishGame.Data
                     if (s != null && !string.IsNullOrEmpty(s.id)) _skillById[s.id] = s;
             }
             return _skillById.TryGetValue(id, out var node) ? node : null;
+        }
+
+        Dictionary<string, int> _slotById;
+
+        /// <summary>칸 id → 인덱스. 없으면 -1.</summary>
+        public int SlotIndex(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return -1;
+            if (_slotById == null || _slotById.Count != skillTree.Count)
+            {
+                _slotById = new Dictionary<string, int>(skillTree.Count);
+                for (int i = 0; i < skillTree.Count; i++)
+                    if (skillTree[i] != null && !string.IsNullOrEmpty(skillTree[i].id))
+                        _slotById[skillTree[i].id] = i;
+            }
+            return _slotById.TryGetValue(id, out int idx) ? idx : -1;
+        }
+
+        public SkillTreeSlot GetSlot(int index) =>
+            index >= 0 && index < skillTree.Count ? skillTree[index] : null;
+
+        /// <summary>그 강화 종류의 칸이 트리에 몇 개 있는가 (= 최대 레벨).</summary>
+        public int SlotCountOf(SkillNode node)
+        {
+            int n = 0;
+            foreach (var s in skillTree) if (s != null && s.skill == node) n++;
+            return n;
+        }
+
+        /// <summary>시작 칸을 뺀 찍을 수 있는 칸 수.</summary>
+        public int PurchasableSlotCount
+        {
+            get
+            {
+                int n = 0;
+                foreach (var s in skillTree) if (s != null && !s.IsRoot) n++;
+                return n;
+            }
+        }
+
+        void OnValidate()
+        {
+            _slotById = null;
+            _skillById = null;
         }
 
         public ZoneData GetZone(int index)

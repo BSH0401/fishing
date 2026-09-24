@@ -323,7 +323,7 @@ namespace FishGame.Gameplay
         /// 물고기를 먹었을 때 PlayerFish가 호출하는 단일 진입점.
         /// 시간·재화 계산과 도감 누적을 여기서 한다.
         /// </summary>
-        public void ReportFishEaten(FishSpecies species, bool wasBoss)
+        public void ReportFishEaten(FishSpecies species, bool wasBoss, int preyZoneIndex = -1)
         {
             if (!IsRunning) return;
 
@@ -337,7 +337,7 @@ namespace FishGame.Gameplay
 
             // 깊이가 값을 정한다. 존 배율 × 존 안에서의 깊이 보너스.
             float depthMult = Layout != null && player != null
-                ? Layout.ValueMultiplierAt(player.transform.position.y)
+                ? Layout.ValueMultiplierAt(player.transform.position.y, preyZoneIndex)
                 : 1f;
 
             double gained = baseMoney * Stats.CurrencyMultiplier * depthMult;

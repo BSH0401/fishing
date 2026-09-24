@@ -243,72 +243,66 @@ namespace FishGame.EditorTools
         // ── UI 프리팹 ───────────────────────────────────────────
         public static GameObject CreateSkillNodePrefab()
         {
-            var go = NewUI("SkillNodeButton", new Vector2(104f, 104f));
+            // 크기·도형은 SkillNodeButton.Bind가 칸 종류에 맞춰 다시 잡는다
+            var go = NewUI("SkillNodeButton", new Vector2(64f, 64f));
             var rt = (RectTransform)go.transform;
 
-            // 살 수 있을 때 맥동하는 글로우 (테두리 바깥, 클릭 방해 안 되게 raycast 끔)
-            var glowGo = NewUI("Glow", new Vector2(128f, 128f), rt);
+            // 클릭 판정용 투명 배경 (도형 모양과 상관없이 칸 전체가 눌리게)
+            var hit = go.AddComponent<Image>();
+            hit.color = new Color(1f, 1f, 1f, 0f);
+
+            // 살 수 있을 때 맥동하는 글로우 (클릭 방해 안 되게 raycast 끔)
+            var glowGo = NewUI("Glow", new Vector2(110f, 110f), rt);
             var glow = glowGo.AddComponent<Image>();
             glow.sprite = PlaceholderArt.CreateCircleSprite("UI_Circle", Color.white, 64);
             glow.color = new Color(0.45f, 1f, 0.65f, 0.3f);
             glow.raycastTarget = false;
             glowGo.SetActive(false);
 
-            var frame = go.AddComponent<Image>();
-            frame.color = new Color(0.35f, 0.78f, 0.45f);
+            // 찍은 칸의 금색 테두리 — 같은 도형을 조금 크게 뒤에 깐다
+            var haloGo = NewUI("Halo", new Vector2(80f, 80f), rt);
+            var halo = haloGo.AddComponent<Image>();
+            halo.color = new Color(1f, 0.84f, 0.36f);
+            halo.raycastTarget = false;
+            halo.enabled = false;
+
+            var shapeGo = NewUI("Shape", new Vector2(64f, 64f), rt);
+            var shape = shapeGo.AddComponent<Image>();
+            shape.raycastTarget = false;
 
             var button = go.AddComponent<Button>();
-            button.targetGraphic = frame;
+            button.targetGraphic = shape;
 
-            // 레벨 진행도 — 아래에서 위로 차오른다
-            var fillGo = NewUI("LevelFill", Vector2.zero, rt);
-            var fillRt = (RectTransform)fillGo.transform;
-            fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
-            fillRt.offsetMin = new Vector2(3f, 3f); fillRt.offsetMax = new Vector2(-3f, -3f);
-            var fill = fillGo.AddComponent<Image>();
-            fill.color = new Color(0.3f, 0.6f, 0.4f, 0.55f);
-            fill.type = Image.Type.Filled;
-            fill.fillMethod = Image.FillMethod.Vertical;
-            fill.fillOrigin = 0;
-            fill.fillAmount = 0f;
-            fill.raycastTarget = false;
-            fill.sprite = PlaceholderArt.CreateSolidSprite("UI_White", Color.white, 8);
+            var nameGo = NewUI("Name", new Vector2(150f, 60f), rt);
+            var nameText = AddText(nameGo, "부스터", 20, TextAlignmentOptions.Center);
+            nameText.fontStyle = FontStyles.Bold;
+            nameText.raycastTarget = false;
+            nameGo.SetActive(false);
 
-            var iconGo = NewUI("Icon", new Vector2(52f, 52f), rt);
-            ((RectTransform)iconGo.transform).anchoredPosition = new Vector2(0f, 12f);
-            var icon = iconGo.AddComponent<Image>();
-            icon.raycastTarget = false;
-            icon.enabled = false;
-
-            var nameGo = NewUI("Name", new Vector2(126f, 34f), rt);
-            ((RectTransform)nameGo.transform).anchoredPosition = new Vector2(0f, -24f);
-            var nameText = AddText(nameGo, "스킬", 13, TextAlignmentOptions.Center);
-
-            var levelGo = NewUI("Level", new Vector2(104f, 20f), rt);
-            ((RectTransform)levelGo.transform).anchoredPosition = new Vector2(0f, -58f);
-            var level = AddText(levelGo, "0/10", 14, TextAlignmentOptions.Center);
-            level.color = new Color(0.80f, 0.85f, 0.90f);
-
-            var costGo = NewUI("Cost", new Vector2(104f, 20f), rt);
-            ((RectTransform)costGo.transform).anchoredPosition = new Vector2(0f, -76f);
-            var cost = AddText(costGo, "10", 14, TextAlignmentOptions.Center);
+            var costGo = NewUI("Cost", new Vector2(120f, 22f), rt);
+            ((RectTransform)costGo.transform).anchoredPosition = new Vector2(0f, -44f);
+            var cost = AddText(costGo, "10", 15, TextAlignmentOptions.Center);
             cost.color = new Color(0.98f, 0.88f, 0.45f);
+            cost.raycastTarget = false;
 
-            var lockGo = NewUI("Lock", new Vector2(26f, 26f), rt);
-            ((RectTransform)lockGo.transform).anchoredPosition = new Vector2(36f, 36f);
+            var lockGo = NewUI("Lock", new Vector2(20f, 20f), rt);
+            ((RectTransform)lockGo.transform).anchoredPosition = new Vector2(26f, 26f);
             var lockImg = lockGo.AddComponent<Image>();
+            lockImg.sprite = PlaceholderArt.CreateCircleSprite("UI_Circle", Color.white, 64);
             lockImg.color = new Color(0.08f, 0.09f, 0.11f, 0.9f);
             lockImg.raycastTarget = false;
+            var lockText = AddText(NewUI("Glyph", new Vector2(20f, 20f), (RectTransform)lockGo.transform),
+                                   "×", 14, TextAlignmentOptions.Center);
+            lockText.color = new Color(0.7f, 0.72f, 0.75f);
+            lockText.raycastTarget = false;
 
             var node = go.AddComponent<SkillNodeButton>();
             var so = new SerializedObject(node);
             so.FindProperty("button").objectReferenceValue = button;
-            so.FindProperty("iconImage").objectReferenceValue = icon;
-            so.FindProperty("frameImage").objectReferenceValue = frame;
-            so.FindProperty("fillImage").objectReferenceValue = fill;
+            so.FindProperty("shapeImage").objectReferenceValue = shape;
+            so.FindProperty("haloImage").objectReferenceValue = halo;
             so.FindProperty("glowImage").objectReferenceValue = glow;
             so.FindProperty("nameText").objectReferenceValue = nameText;
-            so.FindProperty("levelText").objectReferenceValue = level;
             so.FindProperty("costText").objectReferenceValue = cost;
             so.FindProperty("lockIcon").objectReferenceValue = lockGo;
             so.ApplyModifiedPropertiesWithoutUndo();

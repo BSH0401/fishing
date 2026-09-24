@@ -130,6 +130,23 @@ namespace FishGame.Data
         // ══════════════════════════════════════════════════════════
         [Header("스폰")]
         public List<SpawnEntry> spawnTable = new List<SpawnEntry>();
+
+        /// <summary>스폰 가중치로 평균 낸 물고기 크기. 시작 구역 추천에 쓴다.</summary>
+        public float AverageSpawnSize
+        {
+            get
+            {
+                float w = 0f, sum = 0f;
+                if (spawnTable != null)
+                    foreach (var e in spawnTable)
+                    {
+                        if (e?.species == null || e.weight <= 0f) continue;
+                        w += e.weight;
+                        sum += e.weight * e.species.size;
+                    }
+                return w > 0f ? sum / w : 1f;
+            }
+        }
         [Tooltip("이 존에 유지할 물고기 마리 수")]
         [Min(1)] public int targetPopulation = 26;
         [Min(0.02f)] public float spawnInterval = 0.35f;

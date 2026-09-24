@@ -26,9 +26,15 @@ namespace FishGame.Core
     [Serializable]
     public class PlayerProgress
     {
-        public const int CurrentVersion = 2;
+        /// <summary>
+        /// 3 = 스킬트리가 도면형(칸 231개)으로 바뀐 판. 2 이하 세이브는 스킬을 환불하고 초기화한다.
+        /// </summary>
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
+
+        /// <summary>파일에서 읽었을 때의 버전 (OnAfterLoad가 version을 올리기 전 값). 마이그레이션 판단용.</summary>
+        [NonSerialized] public int loadedVersion = CurrentVersion;
 
         public double currency = 0d;
 
@@ -45,7 +51,19 @@ namespace FishGame.Core
         public int highestUnlockedMap = 0;
         public int lastSelectedMap = 0;
         public List<int> clearedMaps = new List<int>();
+        /// <summary>
+        /// 강화 종류별 레벨 = 그 종류의 칸을 찍은 수. purchasedSlots에서 다시 계산되는 파생값이다
+        /// (GameManager가 로드 직후 SkillTreeManager.SyncLevels로 맞춘다).
+        /// </summary>
         public List<SkillLevelEntry> skillLevels = new List<SkillLevelEntry>();
+
+        /// <summary>찍은 트리 칸의 id. 스킬 진행의 원본 데이터.</summary>
+        public List<string> purchasedSlots = new List<string>();
+
+        /// <summary>지금까지 스킬에 쓴 재화 합계 (통계 · 나중에 트리를 또 바꿀 때 정확히 환불하려고).</summary>
+        public double totalSkillSpent = 0d;
+
+        [NonSerialized] HashSet<string> _slotCache;
         public List<CodexEntry> codex = new List<CodexEntry>();
 
         /// <summary>먹은 히든 아이템의 ID. 한 번 먹으면 다시 생성되지 않는다.</summary>
@@ -90,6 +108,41 @@ namespace FishGame.Core
                 if (skillLevels[i].id == id) { skillLevels[i].level = level; return; }
             }
             skillLevels.Add(new SkillLevelEntry { id = id, level = level });
+        }
+
+        // ── 트리 칸 ─────────────────────────────────────────────
+        HashSet<string> SlotSet
+        {
+            get
+            {
+                if (_slotCache == null)
+                {
+                    _slotCache = new HashSet<string>();
+                    foreach (var id in purchasedSlots)
+                        if (!string.IsNullOrEmpty(id)) _slotCache.Add(id);
+                }
+                return _slotCache;
+            }
+        }
+
+        public bool HasSlot(string id) => !string.IsNullOrEmpty(id) && SlotSet.Contains(id);
+
+        /// <summary>새로 찍었으면 true.</summary>
+        public bool AddSlot(string id)
+        {
+            if (string.IsNullOrEmpty(id) || !SlotSet.Add(id)) return false;
+            purchasedSlots.Add(id);
+            return true;
+        }
+
+        /// <summary>스킬 진행을 전부 지운다 (재화는 그대로).</summary>
+        public void ClearSkills()
+        {
+            purchasedSlots.Clear();
+            skillLevels.Clear();
+            totalNodesPurchased = 0;
+            _slotCache = null;
+            _skillCache = null;
         }
 
         // ── 도감 ────────────────────────────────────────────────
@@ -178,7 +231,9 @@ namespace FishGame.Core
         /// <summary>역직렬화 직후 호출. 캐시 무효화 + 값 보정.</summary>
         public void OnAfterLoad()
         {
+            loadedVersion = version;
             _skillCache = null;
+            _slotCache = null;
             _codexCache = null;
             _hiddenCache = null;
 
@@ -188,6 +243,8 @@ namespace FishGame.Core
             if (skillLevels == null) skillLevels = new List<SkillLevelEntry>();
             if (codex == null) codex = new List<CodexEntry>();
             if (hiddenItems == null) hiddenItems = new List<string>();
+            if (purchasedSlots == null) purchasedSlots = new List<string>();
+            if (double.IsNaN(totalSkillSpent) || totalSkillSpent < 0d) totalSkillSpent = 0d;
 
             // v1 세이브에는 totalNodesPurchased가 없다. 스킬 레벨 합으로 복원한다.
             if (totalNodesPurchased <= 0 && skillLevels.Count > 0)

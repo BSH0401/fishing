@@ -68,6 +68,9 @@ namespace FishGame.Gameplay
             {
                 // 히트스톱 중에도 보이게 unscaled
                 _popTimer -= Time.unscaledDeltaTime;
+                // ApplyVisualScale은 타이머가 끝난 뒤엔 강도를 지우지 못한다 — 여기서 지워야
+                // 큰 팝(보스·비늘) 뒤의 작은 팝이 계속 최대 강도로 튀지 않는다
+                if (_popTimer <= 0f) _popStrength = 0f;
                 ApplyVisualScale();
             }
         }

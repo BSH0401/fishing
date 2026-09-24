@@ -18,11 +18,7 @@ MonoBehaviour:
   description: "\uBD80\uC2A4\uD130\uB97C \uC0AC\uC6A9\uD560 \uB54C \uC790\uAE30\uBCF4\uB2E4
     \uB354 \uD070 \uBB3C\uACE0\uAE30\uB3C4 \uBA39\uC744 \uC218 \uC788\uC2B5\uB2C8\uB2E4."
   icon: {fileID: 0}
-  prerequisites:
-  - node: {fileID: 11400000, guid: 276eb288055ac3047ab5143195d0c03c, type: 2}
-    level: 1
-  gridPosition: {x: 0, y: -5}
   effectType: 201
   valuePerLevel: 1
   maxLevel: 1
-  costMultiplier: 14
+  costMultiplier: 6

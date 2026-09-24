@@ -18,9 +18,7 @@ MonoBehaviour:
   description: "\uBA39\uD790 \uBED4\uD55C \uC21C\uAC04\uC744 1\uD68C \uB9C9\uACE0
     \uC9E7\uAC8C \uBB34\uC801\uC774 \uB429\uB2C8\uB2E4."
   icon: {fileID: 0}
-  prerequisites: []
-  gridPosition: {x: 4, y: -3}
   effectType: 2
   valuePerLevel: 1
   maxLevel: 1
-  costMultiplier: 7
+  costMultiplier: 6

@@ -6,11 +6,17 @@
 더 깊이 내려가 더 값진 물고기를 먹는다"로 바뀌었다.
 목표: 총 플레이타임 4~5시간 안에 바다의 보스까지.
 
-코스트는 노드별이 아니라 "지금까지 찍은 총 노드 수"로 정해진다.
-    N번째 노드 = round(1.12^(N-1))   (정체 구간은 +1 보정)
+스킬트리는 기획 도면을 옮긴 칸 231개짜리 그래프다 (skill_tree.json).
+칸 하나 = 1회 구매, 이웃 칸 중 하나가 찍혀 있어야 열린다.
+구매 AI는 "찍힌 영역에서 뻗는 경로 중 효용/비용이 가장 좋은 경로"의 첫 칸을 산다.
 
-python3 balance_sim.py              → 상세 리포트
+코스트는 칸별이 아니라 "지금까지 찍은 총 칸 수"로 정해진다.
+    N번째 칸 = round(1.10^e(N)), e(N) = N-1 (N ≤ 100), 이후 성장률 1.0 (정체 구간은 +1 보정)
+
+python3 balance_sim.py              → 상세 리포트 (클리어 + 풀트리)
 python3 balance_sim.py --trials 60  → 60회 반복 분포
+python3 balance_sim.py --clear      → 클리어 시점에 무엇을 찍었나
+python3 balance_sim.py --full       → 풀트리 상태 점검
 python3 balance_sim.py --curve      → 코스트 곡선 확인
 """
 import math, random, sys, statistics
@@ -18,8 +24,30 @@ import math, random, sys, statistics
 # ══════════════════════════════════════════════════════════════
 #  코스트 곡선 (SkillNode.cs의 SkillCostCurve와 동일해야 함)
 # ══════════════════════════════════════════════════════════════
-GROWTH = 1.12
+# 노드가 231개로 늘어 한 가지 성장률로는 "클리어 4.5시간"과 "풀트리 달성"을 동시에 못 맞춘다.
+# 그래서 SOFTCAP번째 노드부터 성장률을 낮춘다 — 클리어 전엔 가파르게, 그 뒤엔 완만하게.
+#     지수 e(N) = N-1                         (N ≤ SOFTCAP)
+#               = SOFTCAP-1 + (N-SOFTCAP)·r    (N > SOFTCAP),  r = ln(G2)/ln(G1)
+#     가격 = round(G1^e(N)), 정체되면 +1
+GROWTH = 1.10          # G1
+GROWTH_LATE = 1.00     # G2 — 1이면 SOFTCAP 이후 가격이 사실상 고정 (+1씩)
+SOFTCAP = 100
 _COST_CACHE = []
+
+
+def set_growth(g, g_late=None, softcap=None):
+    global GROWTH, GROWTH_LATE, SOFTCAP, _COST_CACHE
+    GROWTH = g
+    GROWTH_LATE = g if g_late is None else g_late
+    if softcap is not None:
+        SOFTCAP = softcap
+    _COST_CACHE = []
+
+
+def _exponent(n):
+    if n <= SOFTCAP:
+        return n - 1
+    return (SOFTCAP - 1) + (n - SOFTCAP) * (math.log(GROWTH_LATE) / math.log(GROWTH))
 
 
 def cost_of_node(n):
@@ -29,7 +57,7 @@ def cost_of_node(n):
         prev = 0.0
         cache = [0.0]
         for i in range(1, 1201):
-            cur = float(round(GROWTH ** (i - 1)))
+            cur = float(round(GROWTH ** _exponent(i)))
             if cur <= prev:
                 cur = prev + 1.0
             cache.append(cur)
@@ -37,7 +65,7 @@ def cost_of_node(n):
         _COST_CACHE = cache
     if n < 1:
         n = 1
-    return _COST_CACHE[n] if n < len(_COST_CACHE) else float(round(GROWTH ** (n - 1)))
+    return _COST_CACHE[n] if n < len(_COST_CACHE) else float(round(GROWTH ** _exponent(n)))
 
 
 def cumulative_cost(count):
@@ -58,57 +86,55 @@ MENU_SECONDS_PER_RUN = 10.0
 DEATH_PENALTY = 0.30
 
 # ══════════════════════════════════════════════════════════════
-#  노드 정의 : (id, 종류, 레벨당 값, 최대 레벨, 코스트 배율, 선행)
-#     mult = 복리(×(1+v)), add = 가산
+#  스킬트리 — 기획 도면(draw.io)을 그대로 옮긴 그래프 (skill_tree.json)
+#  도형 하나 = 노드 하나 = 1회 구매. 선으로 이어진 이웃 중 하나라도 찍혀 있으면 열린다.
+#  같은 종류 노드를 k개 찍으면 그 종류의 "레벨"이 k다.
 # ══════════════════════════════════════════════════════════════
-NODES = [
-    # (id, 종류, 레벨당 값, 최대 레벨, 코스트 배율, 선행 [(id, 필요레벨), ...])
-    # --- 액티브 해금 ---
-    ("unlock_booster",  "unlock", 1, 1,  3.0, []),
-    ("unlock_vacuum",   "unlock", 1, 1,  5.0, []),
-    ("unlock_armor",    "unlock", 1, 1,  7.0, []),
-    ("unlock_bait",     "unlock", 1, 1,  9.0, []),
-    ("unlock_volt",     "unlock", 1, 1, 12.0, []),
-    ("unlock_missile",  "unlock", 1, 1, 16.0, []),
+import json, os, heapq
+_TREE = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "skill_tree.json"), encoding="utf-8"))
+SLOTS = _TREE["slots"]                 # [{id, type, x, y}]
+ROOT = _TREE["root"]
+ADJ = [[] for _ in SLOTS]
+for a, b in _TREE["edges"]:
+    ADJ[a].append(b); ADJ[b].append(a)
+SLOT_COUNT = len(SLOTS) - 1            # 시작점 제외
 
-    # --- 기본 강화 ---
-    ("battery",  "add",  1.00, 20, 1.0, []),   # 커다란 배터리 : 제한시간 +1초
-    ("teeth",    "mult", 0.10,  8, 1.2, []),   # 치아 교정     : 입·흡입력 +10%
-    ("camera",   "mult", 0.10,  8, 1.0, []),   # 카메라 장착   : 시야 +10%
-    ("cell",     "mult", 0.05, 12, 1.0, []),   # 물고기 전지   : 시간 회복 +5%
-    ("acid",     "mult", 0.10, 20, 1.5, []),   # 위액 산성도   : 재화 +10%
+# 종류 정의 : (id, 계산 방식, 노드당 값, 코스트 배율)
+#     mult = 복리(×(1+v)), add = 가산, unlock = 해금
+TYPES = [
+    ("unlock_booster", "unlock", 1,     3.0),
+    ("unlock_vacuum",  "unlock", 1,     5.0),
+    ("unlock_armor",   "unlock", 1,     6.0),
+    ("unlock_bait",    "unlock", 1,     6.0),
+    ("unlock_volt",    "unlock", 1,     8.0),
+    ("unlock_missile", "unlock", 1,    10.0),
 
-    # --- 덧붙인 장갑 (크기·속도 +10%) : 진행의 축. 4단계로 나눠 트리를 넓힌다 ---
-    ("armor_1", "mult", 0.10, 12,  3.0, []),
-    ("armor_2", "mult", 0.10, 10,  5.0, [("battery", 8), ("teeth", 5)]),
-    ("armor_3", "mult", 0.10, 10,  8.0, [("acid", 8), ("cell", 5), ("unlock_vacuum", 1)]),
-    ("armor_4", "mult", 0.10,  4, 12.0, [("camera", 5), ("teeth", 8),
-                                         ("unlock_volt", 1), ("unlock_missile", 1)]),
+    ("battery",  "add",  1.00,  1.0),   # 커다란 배터리 : 제한시간 +1초
+    ("teeth",    "mult", 0.02,  1.0),   # 치아 교정     : 입·흡입력 +2%
+    ("camera",   "mult", 0.035, 1.0),   # 카메라 장착   : 시야 +3.5%
+    ("cell",     "mult", 0.025, 1.0),   # 물고기 전지   : 시간 회복 +2.5%
+    ("acid",     "mult", 0.04,  1.2),   # 위액 산성도   : 재화 +4%
+    ("armor",    "mult", 0.10,  2.0),   # 덧붙인 장갑   : 크기·속도 +10% (진행의 축)
 
-    # --- 액티브 강화 ---
-    ("booster_range", "mult", 0.30,  5, 1.0, [("unlock_booster", 1)]),
-    ("booster_power", "unlock", 1,   1, 14.0, [("unlock_booster", 1)]),
-    ("vacuum_range",  "mult", 0.50,  5, 1.0, [("unlock_vacuum", 1)]),
-    ("armor_stack",   "add",  1.00,  2,  6.0, [("unlock_armor", 1)]),
-    ("bait_range",    "mult", 0.50,  4, 1.0, [("unlock_bait", 1)]),
-    ("bait_count",    "add",  1.00,  3,  5.0, [("unlock_bait", 1)]),
-    ("volt_power",    "mult", 0.50,  5, 1.0, [("unlock_volt", 1)]),
-    ("missile_power", "mult", 0.50,  5, 3.0, [("unlock_missile", 1)]),
+    ("booster_range", "mult", 0.50, 1.0),
+    ("booster_power", "unlock", 1,  6.0),
+    ("vacuum_range",  "mult", 0.60, 1.0),
+    ("armor_stack",   "add",  1.00, 3.0),
+    ("bait_range",    "mult", 0.50, 1.0),
+    ("bait_count",    "add",  1.00, 2.0),
+    ("volt_power",    "mult", 0.60, 1.0),
+    ("missile_power", "mult", 0.60, 2.0),
 ]
-ARMOR_TIERS = ["armor_1", "armor_2", "armor_3", "armor_4"]
+TYPE_BY_ID = {t[0]: t for t in TYPES}
+MAX_LEVEL = {t[0]: sum(1 for s in SLOTS if s["type"] == t[0]) for t in TYPES}
 
-NODE_BY_ID = {n[0]: n for n in NODES}
-
-# 그리디 구매 가중치 — 실제 플레이어의 대략적인 선호도
-WEIGHT = {
-    "acid": 340, "battery": 26, "teeth": 240, "cell": 170, "camera": 70,
-    "booster_range": 60, "vacuum_range": 70, "bait_range": 50, "volt_power": 60,
-    "missile_power": 120, "armor_stack": 80, "bait_count": 60,
-}
-UNLOCK_PRIORITY = {
-    "unlock_booster": 900, "unlock_vacuum": 1400, "unlock_armor": 1100,
-    "unlock_bait": 900, "unlock_volt": 800, "unlock_missile": 2000,
-    "booster_power": 700,
+# 그리디 구매용 효용 — 실제 플레이어가 대충 무엇을 먼저 원하나
+UTILITY = {
+    "armor": 50, "acid": 14, "teeth": 6, "cell": 5, "camera": 2.5, "battery": 8,
+    "unlock_missile": 60, "unlock_vacuum": 45, "unlock_armor": 35, "unlock_booster": 30,
+    "unlock_bait": 30, "unlock_volt": 25, "booster_power": 20,
+    "booster_range": 6, "vacuum_range": 6, "bait_range": 5, "volt_power": 6,
+    "missile_power": 10, "armor_stack": 12, "bait_count": 6,
 }
 
 # ══════════════════════════════════════════════════════════════
@@ -119,11 +145,65 @@ UNLOCK_PRIORITY = {
 # 구역 배율은 구간 페이싱을 잡는 손잡이다(tune.py가 정한다).
 # 깊이에 따른 매끄러운 상승은 아래 DEPTH_RICHNESS 곡선이 따로 맡는다.
 ZONES = [
-    ("어항",   0.1474,  3.1,  0.877,  0.385, 1.029, 0.30,  46.0, 16.0),
-    ("하수구", 0.0655,  8.1,  2.866,  1.566, 1.234, 1.00, 110.0, 22.0),
-    ("강",     0.0271, 21.0,  7.676,  6.528, 1.537, 2.70, 260.0, 40.0),
-    ("바다",   0.0124,  0.0, 17.800, 19.640, 1.740, 6.50, 520.0,  0.0),
+    ("어항",   0.428621,  3.1,  0.877,  0.385, 1.029, 0.30,  46.0, 16.0),
+    ("하수구", 0.516234,  8.1,  2.866,  1.566, 1.234, 1.00, 110.0, 22.0),
+    ("강",     0.197919, 21.0,  7.676,  6.528, 1.537, 2.70, 260.0, 40.0),
+    ("바다",   0.209360,  0.0, 17.800, 19.640, 1.740, 6.50, 520.0,  0.0),
 ]
+
+# ── 종별 데이터 — ContentGenerator.cs에서 그대로 읽는다 (손으로 옮기면 어긋난다) ──
+#   SPECIES[z] = [(가중치, size, money, time, 도감 랭크 or None), ...]
+import re as _re
+def _load_species():
+    src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Assets", "Editor",
+                            "ContentGenerator.cs"), encoding="utf-8").read()
+    def fish(block):
+        out = []
+        for m in _re.finditer(r'F\("(Fish_[^"]+)",\s*"[^"]*",\s*([\d.]+)f,\s*([\d.]+)f,\s*([\d.]+)f', block):
+            out.append((m.group(1), float(m.group(2)), float(m.group(3)), float(m.group(4))))
+        return out
+    map_block = src[src.index("MapFish ="):src.index("Rares =")]
+    rare_block = src[src.index("Rares ="):src.index("static readonly FishDef Boss")]
+    maps = [fish(b) for b in map_block.split("new[]")[1:]]
+    rares = fish(rare_block)
+    weights = [34, 26, 20, 13, 7]
+    table = []
+    for z, fl in enumerate(maps):
+        rows = [(weights[i], f[1], f[2], f[3], i) for i, f in enumerate(fl)]
+        if z < len(rares):
+            rows.append((2.5, rares[z][1], rares[z][2], rares[z][3], None))
+        table.append(rows)
+    return table
+
+SPECIES = _load_species()
+
+# 먹이를 고를 때 큰 것을 얼마나 선호하나 (1 = 가중치 × 크기에 비례 — 실제 플레이어는 큰 걸 노린다)
+PREY_SIZE_PREFERENCE = 1.0
+
+
+def edible_fraction(zone, size, limit_mult=1.0):
+    rows = SPECIES[zone]
+    tw = sum(r[0] for r in rows)
+    return sum(r[0] for r in rows if r[1] <= size * limit_mult) / tw
+
+
+def pick_prey(zone, size, rng, limit_mult=1.0):
+    """먹을 수 있는(크기 ≤ 내 크기×limit) 종 중 하나. 없으면 None."""
+    rows = [r for r in SPECIES[zone] if r[1] <= size * limit_mult]
+    if not rows:
+        return None
+    ws = [r[0] * (r[1] ** PREY_SIZE_PREFERENCE) for r in rows]
+    x = rng.random() * sum(ws)
+    for r, w in zip(rows, ws):
+        x -= w
+        if x <= 0:
+            return r
+    return rows[-1]
+
+
+# 바다는 깊이 520으로 넓고 보스 구조물이 46% 지점에 있어, 실제로는 바닥까지 잘 안 내려간다
+OCEAN_DEPTH_CAP = 0.6
+BOSS_DEPTH01 = 0.46
 
 # ── 깊이 ↔ 가치 (WorldLayout.ValueMultiplierAt와 같은 식) ──────
 #     배율 = GLOBAL_VALUE_SCALE × DEPTH_RICHNESS ^ (수면→바닥 진행도)
@@ -198,8 +278,11 @@ CODEX_BY_RANK = [
 
 class Build:
     def __init__(self):
-        self.lv = {n[0]: 0 for n in NODES}
+        self.lv = {t[0]: 0 for t in TYPES}
+        self.bought = [False] * len(SLOTS)
+        self.bought[ROOT] = True
         self.nodes_bought = 0
+        self._step = None
         # 도감: (구역, 랭크) → 먹은 수
         self.codex = {}
         # 구석에서 주운 히든 아이템 수 (영구 재화 보너스)
@@ -215,27 +298,40 @@ class Build:
             self.codex[key] = self.codex.get(key, 0.0) + kills * w / total_w
 
     def codex_bonus(self, kind):
-        total = 0.0
+        """
+        도감 보너스 (PlayerStats.ApplyCodexBonuses와 같게):
+        재화·시간·입은 종마다 곱하고, 속도·최대시간은 더한다. 반환값은 '배율 - 1' 또는 합.
+        """
+        mult, add = 1.0, 0.0
         for (map_idx, rank), eaten in self.codex.items():
             btype, value = CODEX_BY_RANK[rank]
             if btype != kind:
                 continue
             tiers = min(int(eaten // CODEX_MILESTONE), CODEX_MAX_TIERS)
-            total += value * tiers
-        return total
+            if kind in ("money", "time", "mouth"):
+                mult *= 1.0 + value * tiers
+            else:
+                add += value * tiers
+        return (mult - 1.0) if kind in ("money", "time", "mouth") else add
+
+    def add_kill(self, zone, rank):
+        if rank is None:
+            return
+        key = (zone, rank)
+        self.codex[key] = self.codex.get(key, 0.0) + 1.0
 
     # ── 스탯 ───────────────────────────────────────────────
-    def mult(self, nid):
-        _, kind, v, mx, cm, pre = NODE_BY_ID[nid]
-        if nid in LINEAR_NODES:
-            return 1.0 + v * self.lv[nid]
-        return (1.0 + v) ** self.lv[nid]
+    def mult(self, tid):
+        v = TYPE_BY_ID[tid][2]
+        if tid in LINEAR_NODES:
+            return 1.0 + v * self.lv[tid]
+        return (1.0 + v) ** self.lv[tid]
 
-    def has(self, nid):
-        return self.lv[nid] > 0
+    def has(self, tid):
+        return self.lv[tid] > 0
 
     @property
-    def armor_levels(self): return sum(self.lv[a] for a in ARMOR_TIERS)
+    def armor_levels(self): return self.lv["armor"]
     @property
     def size(self):      return min(MAX_PLAYER_SIZE, BASE_SIZE * (1.10 ** self.armor_levels))
     @property
@@ -256,43 +352,84 @@ class Build:
     @property
     def armor(self):     return (1 + self.lv["armor_stack"]) if self.has("unlock_armor") else 0
 
-    def can_buy(self, nid):
-        _, kind, v, mx, cm, pre = NODE_BY_ID[nid]
-        if self.lv[nid] >= mx:
-            return False
-        for pid, plv in pre:
-            if self.lv[pid] < plv:
-                return False
-        return True
+    # ── 트리 ───────────────────────────────────────────────
+    def available(self, i):
+        """아직 안 찍었고, 이웃 중 하나가 찍혀 있다."""
+        return not self.bought[i] and any(self.bought[n] for n in ADJ[i])
 
-    def armor_goal(self):
+    def price_of_type(self, tid):
+        return math.ceil(round(cost_of_node(self.nodes_bought + 1) * TYPE_BY_ID[tid][3], 6))
+
+    def price(self, i):
+        return self.price_of_type(SLOTS[i]["type"])
+
+    def buy(self, i):
+        self._step = None
+        self.bought[i] = True
+        self.lv[SLOTS[i]["type"]] += 1
+        self.nodes_bought += 1
+
+    def utility(self, tid):
+        u = UTILITY[tid]
+        # 상한에 걸려 더 찍어도 의미 없는 것은 낮춘다
+        if tid == "teeth" and self.mouth >= MAX_MOUTH_MULT - 1e-6:
+            u = 0.3
+        if tid == "armor" and self.size >= MAX_PLAYER_SIZE - 1e-6:
+            u = 0.3
+        return u
+
+    def best_path_step(self):
+        # 찍은 게 바뀌지 않았으면 답도 같다 (도감으로 입 배율이 상한에 닿는 경우만 살짝 늦게 반영)
+        if self._step is None:
+            self._step = self._best_path_step()
+        return self._step
+
+    def _best_path_step(self):
         """
-        크기를 올리기 위해 '지금 사야 할 노드'.
-        상위 장갑 티어가 선행 때문에 막혀 있으면 그 선행 노드를 먼저 돌려준다.
-        실제 플레이어가 트리를 뚫는 순서와 같다.
+        찍힌 영역에서 뻗어나가는 경로 중 '효용 합 / 코스트 배율 합'이 가장 좋은 경로의 첫 노드.
+        목표가 멀리 있으면 그 길에 놓인 노드부터 찍는다 — 실제 플레이어가 트리를 뚫는 방식.
         """
-        for a in ARMOR_TIERS:
-            _, _, _, mx, _, pre = NODE_BY_ID[a]
-            if self.lv[a] >= mx:
+        INF = float("inf")
+        cost = [INF] * len(SLOTS)
+        util = [0.0] * len(SLOTS)
+        first = [-1] * len(SLOTS)
+        pq = []
+        for i in range(len(SLOTS)):
+            if self.available(i):
+                t = SLOTS[i]["type"]
+                cost[i] = TYPE_BY_ID[t][3]
+                util[i] = self.utility(t)
+                first[i] = i
+                heapq.heappush(pq, (cost[i], i))
+        best, best_score = -1, -1.0
+        while pq:
+            c, u = heapq.heappop(pq)
+            if c > cost[u]:
                 continue
-            for pid, plv in pre:
-                if self.lv[pid] < plv:
-                    _, _, _, pmx, _, _ = NODE_BY_ID[pid]
-                    if self.lv[pid] < pmx:
-                        return pid
-            return a
-        return None
+            score = util[u] / cost[u]
+            if score > best_score:
+                best, best_score = first[u], score
+            for n in ADJ[u]:
+                if self.bought[n]:
+                    continue
+                t = SLOTS[n]["type"]
+                nc = c + TYPE_BY_ID[t][3]
+                if nc < cost[n]:
+                    cost[n] = nc
+                    util[n] = util[u] + self.utility(t)
+                    first[n] = first[u]
+                    heapq.heappush(pq, (nc, n))
+        return best
 
-    def price(self, nid):
-        cm = NODE_BY_ID[nid][4]
-        return math.ceil(cost_of_node(self.nodes_bought + 1) * cm)
 
-
-def eat_interval(build, fish_size, size=None):
+def eat_interval(build, fish_size, size=None, zone=None):
     """평균 포식 간격(초). size를 주면 인런 성장한 크기를 쓴다."""
     if size is None:
         size = build.size
-    edible = min(0.94, max(0.02, 0.55 * (size / fish_size)))
+    if zone is not None:
+        edible = min(0.94, max(0.02, edible_fraction(zone, size)))
+    else:
+        edible = min(0.94, max(0.02, 0.55 * (size / fish_size)))
     reach = (build.speed / BASE_SPEED) * (build.mouth ** 0.6)
     itv = 1.9 / (reach * edible)
 
@@ -364,7 +501,6 @@ def simulate_run(build, rng):
             drain = min(MAX_DRAIN, 1.0 + (elapsed / 60.0) * DRAIN_ACCEL_PER_60S)
             t -= DESCEND_SECONDS * drain
             elapsed += DESCEND_SECONDS
-            build.add_codex_kills(zone, kills_in_zone)
             zone += 1
             deepest = max(deepest, zone)
             time_in_zone = 0.0
@@ -374,11 +510,10 @@ def simulate_run(build, rng):
         # ── 보스 ──
         # 바다에서 보스 크기를 넘기면 구조물을 깨고 삼킨다. 클리어.
         if zone == len(ZONES) - 1 and size >= BOSS_SIZE:
-            money += BOSS_MONEY * value_multiplier(zone, 1.0) * build.money_mult
-            build.add_codex_kills(zone, kills_in_zone)
+            money += BOSS_MONEY * value_multiplier(zone, BOSS_DEPTH01) * build.money_mult
             return money, elapsed + 12.0, deepest, True
 
-        itv = eat_interval(build, fish_size, size)
+        itv = eat_interval(build, fish_size, size, zone)
         mps = missile_kills_per_second(build, fish_size, size)
 
         drain = min(MAX_DRAIN, 1.0 + (elapsed / 60.0) * DRAIN_ACCEL_PER_60S)
@@ -389,89 +524,67 @@ def simulate_run(build, rng):
             break
 
         # 위험 — 내가 클수록, 비늘이 남아 있을수록 안전.
-        # 갓 내려온 구역에서는 주변이 전부 나보다 커서 훨씬 위험하다.
         danger = max(0.0, min(0.05, 0.016 * (fish_size * 2.2 - size) / max(1.0, fish_size)))
         if rng.random() < danger * itv:
             if armor > 0:
                 armor -= 1
             else:
-                build.add_codex_kills(zone, kills_in_zone)
                 return money * (1 - DEATH_PENALTY), elapsed, deepest, False
 
         # 깊이가 값을 정한다 — 맵 전체에 걸친 연속 곡선
         depth01 = min(1.0, time_in_zone / DEPTH_RAMP_SECONDS)
+        if zone == len(ZONES) - 1:
+            depth01 = min(depth01, OCEAN_DEPTH_CAP)
         depth_mult = value_multiplier(zone, depth01)
 
-        # 몸이 커질수록 그 구역의 더 큰 종을 먹게 되므로 마리당 재화가 오른다 (최대 3배)
-        prey_bonus = min(3.0, max(0.4, size / fish_size))
-        kills = 1.0 + mps * itv
-        kills_in_zone += kills
+        # 실제로 먹은 종의 값으로 계산한다
+        # (예전엔 구역 평균 × 크기 보너스(최대 3배)라 수입을 2~3배 부풀렸다)
+        preys = []
+        prey = pick_prey(zone, size, rng)
+        if prey is not None:
+            preys.append(prey)
+        n_missile = mps * itv            # 미사일은 내 크기 3배까지 잡는다 (보스 제외)
+        while n_missile > 0:
+            if rng.random() < min(1.0, n_missile):
+                m = pick_prey(zone, size, rng, limit_mult=3.0)
+                if m is not None:
+                    preys.append(m)
+            n_missile -= 1.0
 
-        money += fish_money * build.money_mult * prey_bonus * depth_mult * kills
-        t = min(build.max_time, t + fish_time * build.time_mult * kills)
+        for w, fsize, fmoney, ftime, rank in preys:
+            money += fmoney * build.money_mult * depth_mult
+            t = min(build.max_time, t + ftime * build.time_mult)
+            build.add_kill(zone, rank)
+            if GROWTH_ENABLED:
+                max_size = max(build.size, min(run_cap, zone_size_cap(zone)))
+                if size < max_size:
+                    size = min(max_size, (size * size + fsize * fsize * GROWTH_EFFICIENCY) ** 0.5)
 
-        # ── 성장 ──
-        if GROWTH_ENABLED:
-            eaten_size = min(fish_size, size)      # 실제로 먹을 수 있는 크기 근사
-            # 판 중 성장 상한 = min(시작×2.5, 절대 상한, 지금 구역 출구 한계)
-            max_size = max(build.size, min(run_cap, zone_size_cap(zone)))
-            if size < max_size:
-                size = min(max_size, (size * size + eaten_size * eaten_size * GROWTH_EFFICIENCY) ** 0.5)
-
-    build.add_codex_kills(zone, kills_in_zone)
     return money, elapsed, deepest, False
 
 
 def greedy_buy(build, currency):
     """
     실제 플레이어의 구매 패턴 근사.
-    "다음 크기 강화"를 목표로 두고, 그게 선행에 막혀 있으면 선행부터 뚫는다.
-    목표 노드를 살 돈을 모으는 동안 남는 여윳돈으로만 나머지를 채운다.
+    찍힌 영역에서 뻗는 경로 중 가장 효율 좋은 경로를 골라 그 첫 노드를 산다.
+    살 돈이 없으면 모은다 (잡템을 사면 다음 노드 값이 올라 목표가 멀어진다).
     """
-    guard = 0
-    while guard < 5000:
-        guard += 1
-
-        goal = build.armor_goal()
-        goal_price = build.price(goal) if goal else None
-
-        # 1) 목표 노드를 살 수 있으면 산다
-        if goal and currency >= goal_price:
-            build.lv[goal] += 1
-            build.nodes_bought += 1
-            currency -= goal_price
-            continue
-
-        # 2) 목표를 살 돈이 한참 모자라면 그냥 모은다 (잡템을 사면 다음 노드 값이 올라 목표가 멀어진다)
-        if goal and currency < goal_price * 3.0:
+    while True:
+        step = build.best_path_step()
+        if step < 0:
             return currency
-
-        spare = currency if goal is None else currency - goal_price
-        best, best_score, best_price = None, 0.0, 0
-        for nid, kind, v, mx, cm, pre in NODES:
-            if nid == goal or nid in ARMOR_TIERS or not build.can_buy(nid):
-                continue
-            p = build.price(nid)
-            if p > spare:
-                continue
-            score = (UNLOCK_PRIORITY[nid] / p) if kind == "unlock" else (v * WEIGHT[nid] / p)
-            if score > best_score:
-                best, best_score, best_price = nid, score, p
-
-        if best is None:
+        p = build.price(step)
+        if p > currency:
             return currency
-
-        build.lv[best] += 1
-        build.nodes_bought += 1
-        currency -= best_price
-
-    return currency
+        build.buy(step)
+        currency -= p
 
 
-def play_through(seed):
+def play_through(seed, post_clear_hours=0.0):
     """
-    게임 한 판이 아니라 '게임 전체'를 돌린다.
-    진행의 기준은 이제 보스 클리어가 아니라 '새 구역 도달'이다.
+    게임 전체를 돌린다. post_clear_hours > 0이면 클리어 후에도 계속해
+    트리를 전부 채우는 데 걸리는 시간까지 잰다.
+    반환: build, runs, 클리어까지 초, milestones, phases, 풀트리 누적 h(못 채우면 None)
     """
     rng = random.Random(seed)
     build = Build()
@@ -481,8 +594,10 @@ def play_through(seed):
     phases = []                     # (구역, 구간 런, 구간 분)
     phase_start = (0, 0.0)
     cleared = False
+    clear_seconds = None
+    full_hours = None
 
-    while not cleared and runs < 8000:
+    while runs < 20000:
         money, elapsed, deepest, boss = simulate_run(build, rng)
         runs += 1
         currency += money
@@ -500,41 +615,57 @@ def play_through(seed):
         if build.hidden < reachable and runs % 4 == 0:
             build.hidden += 1
 
-        if boss:
+        if boss and not cleared:
             cleared = True
+            clear_seconds = total_seconds
             milestones.append((-1, runs, total_seconds / 3600))
             phases.append((-1, runs - phase_start[0], (total_seconds - phase_start[1]) / 60))
-            break
+            if post_clear_hours <= 0:
+                break
 
         currency = greedy_buy(build, currency)
 
-    return build, runs, total_seconds, milestones, phases
+        if cleared:
+            if build.nodes_bought >= SLOT_COUNT:
+                full_hours = total_seconds / 3600
+                break
+            if total_seconds - clear_seconds > post_clear_hours * 3600:
+                break
+
+    if clear_seconds is None:
+        clear_seconds = total_seconds
+    return build, runs, clear_seconds, milestones, phases, full_hours
 
 
 def zone_label(idx):
     return "보스 처치" if idx < 0 else ZONES[idx][0]
 
 
-def report(seed=7):
-    build, runs, total_seconds, milestones, phases = play_through(seed)
+def report(seed=7, post_hours=40.0):
+    build, runs, clear_seconds, milestones, phases, full_h = play_through(seed, post_hours)
 
     print(f"{'도달':<12}{'구간 런':>8}{'구간 분':>9}{'누적 h':>9}")
     for (m, r, h), (_, pr, pm) in zip(milestones, phases):
         print(f"{zone_label(m):<12}{pr:>8}{pm:>9.1f}{h:>9.2f}")
     print()
+    clear_nodes = next((r for m, r, h in milestones if m < 0), None)
+    print(f"클리어        : {clear_seconds/3600:.2f} 시간")
+    print(f"풀트리 완성   : {('%.2f 시간 (클리어 후 +%.2f)' % (full_h, full_h - clear_seconds/3600)) if full_h else '못 채움'}")
     print(f"총 런 수      : {runs}")
-    print(f"총 플레이타임 : {total_seconds/3600:.2f} 시간")
-    print(f"평균 런 길이  : {total_seconds/max(1,runs) - MENU_SECONDS_PER_RUN:.0f}초")
-    print(f"찍은 노드     : {build.nodes_bought}개")
+    print(f"찍은 노드     : {build.nodes_bought}/{SLOT_COUNT}개")
     print(f"최종 기본크기 : {build.size:.1f}  (성장 상한 {build.size*GROWTH_MAX_MULT:.1f} / 보스 {BOSS_SIZE})"
-          f"  장갑 {build.armor_levels}레벨")
-    print(f"히든 아이템   : {build.hidden}/{HIDDEN_TOTAL}  (재화 +{build.hidden*HIDDEN_BONUS*100:.0f}%)")
-    print(f"최종 속도     : {build.speed:.1f}")
-    print(f"최종 제한시간 : {build.max_time:.0f}초")
+          f"  장갑 {build.armor_levels}개")
+    print(f"히든 아이템   : {build.hidden}/{HIDDEN_TOTAL}")
     print()
-    print(f"{'노드':<16}{'레벨':>10}")
-    for nid, kind, v, mx, cm, pre in NODES:
-        print(f"  {nid:<16}{build.lv[nid]:>4}/{mx:<5}")
+    for tid, kind, v, cm in TYPES:
+        print(f"  {tid:<16}{build.lv[tid]:>4}/{MAX_LEVEL[tid]:<5}")
+
+
+def clear_snapshot(seed=7):
+    """클리어 시점에 몇 개를 찍었고 무엇을 찍었나."""
+    build, runs, clear_seconds, ms, _, _ = play_through(seed, 0.0)
+    print(f"클리어 {clear_seconds/3600:.2f}h · 노드 {build.nodes_bought}/{SLOT_COUNT} · 장갑 {build.armor_levels}/{MAX_LEVEL['armor']}")
+    print("  " + "  ".join(f"{t[0]} {build.lv[t[0]]}/{MAX_LEVEL[t[0]]}" for t in TYPES))
 
 
 def curve():
@@ -543,21 +674,27 @@ def curve():
         print(f"  {n:>4}번째  {cost_of_node(n):>18,.0f}   누적 {cumulative_cost(n):>20,.0f}")
 
 
-def trials(n):
-    res, nodes = [], []
-    for s in range(n):
-        b, runs, total, ms, _ = play_through(1000 + s)
+def trials(n, post_hours=40.0):
+    res, nodes, full = [], [], []
+    for sd in range(n):
+        b, runs, clear_s, ms, _, full_h = play_through(1000 + sd, post_hours)
         if ms and ms[-1][0] < 0:
-            res.append(total / 3600)
-            nodes.append(b.nodes_bought)
+            res.append(clear_s / 3600)
+            nodes.append(sum(1 for m in ms if m[0] < 0) and b.nodes_bought)
+            full.append(full_h - clear_s / 3600 if full_h else None)
     if not res:
         print("클리어 실패")
         return
     res.sort()
     print(f"시행 {n}회 — 완주 {len(res)}회")
-    print(f"  플레이타임  최소 {res[0]:.2f}h / 중앙 {statistics.median(res):.2f}h / "
+    print(f"  클리어  최소 {res[0]:.2f}h / 중앙 {statistics.median(res):.2f}h / "
           f"최대 {res[-1]:.2f}h / 평균 {statistics.mean(res):.2f}h")
-    print(f"  찍은 노드   중앙 {statistics.median(nodes):.0f}개")
+    ok = sorted(f for f in full if f is not None)
+    if ok:
+        print(f"  풀트리  클리어 후 +{statistics.median(ok):.2f}h (중앙, {len(ok)}/{len(full)}회 달성)"
+              f"  최소 +{ok[0]:.2f}h / 최대 +{ok[-1]:.2f}h")
+    else:
+        print(f"  풀트리  {post_hours}h 안에 못 채움")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -565,9 +702,9 @@ def trials(n):
 # ══════════════════════════════════════════════════════════════
 def full_tree_build():
     b = Build()
-    for nid, kind, v, mx, cm, pre in NODES:
-        b.lv[nid] = mx
-    b.nodes_bought = sum(n[3] for n in NODES)
+    for i in range(len(SLOTS)):
+        if i != ROOT:
+            b.buy(i)
     b.hidden = HIDDEN_TOTAL
     b.deepest = len(ZONES) - 1
     for zi in range(len(ZONES)):
@@ -608,42 +745,13 @@ def full_tree(runs=300):
     print(f"    보스 처치율 {boss / runs * 100:.0f}%")
 
 
-def post_clear(seed=7, hour_cap=60):
-    """클리어 후에도 계속 해서 트리를 다 채우려면 얼마나 걸리나."""
-    build, runs, total, ms, _ = play_through(seed)
-    rng = random.Random(seed + 1)
-    currency = 0.0
-    all_nodes = sum(n[3] for n in NODES)
-    clear_h, clear_nodes = total / 3600, build.nodes_bought
-    marks = {}
-    while build.nodes_bought < all_nodes and total / 3600 < clear_h + hour_cap:
-        m, e, _, _ = simulate_run(build, rng)
-        currency += m
-        total += e + MENU_SECONDS_PER_RUN
-        # 남는 노드는 가장 싼 것부터
-        while True:
-            opts = [(build.price(n[0]), n[0]) for n in NODES if build.can_buy(n[0])]
-            if not opts: break
-            p, nid = min(opts)
-            if p > currency: break
-            currency -= p; build.lv[nid] += 1; build.nodes_bought += 1
-        pct = build.nodes_bought * 100 // all_nodes
-        for mark in (60, 70, 80, 90, 100):
-            if pct >= mark and mark not in marks:
-                marks[mark] = total / 3600 - clear_h
-    print(f"\n■ 클리어 후 트리 채우기  (클리어 시점 {clear_nodes}/{all_nodes}노드, {clear_h:.2f}h)")
-    for mark in (60, 70, 80, 90, 100):
-        v = marks.get(mark)
-        print(f"    {mark:>3}%  {'+%.1fh' % v if v is not None else f'{hour_cap}h 안에 도달 못 함'}")
-    print(f"    다음 노드 가격 {build.price(min((n for n in NODES if build.can_buy(n[0])), key=lambda n: build.price(n[0]))[0]) if any(build.can_buy(n[0]) for n in NODES) else 0:,}")
-
-
 if __name__ == "__main__":
     if "--curve" in sys.argv:
         curve()
     elif "--full" in sys.argv:
         full_tree()
-        post_clear()
+    elif "--clear" in sys.argv:
+        clear_snapshot()
     elif "--trials" in sys.argv:
         trials(int(sys.argv[sys.argv.index("--trials") + 1]))
     else:

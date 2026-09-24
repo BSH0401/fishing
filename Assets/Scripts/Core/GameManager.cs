@@ -95,9 +95,37 @@ namespace FishGame.Core
             if (wipeSaveOnStart) SaveSystem.DeleteSave();
 
             Progress = SaveSystem.Load();
+            PrepareSkillTree();
             SelectedStartZone = Progress.SelectedStartZone;
             RecalculateStats();
         }
+
+        /// <summary>
+        /// 비용 곡선을 DB 값으로 맞추고, 예전 세이브를 옮기고, 찍은 칸에서 레벨을 다시 계산한다.
+        /// </summary>
+        void PrepareSkillTree()
+        {
+            if (database == null) return;
+            SkillCostCurve.Configure(database.skillCostGrowth, database.skillCostGrowthLate,
+                                     database.skillCostSoftcap);
+
+            if (database.skillTree == null || database.skillTree.Count == 0)
+            {
+                Debug.LogError("[GameManager] 스킬트리 칸이 없습니다. [FishGame ▸ 1. 콘텐츠 에셋 생성]을 다시 실행하세요. " +
+                               "(세이브의 스킬은 건드리지 않았습니다)");
+                return;
+            }
+
+            double refund = SkillTreeManager.MigrateLegacySave(Progress);
+            SkillTreeManager.SyncLevels(database, Progress);
+            if (refund > 0d || Progress.loadedVersion < PlayerProgress.CurrentVersion) SaveNow();
+            if (refund > 0d) PendingNotice =
+                $"스킬트리가 새 도면으로 바뀌었습니다.\n예전에 찍은 스킬을 초기화하고 재화 {FishGame.Utils.NumberFormatter.Format(refund)}을 돌려드렸어요.";
+        }
+
+        /// <summary>메인 화면이 한 번 띄워 줄 안내 문구 (없으면 null). 읽으면 비운다.</summary>
+        public string PendingNotice { get; private set; }
+        public string ConsumeNotice() { var n = PendingNotice; PendingNotice = null; return n; }
 
         void Start()
         {
@@ -214,6 +242,19 @@ namespace FishGame.Core
             {
                 Progress.DeepestZoneReached = deepestZoneThisRun;
                 newZone = true;
+
+                // 새 구역에 처음 닿으면 다음 판은 거기서 시작하게 골라 둔다 (메뉴에서 바꿀 수 있다).
+                // 안 그러면 모르고 계속 어항에서 시작해 진행이 크게 느려진다.
+                // 단, 기본 크기가 그 구역 물고기 평균의 42%도 안 되면 시작하자마자 잡아먹히니 그대로 둔다
+                // (balance_sim.py의 pick_start_zone과 같은 기준).
+                var reachedZone = database.GetZone(deepestZoneThisRun);
+                bool strongEnough = reachedZone == null || Stats == null ||
+                                    Stats.Size >= reachedZone.AverageSpawnSize * 0.42f;
+                if (ZoneFitsCurrentSize(deepestZoneThisRun) && strongEnough)
+                {
+                    SelectedStartZone = deepestZoneThisRun;
+                    Progress.SelectedStartZone = deepestZoneThisRun;
+                }
             }
 
             if (bossKilled) Progress.MarkZoneCleared(deepestZoneThisRun);

@@ -208,7 +208,7 @@ namespace FishGame.Gameplay
                 case AIPatternType.Chase:
                 {
                     if (playerBody != null && playerBody.IsAlive &&
-                        Vector2.Distance(pos, playerT.position) < species.patternParam &&
+                        EdgeDistance(pos, playerT, playerBody) < species.patternParam &&
                         species.size > playerBody.Size &&
                         !FishBody.CanEat(playerBody, _body, EatTolerance))   // 플레이어가 먹을 수 있는 상대는 쫓지 않는다
                     {
@@ -222,7 +222,7 @@ namespace FishGame.Gameplay
                 case AIPatternType.Flee:
                 {
                     if (playerBody != null && playerBody.IsAlive &&
-                        Vector2.Distance(pos, playerT.position) < species.patternParam &&
+                        EdgeDistance(pos, playerT, playerBody) < species.patternParam &&
                         FishBody.CanEat(playerBody, _body, EatTolerance))   // 실제 포식 판정과 같은 기준
                     {
                         Vector2 away = (pos - (Vector2)playerT.position).normalized;
@@ -230,13 +230,17 @@ namespace FishGame.Gameplay
                         Vector2 toCenter = (HomeCenter - pos).normalized;
                         return (away * 1.0f + toCenter * 0.35f).normalized * speed * 1.3f;
                     }
-                    goto case AIPatternType.SineWave;
+                    // 평소엔 사인파로 헤엄친다. 단, Flee의 patternParam은 "감지 반경"이라
+                    // 그대로 진폭으로 쓰면(참다랑어 10 vs 속도 4.8) 도망칠 때보다 빠르게 지그재그한다.
+                    float ft = (Time.time - _spawnTime + _patternSeed) * species.patternParam2 * Mathf.PI * 2f;
+                    Vector2 fperp = new Vector2(-_heading.y, _heading.x);
+                    return _heading * speed + fperp * (Mathf.Cos(ft) * speed * 0.35f);
                 }
 
                 case AIPatternType.Ambush:
                 {
                     if (!_ambushTriggered && playerBody != null && playerBody.IsAlive &&
-                        Vector2.Distance(pos, playerT.position) < species.patternParam)
+                        EdgeDistance(pos, playerT, playerBody) < species.patternParam)
                     {
                         _ambushTriggered = true;
                         _stateTimer = 0f;
@@ -257,6 +261,14 @@ namespace FishGame.Gameplay
             }
         }
 
+        /// <summary>
+        /// 몸 가장자리 사이 거리. 감지 반경(patternParam)은 이것과 비교한다.
+        /// 중심 거리로 재면 보스(크기 43, 감지 20)·청상아리·범고래처럼 감지 반경이
+        /// 자기 몸 반지름보다 작은 종은 이미 겹친 뒤에야 반응해 추격·매복·도주가 사실상 없었다.
+        /// </summary>
+        float EdgeDistance(Vector2 pos, Transform playerT, FishBody playerBody) =>
+            Vector2.Distance(pos, playerT.position) - species.size * 0.5f - playerBody.Size * 0.5f;
+
         Vector2 WanderVelocity(Vector2 pos, float speed)
         {
             if (_stateTimer > 3f || Vector2.Distance(pos, _wanderTarget) < species.size * 1.2f)
@@ -274,7 +286,9 @@ namespace FishGame.Gameplay
         /// <summary>지금 방향에서 크게 벗어나지 않는 곳을 다음 목표로 고른다.</summary>
         Vector2 NextWanderTarget(Vector2 pos)
         {
-            float radius = Mathf.Max(2f, species.patternParam);
+            // 도착 판정이 size × 1.2라, 반경이 몸에 비해 작으면(고등어 12 vs 배회 8)
+            // 새 목표가 뽑히자마자 "도착"해서 매 물리 프레임 방향이 바뀌며 떨었다.
+            float radius = Mathf.Max(Mathf.Max(2f, species.patternParam), species.size * 2.5f);
             for (int i = 0; i < 6; i++)
             {
                 float angle = Random.Range(-70f, 70f) * Mathf.Deg2Rad;

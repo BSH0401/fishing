@@ -16,11 +16,9 @@ MonoBehaviour:
   displayName: "\uBB3C\uACE0\uAE30 \uC804\uC9C0"
   tooltip: 
   description: "\uBB3C\uACE0\uAE30\uB97C \uBA39\uC744 \uB54C \uC5BB\uB294 \uC81C\uD55C\uC2DC\uAC04
-    5% \uC99D\uAC00."
+    2.5% \uC99D\uAC00."
   icon: {fileID: 0}
-  prerequisites: []
-  gridPosition: {x: 2, y: 1}
   effectType: 104
-  valuePerLevel: 0.05
-  maxLevel: 12
+  valuePerLevel: 0.025
+  maxLevel: 25
   costMultiplier: 1

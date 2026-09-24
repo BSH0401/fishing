@@ -15,11 +15,9 @@ MonoBehaviour:
   id: camera
   displayName: "\uCE74\uBA54\uB77C \uC7A5\uCC29"
   tooltip: 
-  description: "\uC2DC\uC57C 10% \uC99D\uAC00."
+  description: "\uC2DC\uC57C 3.5% \uC99D\uAC00."
   icon: {fileID: 0}
-  prerequisites: []
-  gridPosition: {x: 4, y: 0}
   effectType: 103
-  valuePerLevel: 0.1
-  maxLevel: 8
+  valuePerLevel: 0.035
+  maxLevel: 22
   costMultiplier: 1

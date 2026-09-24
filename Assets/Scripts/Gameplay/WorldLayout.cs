@@ -222,12 +222,16 @@ namespace FishGame.Gameplay
         /// 연속 함수라 구역 경계에서 값이 튀지 않고, 한 칸 내려갈 때마다 반드시 오른다.
         /// zone.currencyMultiplier는 특정 구역만 손볼 때 쓰는 보조 손잡이로 남겨 뒀다(기본 1).
         /// </summary>
-        public float ValueMultiplierAt(float y)
+        public float ValueMultiplierAt(float y, int trimZoneIndex = -1)
         {
             float depth01 = GlobalDepth01(y);
             float byDepth = Mathf.Pow(DepthRichness, depth01);
 
-            var z = _slices[ZoneIndexAt(y)].Zone;
+            // 보조 배율은 "먹힌 물고기가 속한 구역" 것을 쓴다(balance_sim과 같은 가정).
+            // 위치로만 고르면 통로(= 아래 구역으로 침)에서 먹은 윗구역 물고기가
+            // 아래 구역 배율을 받아 강 → 바다 통로에서 값이 2배로 뛴다.
+            int zi = trimZoneIndex >= 0 && trimZoneIndex < _slices.Length ? trimZoneIndex : ZoneIndexAt(y);
+            var z = _slices[zi].Zone;
             float zoneTrim = z != null ? z.currencyMultiplier : 1f;
 
             return GlobalValueScale * byDepth * zoneTrim;

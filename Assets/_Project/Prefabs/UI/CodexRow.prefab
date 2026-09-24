@@ -649,7 +649,7 @@ GameObject:
   - component: {fileID: 8192428475806887447}
   - component: {fileID: 2612984015193129535}
   - component: {fileID: 7369051025580624148}
-  - component: {fileID: 6702730475957835534}
+  - component: {fileID: 7372479918595150515}
   m_Layer: 0
   m_Name: CodexRow
   m_TagString: Untagged
@@ -739,7 +739,7 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &6702730475957835534
+--- !u!114 &7372479918595150515
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -748,7 +748,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8101519047737413023}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 12e158a24692a9940bd2841d05f15998, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.UI.CodexRow
   icon: {fileID: 8971092992462701724}

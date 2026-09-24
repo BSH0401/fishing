@@ -20,8 +20,6 @@ MonoBehaviour:
     \uACBD\uB85C\uC5D0 \uC788\uB294 \uBB3C\uACE0\uAE30\uB294 \uD06C\uAE30\uC640 \uC0C1\uAD00\uC5C6\uC774
     \uBA39\uD799\uB2C8\uB2E4."
   icon: {fileID: 0}
-  prerequisites: []
-  gridPosition: {x: 0, y: -3}
   effectType: 0
   valuePerLevel: 1
   maxLevel: 1

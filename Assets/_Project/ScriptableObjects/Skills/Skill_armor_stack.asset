@@ -17,11 +17,7 @@ MonoBehaviour:
   tooltip: 
   description: "\uBC29\uC5B4 \uD69F\uC218 +1 (\uCD5C\uB300 3\uD68C)."
   icon: {fileID: 0}
-  prerequisites:
-  - node: {fileID: 11400000, guid: 0bd031e68cec9b0479bbd0b6482b92ae, type: 2}
-    level: 1
-  gridPosition: {x: 4, y: -4}
   effectType: 203
   valuePerLevel: 1
   maxLevel: 2
-  costMultiplier: 6
+  costMultiplier: 3

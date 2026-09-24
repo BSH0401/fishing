@@ -13,15 +13,11 @@ MonoBehaviour:
   m_Name: Skill_missile_power
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.SkillNode
   id: missile_power
-  displayName: "\uBBF8\uC0AC\uC77C \uBC1C\uC0AC \uAC15\uD654"
+  displayName: "\uBBF8\uC0AC\uC77C \uAC15\uD654"
   tooltip: 
-  description: "\uBBF8\uC0AC\uC77C \uBC94\uC704 +50%, \uAC1C\uC218 +1."
+  description: "\uBBF8\uC0AC\uC77C \uBC94\uC704 +60%, \uAC1C\uC218 +1."
   icon: {fileID: 0}
-  prerequisites:
-  - node: {fileID: 11400000, guid: 9a129405e8f998b4b9bd1d5c463dca24, type: 2}
-    level: 1
-  gridPosition: {x: 10, y: -4}
   effectType: 207
-  valuePerLevel: 0.5
-  maxLevel: 5
-  costMultiplier: 3
+  valuePerLevel: 0.6
+  maxLevel: 4
+  costMultiplier: 2

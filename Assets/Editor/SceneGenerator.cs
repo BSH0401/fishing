@@ -418,17 +418,28 @@ namespace FishGame.EditorTools
 
             var dCost = Label(detailRt, "Cost", "", 16, new Vector2(16f, -342f), 288f, TextAlignmentOptions.Left);
 
-            // 범례 — 선 색이 무슨 뜻인지 한 줄로
+            // 범례 — 윗줄: 선 색 / 아랫줄: 도형 (SkillTreeUI가 런타임에 채운다)
             var legend = Panel_(canvasRt, "Legend", new Vector2(0f, 0f), new Vector2(0f, 0f),
-                                new Vector2(36f, 96f), new Vector2(780f, 34f));
+                                new Vector2(384f, 36f), new Vector2(1160f, 62f));
             ((RectTransform)legend.transform).pivot = new Vector2(0f, 0f);
             var legendText = Label((RectTransform)legend.transform, "Text",
-                "선행선  <color=#5ED18A>━ 충족</color>   <color=#F2C74C>━ 진행 중</color>   " +
-                "<color=#5A5F66>━ 미착수</color>      계열  " +
-                "<color=#6BDB8C>크기</color> <color=#73B8F5>시간</color> " +
-                "<color=#FAD161>재화</color> <color=#B899F2>유틸</color> <color=#FA9961>액티브</color>" +
+                "선  <color=#66FFDB>━ 양쪽 찍음</color>   <color=#FFC257>━ 열린 길</color>   " +
+                "<color=#6F8C96>━ 잠김</color>      이어진 칸 중 하나를 찍으면 열립니다" +
                 "      <color=#8A9199>휠 확대·축소 · 드래그 이동</color>",
-                15, new Vector2(12f, -6f), 760f, TextAlignmentOptions.Left);
+                15, new Vector2(12f, -4f), 1150f, TextAlignmentOptions.Left);
+
+            var legendRow = PrefabGenerator.NewUI("Shapes", new Vector2(1150f, 26f), (RectTransform)legend.transform);
+            var legendRowRt = (RectTransform)legendRow.transform;
+            legendRowRt.anchorMin = legendRowRt.anchorMax = new Vector2(0f, 1f);
+            legendRowRt.pivot = new Vector2(0f, 1f);
+            legendRowRt.anchoredPosition = new Vector2(12f, -30f);
+            var legendLayout = legendRow.AddComponent<HorizontalLayoutGroup>();
+            legendLayout.spacing = 14f;
+            legendLayout.childAlignment = TextAnchor.MiddleLeft;
+            legendLayout.childControlWidth = true;
+            legendLayout.childControlHeight = true;
+            legendLayout.childForceExpandWidth = false;
+            legendLayout.childForceExpandHeight = false;
 
             var hint = Label(canvasRt, "TreeHint", "", 17, Vector2.zero, 520f, TextAlignmentOptions.Left);
             var hintRt = hint.rectTransform;
@@ -457,7 +468,8 @@ namespace FishGame.EditorTools
 
             var treeUi = canvas.gameObject.AddComponent<SkillTreeUI>();
             var treeSo = new SerializedObject(treeUi);
-            treeSo.FindProperty("gridSpacing").vector2Value = new Vector2(168f, 150f);
+            treeSo.FindProperty("positionScale").floatValue = 3f;
+            treeSo.FindProperty("legendContainer").objectReferenceValue = legendRowRt;
             treeSo.FindProperty("scrollContent").objectReferenceValue = contentRt;
             treeSo.FindProperty("scrollRect").objectReferenceValue = scrollRect;
             treeSo.FindProperty("zoomInButton").objectReferenceValue = zoomIn;
