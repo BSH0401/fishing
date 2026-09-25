@@ -142,7 +142,7 @@ namespace FishGame.Utils
             }
 
             var p = gm.Progress;
-            GUILayout.Label($"재화 {NumberFormatter.Format(p.currency)}   칸 {p.totalNodesPurchased}개" +
+            GUILayout.Label($"재화 {NumberFormatter.Format(p.currency)}   칸 {p.totalNodesPurchased}개   " +
                             $"도달 {p.DeepestZoneReached + 1}구역   히든 {p.HiddenItemCount}개", _small);
 
             GUILayout.BeginHorizontal();

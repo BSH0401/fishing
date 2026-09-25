@@ -159,6 +159,8 @@ namespace FishGame.Gameplay
             if (follow != null) follow.SnapToTarget();
 
             ApplyZoneVisuals(CurrentZoneIndex);
+            // 메인 화면 · 스킬트리와 같은 물속 분위기 (빛줄기 · 물방울 · 비네트)
+            WorldAmbience.Ensure(worldCamera != null ? worldCamera : Camera.main);
 
             if (spawner != null) spawner.BeginSpawning(this);
 
@@ -316,7 +318,7 @@ namespace FishGame.Gameplay
             if (zone == null) return;
 
             var cam = worldCamera != null ? worldCamera : Camera.main;
-            if (cam != null) cam.backgroundColor = zone.waterColor * 0.45f;
+            if (cam != null) cam.backgroundColor = WorldBuilder.OutsideColor(zone.waterColor);   // 벽 바깥 — 물보다 훨씬 어둡게
         }
 
         // ══════════════════════════════════════════════════════════

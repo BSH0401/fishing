@@ -189,7 +189,7 @@ namespace FishGame.Gameplay
                 if (Obstacle.Overlaps(p, 1.5f)) continue;   // 구조물 안에서 튀어나오지 않게
 
                 result = p;
-                zoneIndex = _layout.ZoneIndexAt(p.y);
+                zoneIndex = HomeZoneAt(p.y);
                 return true;
             }
 
@@ -206,7 +206,7 @@ namespace FishGame.Gameplay
                 if (Vector2.Distance(p, playerPos) < inner * 0.5f) continue;
 
                 result = p;
-                zoneIndex = _layout.ZoneIndexAt(p.y);
+                zoneIndex = HomeZoneAt(p.y);
                 return true;
             }
 
@@ -285,5 +285,12 @@ namespace FishGame.Gameplay
         }
 
         int GetAlive(FishSpecies s) => _aliveCount.TryGetValue(s, out int c) ? c : 0;
+
+        /// <summary>
+        /// 그 높이에서 태어난 물고기가 살 구역. 통로 안이면 위 구역으로 친다 —
+        /// ZoneIndexAt은 통로를 아래 구역으로 보므로, 그대로 쓰면 아래 구역 물고기가 통로에서 태어나
+        /// 첫 물리 프레임에 통로 높이만큼 아래로 순간이동했다.
+        /// </summary>
+        int HomeZoneAt(float y) => _layout.IsInCorridor(y, out int upper) ? upper : _layout.ZoneIndexAt(y);
     }
 }

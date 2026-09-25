@@ -124,8 +124,12 @@ namespace FishGame.Core
             int zone = SelectedStartZone;
             while (zone > 0 && (IsZoneDangerous(zone) || !ZoneFitsCurrentSize(zone))) zone--;
             if (!ZoneFitsCurrentSize(zone)) zone = ShallowestEnterableZone();
+            // 몸이 커서 위 구역에 못 들어가 더 깊은 곳으로 간 경우 — EnsureStartZoneFits와 같이 그 구역을 연다
+            // (안 그러면 세이브가 도달 구역으로 잘라 읽고, 메뉴에서도 선택 표시가 사라진다)
+            if (zone > Progress.DeepestZoneReached) Progress.DeepestZoneReached = zone;
             SelectedStartZone = zone;
             Progress.SelectedStartZone = zone;
+            SaveNow();
         }
 
         /// <summary>
@@ -268,6 +272,7 @@ namespace FishGame.Core
                               float survivedSeconds, bool bossKilled,
                               int deepestZoneThisRun, int hiddenItemsFound)
         {
+            int runStartZone = SelectedStartZone;   // 아래에서 다음 판 시작 구역으로 바뀌기 전에 이번 판 값을 잡아 둔다
             double penalty = reason == RunEndReason.Eaten && database != null ? database.deathCurrencyPenalty : 0d;
 
             double earned = Math.Max(0d, rawCurrency * (1d - penalty));
@@ -307,7 +312,7 @@ namespace FishGame.Core
             LastResult = new RunResult
             {
                 Reason           = reason,
-                StartZone        = SelectedStartZone,
+                StartZone        = runStartZone,
                 DeepestZone      = deepestZoneThisRun,
                 NewZoneReached   = newZone,
                 CurrencyEarned   = earned,

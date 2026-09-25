@@ -751,6 +751,14 @@ namespace FishGame.Player
             if (_run == null) return;
             float r = _body.Size * bodyRadiusRatio;
             Vector2 p = _run.ClampToWorld(_rb.position, r);
+
+            // 장애물도 같은 보험 — 부스터처럼 한 물리 프레임에 멀리 가면 콜라이더를 건너뛸 수 있다
+            if (Obstacle.PushOut(ref p, _body.Size * 0.42f, out Vector2 n))
+            {
+                Vector2 v = _rb.linearVelocity;
+                float into = Vector2.Dot(v, n);
+                if (into < 0f) _rb.linearVelocity = v - n * into;
+            }
             if (p != _rb.position) _rb.position = p;
         }
 

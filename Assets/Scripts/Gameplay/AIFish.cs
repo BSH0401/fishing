@@ -165,7 +165,25 @@ namespace FishGame.Gameplay
                 _heading = Vector2.Lerp(_heading, desired.normalized, 0.15f).normalized;
 
             KeepInsideBounds();
+            KeepOutOfObstacles();
         }
+
+        /// <summary>
+        /// 장애물 안으로 파고들었으면 밖으로 밀어내고, 장애물 쪽으로 향하던 속도를 지운다.
+        /// AI는 트리거 콜라이더라 물리로 막히지 않는다 — 이게 없으면 쫓아오다 구조물을 뚫고 나온다.
+        /// </summary>
+        void KeepOutOfObstacles()
+        {
+            Vector2 p = _rb.position;
+            if (!Obstacle.PushOut(ref p, species.size * BodyRadiusRatio, out Vector2 n)) return;
+            _rb.position = p;
+            Vector2 v = _rb.linearVelocity;
+            float into = Vector2.Dot(v, n);
+            if (into < 0f) _rb.linearVelocity = v - n * into;
+        }
+
+        /// <summary>몸통 원의 반지름 비율 — 프리팹 콜라이더(0.42)와 같다.</summary>
+        const float BodyRadiusRatio = 0.42f;
 
         // ══════════════════════════════════════════════════════════
         //  패턴

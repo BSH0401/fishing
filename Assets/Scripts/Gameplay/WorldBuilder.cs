@@ -57,9 +57,10 @@ namespace FishGame.Gameplay
             _layout = WorldLayout.Build(zones, depthRichness, globalValueScale);
             if (_layout == null) return null;
 
-            BuildOutlinePaths(out var left, out var right);
+            BuildOutlinePaths(out var left, out var right, out var rowZone);
 
             BuildWaterMesh(left, right);
+            BuildWaterGrid(left, right, rowZone);
             BuildWalls(left, right);
             BuildObstacles();          // 히든 아이템보다 먼저 — 아이템이 장애물 안에 박히지 않게
             BuildGates();
@@ -92,10 +93,11 @@ namespace FishGame.Gameplay
         /// 위에서 아래로 내려가며 좌/우 벽의 점을 뽑는다.
         /// 존 바닥에서는 통로 입구까지 가로로 꺾어 "구멍 뚫린 바닥"을 만든다.
         /// </summary>
-        void BuildOutlinePaths(out List<Vector2> left, out List<Vector2> right)
+        void BuildOutlinePaths(out List<Vector2> left, out List<Vector2> right, out List<int> rowZone)
         {
             left = new List<Vector2>(256);
             right = new List<Vector2>(256);
+            rowZone = new List<int>(256);
 
             int count = _layout.ZoneCount;
             for (int i = 0; i < count; i++)
@@ -112,6 +114,7 @@ namespace FishGame.Gameplay
                     float hw = z.HalfWidthAt(t);
                     left.Add(new Vector2(-hw, y));
                     right.Add(new Vector2(hw, y));
+                    rowZone.Add(i);
                 }
 
                 if (s.HasCorridor)
@@ -124,6 +127,7 @@ namespace FishGame.Gameplay
                     right.Add(new Vector2(cr, s.YBottom));
                     left.Add(new Vector2(cl, s.CorridorBottom));
                     right.Add(new Vector2(cr, s.CorridorBottom));
+                    rowZone.Add(i); rowZone.Add(i);
 
                     // 통로 바닥 → 다음 존 천장(가로로 벌어짐)
                     var next = _layout.GetSlice(i + 1);
@@ -132,6 +136,7 @@ namespace FishGame.Gameplay
                         float nhw = next.Zone.HalfWidthAt(0f);
                         left.Add(new Vector2(-nhw, s.CorridorBottom));
                         right.Add(new Vector2(nhw, s.CorridorBottom));
+                        rowZone.Add(i + 1);
                     }
                 }
             }
@@ -148,31 +153,46 @@ namespace FishGame.Gameplay
             _waterGo = new GameObject("Water");
             _waterGo.transform.SetParent(transform, false);
 
-            var verts = new Vector3[n * 2];
-            var colors = new Color[n * 2];
-            var uvs = new Vector2[n * 2];
-            var tris = new int[(n - 1) * 6];
+            // 한 줄에 점 3개(왼쪽 벽 · 가운데 · 오른쪽 벽). 가운데를 밝게, 벽 쪽을 어둡게 해서
+            // 메인 화면처럼 가운데로 빛이 모이는 느낌을 낸다.
+            var verts = new Vector3[n * 3];
+            var colors = new Color[n * 3];
+            var uvs = new Vector2[n * 3];
+            var tris = new int[(n - 1) * 12];
 
             for (int i = 0; i < n; i++)
             {
-                verts[i * 2] = left[i];
-                verts[i * 2 + 1] = right[i];
+                Vector2 l = left[i], r = right[i];
+                Vector2 m = (l + r) * 0.5f;
+                verts[i * 3] = l;
+                verts[i * 3 + 1] = m;
+                verts[i * 3 + 2] = r;
 
-                Color c = WaterColorAt(left[i].y);
-                colors[i * 2] = c;
-                colors[i * 2 + 1] = c;
+                Color c = WaterColorAt(l.y);
+                Color edge = c * EdgeShade; edge.a = 1f;
+                Color mid = c * CenterGlow;  mid.a = 1f;
+                // 메시 정점 색은 선형 색공간에서 변환되지 않는다 — 직접 .linear로 바꿔야
+                // 인스펙터에서 고른 색 그대로 보인다 (안 하면 물이 뿌옇고 밝게 뜬다)
+                colors[i * 3] = edge.linear;
+                colors[i * 3 + 1] = mid.linear;
+                colors[i * 3 + 2] = edge.linear;
 
                 float v = (float)i / (n - 1);
-                uvs[i * 2] = new Vector2(0f, v);
-                uvs[i * 2 + 1] = new Vector2(1f, v);
+                uvs[i * 3] = new Vector2(0f, v);
+                uvs[i * 3 + 1] = new Vector2(0.5f, v);
+                uvs[i * 3 + 2] = new Vector2(1f, v);
             }
 
             for (int i = 0; i < n - 1; i++)
             {
-                int a = i * 2, b = i * 2 + 1, c = (i + 1) * 2, d = (i + 1) * 2 + 1;
-                int o = i * 6;
-                tris[o + 0] = a; tris[o + 1] = c; tris[o + 2] = b;
-                tris[o + 3] = b; tris[o + 4] = c; tris[o + 5] = d;
+                int o = i * 12;
+                for (int col = 0; col < 2; col++)
+                {
+                    int a = i * 3 + col, b = a + 1, c = (i + 1) * 3 + col, d = c + 1;
+                    int k = o + col * 6;
+                    tris[k + 0] = a; tris[k + 1] = c; tris[k + 2] = b;
+                    tris[k + 3] = b; tris[k + 4] = c; tris[k + 5] = d;
+                }
             }
 
             var mesh = new Mesh { name = "WaterStrip" };
@@ -193,16 +213,98 @@ namespace FishGame.Gameplay
             mr.receiveShadows = false;
         }
 
+        // ── 수중 실험실 팔레트 ──────────────────────────────────
+        // 구역 데이터의 물 색(어항 민트 · 하수구 탁한 초록 · 강 파랑 · 바다 남색)은 살리되,
+        // 타이틀 · 스킬트리 배경처럼 어둡고 깊은 청록 쪽으로 끌어내린다.
+        static readonly Color DeepBase = new Color(0.012f, 0.055f, 0.075f, 1f);
+        const float ZoneTint = 0.36f;      // 구역 색이 남는 비율
+        const float EdgeShade = 0.72f;     // 벽 쪽 어둡기
+        const float CenterGlow = 1.12f;    // 가운데 밝기
+
+        /// <summary>구역 물 색 → 수중 실험실 톤.</summary>
+        public static Color LabWater(Color zoneWater)
+        {
+            var c = Color.Lerp(DeepBase, zoneWater, ZoneTint);
+            c.a = 1f;
+            return c;
+        }
+
+        /// <summary>벽 바깥(카메라 배경). 물보다 한참 어두운 바위 · 어둠.</summary>
+        public static Color OutsideColor(Color zoneWater)
+        {
+            var c = Color.Lerp(new Color(0.004f, 0.016f, 0.024f, 1f), LabWater(zoneWater), 0.18f);
+            c.a = 1f;
+            return c;
+        }
+
         Color WaterColorAt(float y)
         {
             int i = _layout.ZoneIndexAt(y);
             var z = _layout.GetZone(i);
-            if (z == null) return new Color(0.2f, 0.4f, 0.55f);
+            if (z == null) return LabWater(new Color(0.2f, 0.4f, 0.55f));
 
-            // 같은 존 안에서도 아래로 갈수록 살짝 어둡게 — 깊이감
+            // 같은 존 안에서도 아래로 갈수록 어둡게 — 깊이감
             float d = _layout.DepthFactorInZone(y);
-            Color c = z.waterColor;
-            return Color.Lerp(c, c * 0.72f, d);
+            Color c = LabWater(z.waterColor);
+            return Color.Lerp(c * 1.18f, c * 0.70f, d);
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  물 위의 옅은 격자 — 스킬트리 배경과 같은 실험실 도면 격자
+        // ══════════════════════════════════════════════════════════
+        void BuildWaterGrid(List<Vector2> left, List<Vector2> right, List<int> rowZone)
+        {
+            int n = Mathf.Min(left.Count, Mathf.Min(right.Count, rowZone.Count));
+            if (n < 2 || _waterGo == null) return;
+
+            var go = new GameObject("WaterGrid");
+            go.transform.SetParent(_waterGo.transform, false);
+
+            var verts = new Vector3[n * 2];
+            var colors = new Color[n * 2];
+            var uvs = new Vector2[n * 2];
+            var tris = new int[(n - 1) * 6];
+
+            for (int i = 0; i < n; i++)
+            {
+                // 구역마다 칸 크기를 그 구역 폭에 맞춘다 — 바다에서 카메라가 멀어져도 격자가 빽빽해지지 않게
+                var z = _layout.GetZone(rowZone[i]);
+                float cell = z != null ? Mathf.Max(2f, z.HalfWidthAt(0f) * 0.22f) : 4f;
+                float depth = _layout.ZoneCount > 1 ? rowZone[i] / (float)(_layout.ZoneCount - 1) : 0f;
+                // 얕은 실험실(어항)일수록 격자가 또렷하고, 바다로 갈수록 거의 사라진다
+                var col = new Color(0.55f, 0.95f, 0.92f, Mathf.Lerp(0.085f, 0.025f, depth));
+
+                verts[i * 2] = left[i];
+                verts[i * 2 + 1] = right[i];
+                colors[i * 2] = colors[i * 2 + 1] = col.linear;
+                uvs[i * 2] = left[i] / cell;
+                uvs[i * 2 + 1] = right[i] / cell;
+            }
+            for (int i = 0; i < n - 1; i++)
+            {
+                int a = i * 2, b = a + 1, c = a + 2, d = a + 3, o = i * 6;
+                tris[o] = a; tris[o + 1] = c; tris[o + 2] = b;
+                tris[o + 3] = b; tris[o + 4] = c; tris[o + 5] = d;
+            }
+
+            var mesh = new Mesh { name = "WaterGrid" };
+            mesh.vertices = verts;
+            mesh.colors = colors;
+            mesh.uv = uvs;
+            mesh.triangles = tris;
+            mesh.RecalculateBounds();
+
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            var mat = CreateVertexColorMaterial();
+            mat.name = "WaterGridMat";
+            var tex = FishGame.UI.LabArt.GridTile.texture;
+            if (mat.HasProperty("_MainTex")) mat.SetTexture("_MainTex", tex);
+            if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", tex);
+            mr.sharedMaterial = mat;
+            mr.sortingOrder = waterSortingOrder + 2;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
         }
 
         /// <summary>

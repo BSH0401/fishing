@@ -164,7 +164,7 @@ namespace FishGame.UI
         /// <summary>제한시간이 임박하면 화면 가장자리를 붉게 맥동시키고 심박음을 올린다.</summary>
         void UpdateDanger()
         {
-            if (!_run.IsRunning || _run.TimeRemaining > dangerThreshold)
+            if (!_run.IsRunning || _run.IsPaused || _run.TimeRemaining > dangerThreshold)
             {
                 if (dangerVignette != null && dangerVignette.color.a > 0f)
                     SetVignetteAlpha(0f);
