@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M2_Grate
   displayName: "\uCCA0\uB9DD \uD3EC\uC2DD\uC790"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 824256769e1885d49813d994b65cc6a3, type: 3}
+  sprite: {fileID: 21300000, guid: b987ab085b4ad6049877b4111995c982, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 8.5

@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M4_Tuna
   displayName: "\uCC38\uB2E4\uB791\uC5B4"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 49f70e7a771459c4f9f1eda82dca6ea7, type: 3}
+  sprite: {fileID: 21300000, guid: 5151e48a17eadd5459d34680e67c1b85, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 21

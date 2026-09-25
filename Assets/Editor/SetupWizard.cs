@@ -50,6 +50,7 @@ namespace FishGame.EditorTools
 
             EditorUtility.DisplayProgressBar("FishGame 셋업", "한글 폰트 적용", 0.95f);
             FontSetup.ApplyToEverything(false);
+            ArtApplier.Apply();   // 직접 그린 그림 — 프리팹을 새로 만들었으니 다시 꽂는다
             UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
 
             EditorUtility.ClearProgressBar();

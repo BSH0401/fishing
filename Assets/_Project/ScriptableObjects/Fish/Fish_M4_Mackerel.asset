@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M4_Mackerel
   displayName: "\uACE0\uB4F1\uC5B4"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 225f98a2f97c72649a615e0b33cf50a6, type: 3}
+  sprite: {fileID: 21300000, guid: ca39e17006711e04a99f8928353bd335, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 12

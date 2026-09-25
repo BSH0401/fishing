@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M1_Angel
   displayName: "\uC218\uC870 \uC5D4\uC824"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 2587d9be2d4beb941ad1d1ad71b0cf07, type: 3}
+  sprite: {fileID: 21300000, guid: ca39e17006711e04a99f8928353bd335, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 1.6

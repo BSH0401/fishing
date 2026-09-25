@@ -72,6 +72,8 @@ namespace FishGame.UI
             _run.OnGateOpened += HandleGateOpened;
             _run.OnHiddenItemFound += HandleHiddenItemFound;
 
+            ApplySlotIcons();
+
             var s = _run.Stats;
             SetActive(boosterSlot, s.HasBooster);
             SetActive(vacuumSlot,  s.HasVacuum);
@@ -301,6 +303,71 @@ namespace FishGame.UI
             bossBanner.SetActive(true);
             yield return new WaitForSeconds(2.5f);
             bossBanner.SetActive(false);
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  스킬 칸 아이콘 — 직접 그린 그림(Resources/Icons)이 있으면 칸 위쪽에 그린다
+        // ══════════════════════════════════════════════════════════
+        void ApplySlotIcons()
+        {
+            AddIcon(boosterSlot, "Icons/Item_Booster");
+            AddIcon(baitSlot,    "Icons/Item_GoldenBait");
+            AddIcon(voltSlot,    "Icons/Item_Volt");
+            AddIcon(missileSlot, "Icons/Item_Missile");
+            AddArmorIcon();
+        }
+
+        static void AddIcon(GameObject slot, string resource)
+        {
+            if (slot == null || slot.transform.Find("Icon") != null) return;
+            var sprite = Resources.Load<Sprite>(resource);
+            if (sprite == null) return;
+
+            var slotRt = (RectTransform)slot.transform;
+            var go = new GameObject("Icon", typeof(RectTransform));
+            go.transform.SetParent(slotRt, false);
+            go.transform.SetAsFirstSibling();                 // 쿨다운 막 · 글자보다 뒤
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            var r = img.rectTransform;
+            r.anchorMin = new Vector2(0.14f, 0.36f);
+            r.anchorMax = new Vector2(0.86f, 0.94f);
+            r.offsetMin = r.offsetMax = Vector2.zero;
+
+            // 이름 · 키 글자는 아이콘 밑으로 작게
+            var label = slot.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+            {
+                var lr = label.rectTransform;
+                lr.anchorMin = new Vector2(0f, 0f);
+                lr.anchorMax = new Vector2(1f, 0.36f);
+                lr.pivot = new Vector2(0.5f, 0.5f);
+                lr.offsetMin = new Vector2(-4f, 1f);
+                lr.offsetMax = new Vector2(4f, 0f);
+                label.fontSize = Mathf.Min(label.fontSize, 11f);
+                label.lineSpacing = -18f;
+            }
+        }
+
+        void AddArmorIcon()
+        {
+            if (armorGroup == null || armorGroup.transform.Find("Icon") != null) return;
+            var sprite = Resources.Load<Sprite>("Icons/Item_ScaleArmor");
+            if (sprite == null) return;
+            var go = new GameObject("Icon", typeof(RectTransform));
+            go.transform.SetParent(armorGroup.transform, false);
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            var r = img.rectTransform;
+            // 비늘 칸 왼쪽 바깥에 붙인다
+            r.anchorMin = r.anchorMax = new Vector2(0f, 0.5f);
+            r.pivot = new Vector2(1f, 0.5f);
+            r.sizeDelta = new Vector2(40f, 40f);
+            r.anchoredPosition = new Vector2(-6f, 0f);
         }
     }
 }

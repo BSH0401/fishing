@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M2_Pipe
   displayName: "\uAD00\uBC8C\uB808\uACE0\uAE30"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 821b5d51409bb4e4883db98843793587, type: 3}
+  sprite: {fileID: 21300000, guid: 7ab84dbf80421bf42873455c42fa0ff0, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 3.2

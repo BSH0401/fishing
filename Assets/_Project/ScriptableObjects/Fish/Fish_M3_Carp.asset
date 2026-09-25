@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M3_Carp
   displayName: "\uC789\uC5B4"
   codexNote: 
-  sprite: {fileID: 21300000, guid: fb5cdc787c80abf439168382e6504c01, type: 3}
+  sprite: {fileID: 21300000, guid: 7ab84dbf80421bf42873455c42fa0ff0, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 8.6

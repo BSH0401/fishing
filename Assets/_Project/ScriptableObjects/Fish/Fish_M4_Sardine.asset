@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M4_Sardine
   displayName: "\uC815\uC5B4\uB9AC \uAD70\uC9D1"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 269e9992f8defaf4babc6c9ecdd79569, type: 3}
+  sprite: {fileID: 21300000, guid: 3bb65054a1fb1e949be14b8c2f533778, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 6.5

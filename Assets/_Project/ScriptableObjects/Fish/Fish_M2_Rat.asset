@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M2_Rat
   displayName: "\uD558\uC218 \uC950\uCE58"
   codexNote: 
-  sprite: {fileID: 21300000, guid: dd1853390130dfd4dba81153febe95e3, type: 3}
+  sprite: {fileID: 21300000, guid: 58d26389bf181a948af8e78f49300adc, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 5.2

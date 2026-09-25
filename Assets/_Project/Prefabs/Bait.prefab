@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 8
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 56260948ce135c54ca8465b0864a4bcd, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 11c5df2682c0b1241be7d1670f5601ad, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -107,4 +107,4 @@ MonoBehaviour:
   spriteRenderer: {fileID: 3502370193583540936}
   bobAmplitude: 0.25
   bobFrequency: 1.6
-  spinSpeed: 90
+  spinSpeed: 0

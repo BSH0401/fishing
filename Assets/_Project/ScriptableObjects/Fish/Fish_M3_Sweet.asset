@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M3_Sweet
   displayName: "\uC740\uC5B4\uB5BC"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 9a746ed83487e8441accfc85c278cffe, type: 3}
+  sprite: {fileID: 21300000, guid: ca39e17006711e04a99f8928353bd335, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 2.7
