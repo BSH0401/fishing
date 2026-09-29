@@ -5,6 +5,7 @@ using FishGame.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace FishGame.UI
@@ -177,7 +178,7 @@ namespace FishGame.UI
             }
 
             var start = MenuButton(col, "NewGame", hasSave ? "새 게임" : "게임 시작", y, primary: !hasSave);
-            start.onClick.AddListener(() => { if (hasSave) AskNewGame(); else Continue(); });
+            start.onClick.AddListener(() => { if (hasSave) AskNewGame(); else StartFirstRun(); });
             buttons.Add(start);
             y -= gap;
 
@@ -255,7 +256,7 @@ namespace FishGame.UI
             ok.onClick.AddListener(() =>
             {
                 _game.ResetProgress();
-                Continue();
+                StartFirstRun();
             });
             // 두 버튼끼리만 오가게 — 자동 탐색이면 어둡게 가린 뒤쪽 메뉴 버튼까지 골라진다
             cancel.navigation = new Navigation { mode = Navigation.Mode.Explicit, selectOnLeft = ok, selectOnRight = ok };
@@ -276,6 +277,17 @@ namespace FishGame.UI
             if (_busy) return;
             _busy = true;
             StartCoroutine(FadeThen(() => _game.GoToMainMenu()));
+        }
+
+        /// <summary>
+        /// 새 게임 — 스킬트리를 거치지 않고 바로 첫 판(어항)으로 들어간다.
+        /// 아직 찍을 재화도 없으니 먼저 한 판 해 보고, 판이 끝나면 결과 창의 "메인으로"에서 스킬트리가 열린다.
+        /// </summary>
+        void StartFirstRun()
+        {
+            if (_busy) return;
+            _busy = true;
+            StartCoroutine(FadeThen(() => _game.StartRun()));
         }
 
         void Quit()
@@ -322,8 +334,31 @@ namespace FishGame.UI
         }
 
         // ══════════════════════════════════════════════════════════
+        InputAction _escape;
+
+        void OnEnable()
+        {
+            _escape = new InputAction("OpenSettings", InputActionType.Button);
+            _escape.AddBinding("<Keyboard>/escape");
+            _escape.AddBinding("<Gamepad>/start");
+            _escape.Enable();
+        }
+
+        void OnDisable()
+        {
+            _escape?.Dispose();
+            _escape = null;
+        }
+
+        bool EscPressed() => UIKit.EscapePressed(_escape);
+
         void Update()
         {
+            // ESC = 설정 창 (새 게임 확인 창이 떠 있거나 화면이 넘어가는 중이면 무시)
+            if (EscPressed() && !_busy && _confirm == null &&
+                !SettingsPanel.IsOpen && !SettingsPanel.ClosedThisFrame)
+                SettingsPanel.Open(() => Select(_firstButton));
+
             float t = Time.unscaledTime, dt = Time.unscaledDeltaTime;
             if (_titleRt != null) _titleRt.anchoredPosition = new Vector2(0f, -40f + Mathf.Sin(t * 0.9f) * 6f);
 

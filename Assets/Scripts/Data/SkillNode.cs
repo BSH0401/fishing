@@ -10,8 +10,7 @@ namespace FishGame.Data
     /// 트리 위의 칸(SkillTreeSlot)들이 이 종류를 가리킨다. 같은 종류의 칸을 k개 찍으면 k레벨이다.
     /// 그래서 maxLevel = 트리에 놓인 그 종류의 칸 수 (생성기가 맞춰 준다).
     ///
-    /// ★ 가격은 칸별이 아니라 "지금까지 찍은 총 칸 수"로 정해진다 (SkillCostCurve).
-    ///   어떤 칸을 먼저 찍든 N번째 칸의 기본 가격은 같고, costMultiplier만 종류별로 다르다.
+    /// ★ 가격은 칸마다 고정이다 (SkillTreeManager.SlotCost — 시작 칸에서 가까운 순번 × costMultiplier).
     /// </summary>
     [CreateAssetMenu(fileName = "Skill_", menuName = "FishGame/Skill Node", order = 2)]
     public class SkillNode : ScriptableObject
@@ -49,6 +48,13 @@ namespace FishGame.Data
             // 소수 6자리에서 한 번 반올림해 부동소수 오차를 걷어낸 뒤 올린다.
             double mult = (double)(decimal)costMultiplier;
             return Math.Ceiling(Math.Round(SkillCostCurve.CostOfNode(totalNodesPurchased + 1) * mult, 6));
+        }
+
+        /// <summary>가격 순번 rank(1부터)인 칸의 가격. 칸마다 고정 가격 — SkillTreeManager.SlotCost가 순번을 정한다.</summary>
+        public double GetCostAtRank(int rank)
+        {
+            double mult = (double)(decimal)costMultiplier;
+            return Math.Ceiling(Math.Round(SkillCostCurve.CostOfNode(Mathf.Max(1, rank)) * mult, 6));
         }
 
         /// <summary>UI 표기용 누적 효과 문자열.</summary>

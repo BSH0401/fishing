@@ -93,6 +93,20 @@ namespace FishGame.UI
             go.AddComponent<InputSystemUIInputModule>();
         }
 
+        /// <summary>
+        /// 이번 프레임에 ESC(또는 패드 Start)를 눌렀는가.
+        /// 액션 하나에만 기대지 않고 키보드 · 패드 상태도 직접 본다 — 창이 켜진 첫 프레임이나
+        /// 액션이 아직 활성화되기 전이라 액션이 놓치는 경우가 있었다.
+        /// </summary>
+        public static bool EscapePressed(UnityEngine.InputSystem.InputAction action = null)
+        {
+            if (action != null && action.enabled && action.WasPressedThisFrame()) return true;
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null && kb.escapeKey.wasPressedThisFrame) return true;
+            var pad = UnityEngine.InputSystem.Gamepad.current;
+            return pad != null && pad.startButton.wasPressedThisFrame;
+        }
+
         // ── 버튼 ────────────────────────────────────────────────
         public static Button Button(Transform parent, string name, string label, Vector2 size,
                                     bool primary = false, float fontSize = 24f)

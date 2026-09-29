@@ -55,7 +55,7 @@ namespace FishGame.UI
             if (root != null && root.activeSelf != run.IsPaused) root.SetActive(run.IsPaused);
             // 설정 창이 떠 있으면 ESC는 설정 창이 먼저 쓴다 (닫는 그 ESC로 일시정지까지 풀리지 않게)
             if (SettingsPanel.IsOpen || SettingsPanel.ClosedThisFrame) return;
-            if (_pause.WasPressedThisFrame()) SetPaused(!run.IsPaused);
+            if (UIKit.EscapePressed(_pause)) SetPaused(!run.IsPaused);
         }
 
         void SetPaused(bool paused)

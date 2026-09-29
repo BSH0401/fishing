@@ -150,6 +150,7 @@ namespace FishGame.UI
             if (currencyText != null) _currencyBaseColor = currencyText.color;
 
             ApplyLabStyle();
+            BuildTooltip();
             Build();
             BuildLegend();
             _game.OnProgressChanged += RefreshAll;
@@ -194,17 +195,7 @@ namespace FishGame.UI
                 if (backdrop == null) backdrop = viewport.gameObject.AddComponent<UnderwaterBackdrop>();
                 backdrop.Build();
 
-                // 테두리는 비네트보다도 앞
-                if (viewport.Find("LabFrame") == null)
-                {
-                    var frame = NewImage(viewport, "LabFrame", LabArt.PanelBorder);
-                    frame.type = Image.Type.Sliced;
-                    frame.color = LabStyle.Border;
-                    var fr = frame.rectTransform;
-                    fr.anchorMin = Vector2.zero; fr.anchorMax = Vector2.one;
-                    fr.offsetMin = fr.offsetMax = Vector2.zero;
-                    fr.SetAsLastSibling();
-                }
+                // (트리가 화면 전체라 테두리는 두지 않는다)
 
                 // 관성 스크롤을 부드럽게
                 scrollRect.inertia = true;
@@ -704,6 +695,11 @@ namespace FishGame.UI
         {
             float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
             FitLegend();
+            if (_tipTarget != null && _tip != null && _tip.gameObject.activeSelf)
+            {
+                if (!_tipTarget.gameObject.activeInHierarchy) ShowDetail(null);
+                else PlaceTooltip();
+            }
 
             if (_zooming && scrollContent != null)
             {
@@ -748,6 +744,10 @@ namespace FishGame.UI
 
             foreach (var btn in _buttons)
             {
+                // 찍은 칸과 "바로 다음에 찍을 수 있는 칸"만 보인다. 그 너머는 찍어서 열어야 드러난다
+                bool visible = IsVisible(btn.SlotIndex);
+                if (btn.gameObject.activeSelf != visible) btn.gameObject.SetActive(visible);
+                if (!visible) continue;
                 btn.Refresh(db, progress);
                 if (btn.Affordable) affordable++;
             }
@@ -757,10 +757,8 @@ namespace FishGame.UI
 
             if (currencyText != null)
             {
-                double next = SkillTreeManager.NextNodeBaseCost(progress);
-                currencyText.text =
-                    $"{NumberFormatter.Format(progress.currency)}" +
-                    $"   <size=60%><color=#8FB7B8>다음 칸 {NumberFormatter.Format(next)}</color></size>";
+                // 칸마다 가격이 고정이라 "다음 칸 가격"은 없다 — 각 칸의 가격은 칸 아래 · 툴팁에 있다
+                currencyText.text = $"<size=55%><color=#8FB7B8>재화</color></size>  {NumberFormatter.Format(progress.currency)}";
             }
 
             if (hintText != null)
@@ -773,6 +771,9 @@ namespace FishGame.UI
             }
         }
 
+        /// <summary>화면에 드러난 칸인가 — 시작 칸 · 찍은 칸 · 찍은 칸과 선으로 바로 이어진 칸.</summary>
+        bool IsVisible(int slot) => SkillTreeManager.IsReachable(_game.Database, slot, _game.Progress);
+
         void RefreshLines()
         {
             var db = _game.Database;
@@ -781,6 +782,15 @@ namespace FishGame.UI
 
             foreach (var line in _lines)
             {
+                // 숨은 칸으로 이어지는 선도 숨긴다 — 선만 보여도 다음 칸 자리가 드러난다
+                bool shown = IsVisible(line.A) && IsVisible(line.B);
+                if (line.Image.gameObject.activeSelf != shown) line.Image.gameObject.SetActive(shown);
+                if (!shown)
+                {
+                    if (line.Flow != null) line.Flow.gameObject.SetActive(false);
+                    continue;
+                }
+
                 bool a = SkillTreeManager.IsPurchased(db, line.A, progress);
                 bool b = SkillTreeManager.IsPurchased(db, line.B, progress);
                 bool hover = _hoverSlot >= 0 && (line.A == _hoverSlot || line.B == _hoverSlot);
@@ -859,6 +869,10 @@ namespace FishGame.UI
                 }
                 bool done = bought == p.Slots.Count;
                 bool active = bought > 0 || open > 0;
+
+                // 아직 한 칸도 드러나지 않은 모듈 판은 통째로 숨긴다
+                if (p.Fill.gameObject.activeSelf != active) p.Fill.gameObject.SetActive(active);
+                if (!active) continue;
 
                 if (p.Border != null)
                     p.Border.color = done ? new Color(1f, 0.84f, 0.4f, 0.75f)
@@ -942,95 +956,192 @@ namespace FishGame.UI
             ShowDetail(btn);
         }
 
+        // ══════════════════════════════════════════════════════════
+        //  툴팁 — 마우스를 올린 칸 옆에 뜨는 설명
+        // ══════════════════════════════════════════════════════════
+        RectTransform _tip;
+        TMP_Text _tipTitle, _tipCategory, _tipBody, _tipStats, _tipFoot;
+        Image _tipIcon;
+        SkillNodeButton _tipTarget;
+        const float TipWidth = 400f;
+
+        void BuildTooltip()
+        {
+            if (_tip != null) return;
+            // 예전 씬의 고정 상세 패널은 쓰지 않는다
+            if (detailPanel != null) detailPanel.SetActive(false);
+
+            var root = (RectTransform)transform;
+            var bg = NewImage(root, "SkillTooltip", LabArt.Panel);
+            LabStyle.Panel(bg, corners: true, fill: new Color(0.02f, 0.07f, 0.09f, 0.96f),
+                           border: new Color(0.45f, 0.95f, 0.9f, 0.55f));
+            _tip = bg.rectTransform;
+            _tip.anchorMin = _tip.anchorMax = new Vector2(0.5f, 0.5f);
+            _tip.pivot = new Vector2(0f, 1f);
+            _tip.sizeDelta = new Vector2(TipWidth, 200f);
+
+            var layout = bg.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(26, 26, 20, 20);
+            layout.spacing = 8f;
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            var fitter = bg.gameObject.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            // 머리: 도형 아이콘 + 이름
+            var head = new GameObject("Head", typeof(RectTransform));
+            head.transform.SetParent(_tip, false);
+            var h = head.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 10f;
+            h.childAlignment = TextAnchor.MiddleCenter;
+            h.childControlWidth = true; h.childControlHeight = true;
+            h.childForceExpandWidth = false; h.childForceExpandHeight = false;
+
+            _tipIcon = NewImage((RectTransform)head.transform, "Icon", null);
+            _tipIcon.preserveAspect = true;
+            var ile = _tipIcon.gameObject.AddComponent<LayoutElement>();
+            ile.preferredWidth = 30f; ile.preferredHeight = 30f;
+
+            _tipTitle = TipText((RectTransform)head.transform, "Title", 28f, FontStyles.Bold, TextAlignmentOptions.Center);
+            _tipCategory = TipText(_tip, "Category", 15f, FontStyles.Normal, TextAlignmentOptions.Center);
+            _tipCategory.color = new Color(0.56f, 0.72f, 0.74f);
+            TipDivider();
+            _tipBody = TipText(_tip, "Body", 19f, FontStyles.Normal, TextAlignmentOptions.Center);
+            _tipBody.color = new Color(0.9f, 0.95f, 0.95f);
+            TipDivider();
+            _tipStats = TipText(_tip, "Stats", 17f, FontStyles.Normal, TextAlignmentOptions.Left);
+            _tipStats.color = new Color(0.78f, 0.86f, 0.87f);
+            _tipFoot = TipText(_tip, "Foot", 17f, FontStyles.Bold, TextAlignmentOptions.Center);
+
+            // 칸 위를 가리지 않게 입력은 받지 않는다
+            foreach (var g in _tip.GetComponentsInChildren<Graphic>(true)) g.raycastTarget = false;
+            _tip.gameObject.SetActive(false);
+        }
+
+        TMP_Text TipText(RectTransform parent, string name, float size, FontStyles style, TextAlignmentOptions align)
+        {
+            var t = UIKit.Text(parent, name, "", size, Color.white, align, style);
+            t.textWrappingMode = TextWrappingModes.Normal;
+            return t;
+        }
+
+        void TipDivider()
+        {
+            var line = NewImage(_tip, "Divider", null);
+            line.color = new Color(0.45f, 0.95f, 0.9f, 0.22f);
+            var le = line.gameObject.AddComponent<LayoutElement>();
+            le.preferredHeight = 2f; le.minHeight = 2f;
+        }
+
         void ShowDetail(SkillNodeButton btn)
         {
-            if (detailPanel == null) return;
-
-            if (btn == null || btn.Slot == null)
+            if (_tip == null) return;
+            if (btn == null || btn.Slot == null || !btn.gameObject.activeInHierarchy)
             {
-                detailPanel.SetActive(false);
+                _tipTarget = null;
+                _tip.gameObject.SetActive(false);
                 return;
             }
 
-            detailPanel.SetActive(true);
+            _tipTarget = btn;
             var db = _game.Database;
             var progress = _game.Progress;
 
-            if (_detailIcon != null)
-            {
-                _detailIcon.sprite = btn.ShapeSprite;
-                _detailIcon.color = btn.TypeColor;
-                _detailIcon.rectTransform.sizeDelta = btn.IsPill ? new Vector2(70f, 28f) : new Vector2(42f, 42f);
-            }
+            _tipIcon.sprite = btn.ShapeSprite;
+            _tipIcon.color = btn.TypeColor;
+            var ile = _tipIcon.GetComponent<LayoutElement>();
+            ile.preferredWidth = btn.IsPill ? 56f : 30f;
 
             if (btn.Slot.IsRoot)
             {
-                if (detailName != null) { detailName.text = "시작"; detailName.color = Color.white; }
-                if (detailCategory != null) detailCategory.text = $"찍은 칸 {progress.totalNodesPurchased} / {db.PurchasableSlotCount}";
-                if (detailDescription != null)
-                    detailDescription.text = "여기서부터 뻗어 나갑니다.\n선으로 이어진 칸 중 하나라도 찍으면 그 칸이 열립니다.";
-                if (detailEffect != null) detailEffect.text = "";
-                if (detailRequirements != null) detailRequirements.gameObject.SetActive(false);
-                if (detailCost != null) detailCost.text = "";
-                return;
+                _tipTitle.text = "시작";
+                _tipTitle.color = Color.white;
+                _tipCategory.text = $"찍은 칸 {progress.totalNodesPurchased} / {db.PurchasableSlotCount}";
+                _tipBody.text = "여기서부터 뻗어 나갑니다.\n이어진 칸을 찍으면 그 너머의 칸이 드러납니다.";
+                _tipStats.gameObject.SetActive(false);
+                _tipFoot.text = "";
+                _tipFoot.gameObject.SetActive(false);
             }
-
-            var node = btn.Node;
-            int level = progress.GetSkillLevel(node.id);
-            int max = Mathf.Max(1, db.SlotCountOf(node));
-            var state = SkillTreeManager.CanPurchase(db, btn.SlotIndex, progress, out double cost);
-
-            if (detailName != null)
+            else
             {
-                detailName.text = node.displayName;
-                detailName.color = SkillPalette.TypeColor(node.effectType);
-            }
+                var node = btn.Node;
+                int level = progress.GetSkillLevel(node.id);
+                int max = Mathf.Max(1, db.SlotCountOf(node));
+                var state = SkillTreeManager.CanPurchase(db, btn.SlotIndex, progress, out double cost);
+                if (state == PurchaseResult.MaxLevel || state == PurchaseResult.PrerequisiteLocked)
+                    cost = SkillTreeManager.SlotCost(db, btn.SlotIndex);
 
-            if (detailCategory != null)
-            {
-                detailCategory.text = node.effectType.IsUnlock()
+                _tipTitle.text = node.displayName;
+                _tipTitle.color = SkillPalette.TypeColor(node.effectType);
+                _tipCategory.text = node.effectType.IsUnlock()
                     ? SkillPalette.CategoryName(node.effectType)
-                    : $"{SkillPalette.CategoryName(node.effectType)}  ·  이 종류 {level}/{max}칸 찍음";
-            }
+                    : $"{SkillPalette.CategoryName(node.effectType)}  ·  {level} / {max}칸";
 
-            if (detailDescription != null)
-                detailDescription.text = string.IsNullOrEmpty(node.tooltip)
-                    ? node.description
-                    : $"<i>{node.tooltip}</i>\n{node.description}";
+                string desc = string.IsNullOrEmpty(node.tooltip) ? node.description
+                            : string.IsNullOrEmpty(node.description) ? node.tooltip
+                            : $"{node.tooltip}\n<size=85%><color=#A9C4C6>{node.description}</color></size>";
+                _tipBody.text = desc;
 
-            if (detailEffect != null)
-            {
-                if (node.effectType.IsUnlock())
-                {
-                    detailEffect.text = level > 0 ? "해금 완료" : "미해금";
-                }
+                // 표처럼 — 왼쪽 이름, 오른쪽 값 (예시 화면의 확률 · 피해 · 지속 시간 줄)
+                string effect;
+                if (node.effectType.IsUnlock()) effect = level > 0 ? "해금됨" : "해금";
                 else
                 {
                     string cur = node.FormatEffect(level);
-                    string next = state != PurchaseResult.MaxLevel
-                        ? $"   →   <color=#6FF2C8>{node.FormatEffect(level + 1)}</color>" : "";
-                    detailEffect.text = $"합계 {cur}{next}";
+                    effect = state == PurchaseResult.MaxLevel ? cur
+                           : $"{cur}  →  <color=#6FF2C8>{node.FormatEffect(level + 1)}</color>";
                 }
-            }
+                _tipStats.text = $"효과<pos=34%>{effect}\n가격<pos=34%><color=#FFD666>{NumberFormatter.Format(cost)}</color>";
+                _tipStats.gameObject.SetActive(true);
 
-            if (detailRequirements != null)
-            {
-                bool locked = state == PurchaseResult.PrerequisiteLocked;
-                detailRequirements.gameObject.SetActive(locked);
-                if (locked)
-                    detailRequirements.text = "<color=#E08A72>잠김 — 선으로 이어진 칸 중\n하나를 먼저 찍어야 합니다</color>";
-            }
-
-            if (detailCost != null)
-            {
-                detailCost.text = state switch
+                _tipFoot.gameObject.SetActive(true);
+                _tipFoot.text = state switch
                 {
-                    PurchaseResult.MaxLevel           => "<color=#F2C74C>찍음</color>",
-                    PurchaseResult.PrerequisiteLocked => "<color=#E08A72>잠김</color>",
-                    PurchaseResult.NotEnoughCurrency  => $"<color=#E08A72>비용 {NumberFormatter.Format(cost)} — 재화 부족</color>",
-                    _                                 => $"<color=#6FF2C8>비용 {NumberFormatter.Format(cost)} — 클릭해서 구매</color>",
+                    PurchaseResult.MaxLevel          => "<color=#FFD666>찍음</color>",
+                    PurchaseResult.NotEnoughCurrency => "<color=#E08A72>재화 부족</color>",
+                    PurchaseResult.Success           => "<color=#6FF2C8>클릭해서 구매</color>",
+                    _                                => "<color=#E08A72>잠김</color>",
                 };
             }
+
+            _tip.gameObject.SetActive(true);
+            _tip.SetAsLastSibling();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_tip);
+            PlaceTooltip();
+        }
+
+        /// <summary>칸 오른쪽에 붙이고, 화면 밖으로 나가면 왼쪽 · 위아래로 옮긴다.</summary>
+        void PlaceTooltip()
+        {
+            if (_tip == null || _tipTarget == null) return;
+            var canvasRt = (RectTransform)transform;
+            var canvas = GetComponentInParent<Canvas>();
+            Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+
+            var target = (RectTransform)_tipTarget.transform;
+            var corners = new Vector3[4];
+            target.GetWorldCorners(corners);     // 0 왼아래 · 1 왼위 · 2 오위 · 3 오아래
+            Vector2 left = RectTransformUtility.WorldToScreenPoint(cam, (corners[0] + corners[1]) * 0.5f);
+            Vector2 right = RectTransformUtility.WorldToScreenPoint(cam, (corners[2] + corners[3]) * 0.5f);
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt, left, cam, out var lLocal);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt, right, cam, out var rLocal);
+
+            Vector2 size = _tip.rect.size;
+            Rect area = canvasRt.rect;
+            const float gap = 22f, margin = 16f;
+
+            bool toRight = rLocal.x + gap + size.x <= area.xMax - margin;
+            float x = toRight ? rLocal.x + gap : lLocal.x - gap - size.x;
+            x = Mathf.Clamp(x, area.xMin + margin, area.xMax - margin - size.x);
+            float y = rLocal.y + size.y * 0.5f;                              // 칸 높이 가운데에 맞춘다
+            y = Mathf.Clamp(y, area.yMin + margin + size.y, area.yMax - margin);
+
+            _tip.pivot = new Vector2(0f, 1f);
+            _tip.anchoredPosition = new Vector2(x, y);
         }
 
         // ── 헬퍼 ────────────────────────────────────────────────

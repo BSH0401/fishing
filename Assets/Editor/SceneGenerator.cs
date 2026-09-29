@@ -359,42 +359,17 @@ namespace FishGame.EditorTools
             var canvas = CreateCanvas("Menu Canvas", out var canvasRt);
             CreateEventSystem();
 
-            // 상단 타이틀 + 재화
-            var title = Label(canvasRt, "Title", "실험체 #7", 46, Vector2.zero, 600f, TextAlignmentOptions.Left);
-            var titleRt = title.rectTransform;
-            titleRt.anchorMin = titleRt.anchorMax = new Vector2(0f, 1f);
-            titleRt.pivot = new Vector2(0f, 1f);
-            titleRt.anchoredPosition = new Vector2(36f, -28f);
-
-            var currency = Label(canvasRt, "Currency", "0", 40, Vector2.zero, 400f, TextAlignmentOptions.Right);
-            var curRt = currency.rectTransform;
-            curRt.anchorMin = curRt.anchorMax = new Vector2(1f, 1f);
-            curRt.pivot = new Vector2(1f, 1f);
-            curRt.anchoredPosition = new Vector2(-300f, -32f);
-            currency.color = new Color(0.98f, 0.86f, 0.42f);
-
-            // 오른쪽 위: 설정 · 타이틀로
-            var settingsBtn = TextButton(canvasRt, "SettingsButton", "설정", Vector2.zero, new Vector2(120f, 46f));
-            var setRt = (RectTransform)settingsBtn.transform;
-            setRt.anchorMin = setRt.anchorMax = new Vector2(1f, 1f);
-            setRt.pivot = new Vector2(1f, 1f);
-            setRt.anchoredPosition = new Vector2(-36f, -28f);
-
-            var titleBtn = TextButton(canvasRt, "TitleButton", "타이틀", Vector2.zero, new Vector2(120f, 46f));
-            var tbRt = (RectTransform)titleBtn.transform;
-            tbRt.anchorMin = tbRt.anchorMax = new Vector2(1f, 1f);
-            tbRt.pivot = new Vector2(1f, 1f);
-            tbRt.anchoredPosition = new Vector2(-168f, -28f);
-
-            // ── 스킬트리 (스크롤 영역) ──
+            // ══ 스킬트리가 화면 전체 ══
+            // 남기는 UI: 재화(왼쪽 위) · 설정(오른쪽 위) · 물고기 도감(왼쪽 아래) · 맵 선택(오른쪽 아래)
+            // 칸 설명은 고정 패널 대신 마우스를 올린 칸 옆에 뜨는 툴팁 (SkillTreeUI가 실행 중에 만든다)
             var scrollGo = PrefabGenerator.NewUI("SkillTreeScroll", Vector2.zero, canvasRt);
             var scrollRt = (RectTransform)scrollGo.transform;
-            scrollRt.anchorMin = new Vector2(0f, 0f);
-            scrollRt.anchorMax = new Vector2(1f, 1f);
-            scrollRt.offsetMin = new Vector2(36f, 140f);
-            scrollRt.offsetMax = new Vector2(-380f, -116f);
+            scrollRt.anchorMin = Vector2.zero;
+            scrollRt.anchorMax = Vector2.one;
+            scrollRt.offsetMin = Vector2.zero;
+            scrollRt.offsetMax = Vector2.zero;
             var scrollBg = scrollGo.AddComponent<Image>();
-            scrollBg.color = new Color(0.09f, 0.12f, 0.15f, 0.85f);
+            scrollBg.color = new Color(0.02f, 0.06f, 0.09f, 1f);
             scrollGo.AddComponent<RectMask2D>();
             var scrollRect = scrollGo.AddComponent<ScrollRect>();
             scrollRect.horizontal = true;
@@ -414,143 +389,33 @@ namespace FishGame.EditorTools
             var lineRoot = PrefabGenerator.NewUI("Lines", Vector2.zero, contentRt);
             var nodeRoot = PrefabGenerator.NewUI("Nodes", Vector2.zero, contentRt);
 
-            // 상세 패널
-            var detail = Panel_(canvasRt, "SkillDetail", new Vector2(1f, 1f), new Vector2(1f, 1f),
-                                new Vector2(-36f, -100f), new Vector2(320f, 400f));
-            var detailRt = (RectTransform)detail.transform;
-            detailRt.pivot = new Vector2(1f, 1f);
+            // ── 왼쪽 위: 재화 ──
+            var currency = Label(canvasRt, "Currency", "0", 44, Vector2.zero, 560f, TextAlignmentOptions.Left);
+            var curRt = currency.rectTransform;
+            curRt.anchorMin = curRt.anchorMax = new Vector2(0f, 1f);
+            curRt.pivot = new Vector2(0f, 1f);
+            curRt.anchoredPosition = new Vector2(36f, -26f);
+            currency.color = new Color(0.98f, 0.86f, 0.42f);
+            currency.raycastTarget = false;
 
-            var dName = Label(detailRt, "Name", "스킬", 25, new Vector2(16f, -14f), 288f, TextAlignmentOptions.Left);
-            var dCategory = Label(detailRt, "Category", "", 15, new Vector2(16f, -46f), 288f, TextAlignmentOptions.Left);
-            dCategory.color = new Color(0.62f, 0.68f, 0.74f);
+            // ── 오른쪽 위: 설정 (누르면 설정 · 타이틀 메뉴) ──
+            var settingsBtn = TextButton(canvasRt, "SettingsButton", "설정", Vector2.zero, new Vector2(120f, 48f));
+            var setRt = (RectTransform)settingsBtn.transform;
+            setRt.anchorMin = setRt.anchorMax = new Vector2(1f, 1f);
+            setRt.pivot = new Vector2(1f, 1f);
+            setRt.anchoredPosition = new Vector2(-36f, -28f);
 
-            var dDesc = Label(detailRt, "Desc", "", 16, new Vector2(16f, -74f), 288f, TextAlignmentOptions.TopLeft);
-            dDesc.rectTransform.sizeDelta = new Vector2(288f, 108f);
-            dDesc.color = new Color(0.80f, 0.85f, 0.89f);
-
-            var dEffect = Label(detailRt, "Effect", "", 18, new Vector2(16f, -190f), 288f, TextAlignmentOptions.Left);
-            dEffect.color = Accent;
-
-            var dReq = Label(detailRt, "Requirements", "", 15, new Vector2(16f, -222f), 288f, TextAlignmentOptions.TopLeft);
-            dReq.rectTransform.sizeDelta = new Vector2(288f, 110f);
-
-            var dCost = Label(detailRt, "Cost", "", 16, new Vector2(16f, -342f), 288f, TextAlignmentOptions.Left);
-
-            // 범례 — 윗줄: 선 색 / 아랫줄: 도형 (SkillTreeUI가 런타임에 채운다)
-            var legend = Panel_(canvasRt, "Legend", new Vector2(0f, 0f), new Vector2(0f, 0f),
-                                new Vector2(384f, 36f), new Vector2(1160f, 62f));
-            ((RectTransform)legend.transform).pivot = new Vector2(0f, 0f);
-            var legendText = Label((RectTransform)legend.transform, "Text",
-                "선  <color=#66FFDB>━ 양쪽 찍음</color>   <color=#FFC257>━ 열린 길</color>   " +
-                "<color=#6F8C96>━ 잠김</color>      이어진 칸 중 하나를 찍으면 열립니다" +
-                "      <color=#8A9199>휠 확대·축소 · 드래그 이동</color>",
-                15, new Vector2(12f, -4f), 1150f, TextAlignmentOptions.Left);
-
-            // 16:10처럼 좁은 화면에서 오른쪽 패널 밑으로 파고들지 않게 — 도감 버튼 뒤부터 오른쪽 패널 앞까지 늘어난다
-            var legendRt = (RectTransform)legend.transform;
-            legendRt.anchorMin = new Vector2(0f, 0f);
-            legendRt.anchorMax = new Vector2(1f, 0f);
-            legendRt.offsetMin = new Vector2(384f, 36f);
-            legendRt.offsetMax = new Vector2(-376f, 98f);
-            var legendTextRt = legendText.rectTransform;
-            legendTextRt.anchorMin = new Vector2(0f, 1f);
-            legendTextRt.anchorMax = new Vector2(1f, 1f);
-            legendTextRt.offsetMin = new Vector2(12f, -4f - 22.5f);
-            legendTextRt.offsetMax = new Vector2(-12f, -4f);
-            legendText.enableAutoSizing = true;
-            legendText.fontSizeMin = 11f;
-            legendText.fontSizeMax = 15f;
-            legendText.textWrappingMode = TextWrappingModes.NoWrap;   // 줄바꿈 대신 글자를 줄인다
-
-            var legendRow = PrefabGenerator.NewUI("Shapes", new Vector2(1150f, 26f), (RectTransform)legend.transform);
-            var legendRowRt = (RectTransform)legendRow.transform;
-            legendRowRt.anchorMin = legendRowRt.anchorMax = new Vector2(0f, 1f);
-            legendRowRt.pivot = new Vector2(0f, 1f);
-            legendRowRt.anchoredPosition = new Vector2(12f, -30f);
-            var legendLayout = legendRow.AddComponent<HorizontalLayoutGroup>();
-            legendLayout.spacing = 14f;
-            legendLayout.childAlignment = TextAnchor.MiddleLeft;
-            legendLayout.childControlWidth = true;
-            legendLayout.childControlHeight = true;
-            legendLayout.childForceExpandWidth = false;
-            legendLayout.childForceExpandHeight = false;
-
-            var hint = Label(canvasRt, "TreeHint", "", 17, Vector2.zero, 520f, TextAlignmentOptions.Left);
-            var hintRt = hint.rectTransform;
-            hintRt.anchorMin = hintRt.anchorMax = new Vector2(0f, 1f);
-            hintRt.pivot = new Vector2(0f, 1f);
-            hintRt.anchoredPosition = new Vector2(266f, -118f);
-
-            // 줌 / 전체보기 버튼
-            var zoomOut = TextButton(canvasRt, "ZoomOut", "−", Vector2.zero, new Vector2(44f, 40f));
-            var zoomOutRt = (RectTransform)zoomOut.transform;
-            zoomOutRt.anchorMin = zoomOutRt.anchorMax = new Vector2(0f, 1f);
-            zoomOutRt.pivot = new Vector2(0f, 1f);
-            zoomOutRt.anchoredPosition = new Vector2(36f, -116f);
-
-            var zoomIn = TextButton(canvasRt, "ZoomIn", "+", Vector2.zero, new Vector2(44f, 40f));
-            var zoomInRt = (RectTransform)zoomIn.transform;
-            zoomInRt.anchorMin = zoomInRt.anchorMax = new Vector2(0f, 1f);
-            zoomInRt.pivot = new Vector2(0f, 1f);
-            zoomInRt.anchoredPosition = new Vector2(86f, -116f);
-
-            var fitBtn = TextButton(canvasRt, "FitButton", "전체 보기", Vector2.zero, new Vector2(110f, 40f));
-            var fitRt = (RectTransform)fitBtn.transform;
-            fitRt.anchorMin = fitRt.anchorMax = new Vector2(0f, 1f);
-            fitRt.pivot = new Vector2(0f, 1f);
-            fitRt.anchoredPosition = new Vector2(136f, -116f);
-
-            var treeUi = canvas.gameObject.AddComponent<SkillTreeUI>();
-            var treeSo = new SerializedObject(treeUi);
-            treeSo.FindProperty("positionScale").floatValue = 3f;
-            treeSo.FindProperty("legendContainer").objectReferenceValue = legendRowRt;
-            treeSo.FindProperty("scrollContent").objectReferenceValue = contentRt;
-            treeSo.FindProperty("scrollRect").objectReferenceValue = scrollRect;
-            treeSo.FindProperty("zoomInButton").objectReferenceValue = zoomIn;
-            treeSo.FindProperty("zoomOutButton").objectReferenceValue = zoomOut;
-            treeSo.FindProperty("fitButton").objectReferenceValue = fitBtn;
-            treeSo.FindProperty("nodeContainer").objectReferenceValue = nodeRoot.transform;
-            treeSo.FindProperty("lineContainer").objectReferenceValue = lineRoot.transform;
-            treeSo.FindProperty("nodePrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/SkillNodeButton.prefab")
-                    ?.GetComponent<SkillNodeButton>();
-            treeSo.FindProperty("linePrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/SkillLine.prefab")
-                    ?.GetComponent<Image>();
-            treeSo.FindProperty("lineLabelPrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/LineLabel.prefab")
-                    ?.GetComponent<TMP_Text>();
-            treeSo.FindProperty("detailPanel").objectReferenceValue = detail;
-            treeSo.FindProperty("detailName").objectReferenceValue = dName;
-            treeSo.FindProperty("detailCategory").objectReferenceValue = dCategory;
-            treeSo.FindProperty("detailDescription").objectReferenceValue = dDesc;
-            treeSo.FindProperty("detailEffect").objectReferenceValue = dEffect;
-            treeSo.FindProperty("detailRequirements").objectReferenceValue = dReq;
-            treeSo.FindProperty("detailCost").objectReferenceValue = dCost;
-            treeSo.FindProperty("currencyText").objectReferenceValue = currency;
-            treeSo.FindProperty("hintText").objectReferenceValue = hint;
-            treeSo.ApplyModifiedPropertiesWithoutUndo();
-
-            var zoomSo = new SerializedObject(zoomArea);
-            zoomSo.FindProperty("tree").objectReferenceValue = treeUi;
-            zoomSo.ApplyModifiedPropertiesWithoutUndo();
-
-            _ = legendText;
-
-            // ── 우측 하단: 스탯 + 맵 선택 + 시작 ──
+            // ── 오른쪽 아래: 맵 선택 + 탈출 시작 ──
             var side = Panel_(canvasRt, "SidePanel", new Vector2(1f, 0f), new Vector2(1f, 0f),
-                              new Vector2(-36f, 36f), new Vector2(320f, 500f));
+                              new Vector2(-36f, 36f), new Vector2(320f, 300f));
             var sideRt = (RectTransform)side.transform;
             sideRt.pivot = new Vector2(1f, 0f);
-
-            var loadout = Label(sideRt, "Loadout", "", 18, new Vector2(16f, -14f), 288f, TextAlignmentOptions.TopLeft);
-            loadout.rectTransform.sizeDelta = new Vector2(288f, 100f);
 
             var mapListRoot = PrefabGenerator.NewUI("MapList", new Vector2(288f, 194f), sideRt);   // 구역 4개 × 44 + 간격
             var mapListRt = (RectTransform)mapListRoot.transform;
             mapListRt.anchorMin = mapListRt.anchorMax = new Vector2(0f, 1f);
             mapListRt.pivot = new Vector2(0f, 1f);
-            mapListRt.anchoredPosition = new Vector2(16f, -122f);
+            mapListRt.anchoredPosition = new Vector2(16f, -16f);
             var vLayout = mapListRoot.AddComponent<VerticalLayoutGroup>();
             vLayout.spacing = 6f;
             vLayout.childForceExpandHeight = false;
@@ -559,12 +424,8 @@ namespace FishGame.EditorTools
             vLayout.childControlWidth = true;
 
             var playBtn = TextButton(sideRt, "PlayButton", "탈출 시작",
-                                     new Vector2(0f, -328f), new Vector2(288f, 58f));
+                                     new Vector2(0f, -226f), new Vector2(288f, 58f));
             playBtn.GetComponent<Image>().color = Accent;
-
-            var stats = Label(sideRt, "Stats", "", 16, new Vector2(16f, -400f), 288f, TextAlignmentOptions.TopLeft);
-            stats.rectTransform.sizeDelta = new Vector2(288f, 84f);
-            stats.color = new Color(0.68f, 0.74f, 0.79f);
 
             var zoneUi = canvas.gameObject.AddComponent<ZoneSelectUI>();
             var zoneSo = new SerializedObject(zoneUi);
@@ -574,35 +435,13 @@ namespace FishGame.EditorTools
                     ?.GetComponent<Button>();
             zoneSo.ApplyModifiedPropertiesWithoutUndo();
 
-            // 세이브 초기화
-            var resetBtn = TextButton(canvasRt, "ResetButton", "세이브 초기화",
-                                      new Vector2(0f, 0f), new Vector2(160f, 40f));
-            var resetRt = (RectTransform)resetBtn.transform;
-            resetRt.anchorMin = resetRt.anchorMax = new Vector2(0f, 0f);
-            resetRt.pivot = new Vector2(0f, 0f);
-            resetRt.anchoredPosition = new Vector2(36f, 36f);
-            resetBtn.GetComponent<Image>().color = new Color(0.35f, 0.22f, 0.24f);
-
-            var confirm = Panel_(canvasRt, "ResetConfirm", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                                 Vector2.zero, new Vector2(420f, 200f));
-            ((RectTransform)confirm.transform).pivot = new Vector2(0.5f, 0.5f);
-            Label((RectTransform)confirm.transform, "Text", "모든 진행도가 사라집니다.\n초기화할까요?", 22,
-                  new Vector2(0f, -36f), 400f, TextAlignmentOptions.Center)
-                .rectTransform.sizeDelta = new Vector2(400f, 70f);
-            var yes = TextButton((RectTransform)confirm.transform, "Yes", "초기화",
-                                 new Vector2(-100f, -150f), new Vector2(170f, 46f));
-            var no  = TextButton((RectTransform)confirm.transform, "No", "취소",
-                                 new Vector2(100f, -150f), new Vector2(170f, 46f));
-            confirm.SetActive(false);
-
-            // ── 물고기 도감 ──
+            // ── 왼쪽 아래: 물고기 도감 ──
             var codexBtn = TextButton(canvasRt, "CodexButton", "물고기 도감",
-                                      new Vector2(0f, 0f), new Vector2(160f, 40f));
+                                      new Vector2(0f, 0f), new Vector2(170f, 48f));
             var codexBtnRt = (RectTransform)codexBtn.transform;
             codexBtnRt.anchorMin = codexBtnRt.anchorMax = new Vector2(0f, 0f);
             codexBtnRt.pivot = new Vector2(0f, 0f);
-            codexBtnRt.anchoredPosition = new Vector2(208f, 36f);
-            codexBtn.GetComponent<Image>().color = new Color(0.22f, 0.32f, 0.30f);
+            codexBtnRt.anchoredPosition = new Vector2(36f, 36f);
 
             var codexPanel = Panel_(canvasRt, "CodexPanel", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                                     Vector2.zero, new Vector2(660f, 720f));
@@ -663,18 +502,35 @@ namespace FishGame.EditorTools
             codexSo.FindProperty("summaryText").objectReferenceValue = codexSummary;
             codexSo.ApplyModifiedPropertiesWithoutUndo();
 
+            // ── 스킬트리 ──
+            var treeUi = canvas.gameObject.AddComponent<SkillTreeUI>();
+            var treeSo = new SerializedObject(treeUi);
+            treeSo.FindProperty("positionScale").floatValue = 3f;
+            treeSo.FindProperty("scrollContent").objectReferenceValue = contentRt;
+            treeSo.FindProperty("scrollRect").objectReferenceValue = scrollRect;
+            treeSo.FindProperty("nodeContainer").objectReferenceValue = nodeRoot.transform;
+            treeSo.FindProperty("lineContainer").objectReferenceValue = lineRoot.transform;
+            treeSo.FindProperty("nodePrefab").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/SkillNodeButton.prefab")
+                    ?.GetComponent<SkillNodeButton>();
+            treeSo.FindProperty("linePrefab").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/SkillLine.prefab")
+                    ?.GetComponent<Image>();
+            treeSo.FindProperty("lineLabelPrefab").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabGenerator.UiPrefabFolder}/LineLabel.prefab")
+                    ?.GetComponent<TMP_Text>();
+            treeSo.FindProperty("currencyText").objectReferenceValue = currency;
+            treeSo.ApplyModifiedPropertiesWithoutUndo();
+
+            var zoomSo = new SerializedObject(zoomArea);
+            zoomSo.FindProperty("tree").objectReferenceValue = treeUi;
+            zoomSo.ApplyModifiedPropertiesWithoutUndo();
+
             var menuUi = canvas.gameObject.AddComponent<MainMenuUI>();
             var menuSo = new SerializedObject(menuUi);
             menuSo.FindProperty("playButton").objectReferenceValue = playBtn;
-            menuSo.FindProperty("resetSaveButton").objectReferenceValue = resetBtn;
             menuSo.FindProperty("settingsButton").objectReferenceValue = settingsBtn;
-            menuSo.FindProperty("titleButton").objectReferenceValue = titleBtn;
             menuSo.FindProperty("currencyText").objectReferenceValue = currency;
-            menuSo.FindProperty("statsText").objectReferenceValue = stats;
-            menuSo.FindProperty("loadoutText").objectReferenceValue = loadout;
-            menuSo.FindProperty("resetConfirmPanel").objectReferenceValue = confirm;
-            menuSo.FindProperty("resetConfirmYes").objectReferenceValue = yes;
-            menuSo.FindProperty("resetConfirmNo").objectReferenceValue = no;
             menuSo.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.SaveScene(scene, $"{SceneFolder}/MainMenu.unity");

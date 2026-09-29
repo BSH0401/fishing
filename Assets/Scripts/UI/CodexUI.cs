@@ -52,6 +52,9 @@ namespace FishGame.UI
             if (_game != null) _game.OnProgressChanged -= RefreshIfOpen;
         }
 
+        /// <summary>도감 창이 떠 있는가 (메인 화면의 ESC가 먼저 도감을 닫는다).</summary>
+        public bool IsOpen => root != null && root.activeSelf;
+
         public void Open()
         {
             if (_game == null || _game.Database == null) return;

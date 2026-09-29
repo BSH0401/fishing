@@ -37,6 +37,7 @@ namespace FishGame.UI
             var canvas = UIKit.OverlayCanvas("SettingsPanel", 900);
             var panel = canvas.gameObject.AddComponent<SettingsPanel>();
             panel._onClosed = onClosed;
+            panel._openedFrame = Time.frameCount;
             panel._previousSelection = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             panel.LockBehind();
             panel.Build();
@@ -45,6 +46,7 @@ namespace FishGame.UI
         }
 
         Action _onClosed;
+        int _openedFrame = -1;
         readonly List<Selectable> _locked = new List<Selectable>();
 
         /// <summary>
@@ -347,7 +349,8 @@ namespace FishGame.UI
 
         void Update()
         {
-            if (_escape != null && _escape.WasPressedThisFrame()) Close();
+            // 연 그 프레임의 ESC(여는 데 쓴 키)로 바로 닫히지 않게
+            if (Time.frameCount != _openedFrame && UIKit.EscapePressed(_escape)) Close();
         }
 
         public void Close()

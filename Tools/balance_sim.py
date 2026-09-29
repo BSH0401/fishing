@@ -99,6 +99,39 @@ for a, b in _TREE["edges"]:
     ADJ[a].append(b); ADJ[b].append(a)
 SLOT_COUNT = len(SLOTS) - 1            # 시작점 제외
 
+# (참고용) BFS 순번 방식 — 깊은 칸이 초반부터 비싸져 클리어 127h로 무너져서 쓰지 않는다.
+def _price_ranks():
+    depth = [-1] * len(SLOTS)
+    depth[ROOT] = 0
+    q = [ROOT]
+    for u in q:
+        for n in ADJ[u]:
+            if depth[n] < 0:
+                depth[n] = depth[u] + 1
+                q.append(n)
+    order = sorted((i for i in range(len(SLOTS)) if i != ROOT and depth[i] >= 0), key=lambda i: (depth[i], i))
+    rank = [0] * len(SLOTS)
+    for k, i in enumerate(order, 1):
+        rank[i] = k
+    return rank
+
+# 깊이 d인 칸의 가격 순번 = round(DEPTH_RANK_SCALE × d). 같은 깊이는 같은 순번.
+DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "5"))   # 5 → 클리어 중앙 4.44h (8회)
+
+def _depth_ranks(scale):
+    depth = [-1] * len(SLOTS)
+    depth[ROOT] = 0
+    q = [ROOT]
+    for u in q:
+        for n in ADJ[u]:
+            if depth[n] < 0:
+                depth[n] = depth[u] + 1
+                q.append(n)
+    return [max(1, round(scale * d)) for d in depth]
+
+PRICE_RANK = _depth_ranks(DEPTH_RANK_SCALE) if DEPTH_RANK_SCALE > 0 else _price_ranks()
+FIXED_SLOT_PRICES = True
+
 # 종류 정의 : (id, 계산 방식, 노드당 값, 코스트 배율)
 #     mult = 복리(×(1+v)), add = 가산, unlock = 해금
 TYPES = [
@@ -361,6 +394,10 @@ class Build:
         return math.ceil(round(cost_of_node(self.nodes_bought + 1) * TYPE_BY_ID[tid][3], 6))
 
     def price(self, i):
+        if FIXED_SLOT_PRICES:
+            # 칸마다 고정 가격 — 시작 칸에서 가까운 순서(BFS 순번)로 곡선의 N번째 값을 미리 정해 둔다.
+            # 무엇을 찍어도 다른 칸 가격은 변하지 않는다. (C#: SkillTreeManager.SlotCost)
+            return math.ceil(round(cost_of_node(PRICE_RANK[i]) * TYPE_BY_ID[SLOTS[i]["type"]][3], 6))
         return self.price_of_type(SLOTS[i]["type"])
 
     def buy(self, i):

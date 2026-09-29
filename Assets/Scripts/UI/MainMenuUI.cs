@@ -2,6 +2,7 @@ using FishGame.Core;
 using FishGame.Utils;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace FishGame.UI
@@ -45,7 +46,8 @@ namespace FishGame.UI
             if (settingsButton != null)
             {
                 LabStyle.Button(settingsButton);
-                settingsButton.onClick.AddListener(() => SettingsPanel.Open());
+                // 누르면 바로 설정 창이 아니라 작은 메뉴(설정 · 타이틀)를 펼친다
+                settingsButton.onClick.AddListener(ToggleSettingsMenu);
             }
             if (titleButton != null)
             {
@@ -112,6 +114,80 @@ namespace FishGame.UI
                 var yesLabel = resetConfirmYes != null ? resetConfirmYes.GetComponentInChildren<TMP_Text>() : null;
                 if (yesLabel != null) yesLabel.color = new Color(1f, 0.62f, 0.58f);
             }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  설정 버튼 메뉴 — 설정 · 타이틀
+        // ══════════════════════════════════════════════════════════
+        GameObject _menuBlocker;
+
+        void ToggleSettingsMenu()
+        {
+            if (_menuBlocker != null) { CloseSettingsMenu(); return; }
+
+            var root = (RectTransform)transform;
+            // 메뉴 밖 아무 곳이나 누르면 닫힌다
+            var blocker = UIKit.Image(root, "SettingsMenuBlocker", null, new Color(0f, 0f, 0f, 0.001f), raycast: true);
+            UIKit.Stretch(blocker.rectTransform);
+            var close = blocker.gameObject.AddComponent<Button>();
+            close.transition = Selectable.Transition.None;
+            close.onClick.AddListener(CloseSettingsMenu);
+            _menuBlocker = blocker.gameObject;
+
+            var panel = UIKit.Image(blocker.transform, "Menu", LabArt.Panel, LabStyle.Fill, raycast: true);
+            LabStyle.Panel(panel, corners: true, fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
+            var pr = panel.rectTransform;
+            // 설정 버튼 바로 아래, 오른쪽 끝을 맞춘다
+            var btnRt = settingsButton != null ? (RectTransform)settingsButton.transform : null;
+            Vector2 anchorPos = new Vector2(-36f, -86f);
+            if (btnRt != null)
+                anchorPos = new Vector2(btnRt.anchoredPosition.x, btnRt.anchoredPosition.y - btnRt.sizeDelta.y - 10f);
+            UIKit.Place(pr, new Vector2(1f, 1f), anchorPos, new Vector2(220f, 140f), new Vector2(1f, 1f));
+
+            var open = UIKit.Button(pr, "Settings", "설정", new Vector2(188f, 52f), fontSize: 22f);
+            UIKit.Place((RectTransform)open.transform, new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(188f, 52f), new Vector2(0.5f, 0.5f));
+            open.onClick.AddListener(() => { CloseSettingsMenu(); SettingsPanel.Open(); });
+
+            var title = UIKit.Button(pr, "Title", "타이틀로", new Vector2(188f, 52f), fontSize: 22f);
+            UIKit.Place((RectTransform)title.transform, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(188f, 52f), new Vector2(0.5f, 0.5f));
+            title.onClick.AddListener(() => { CloseSettingsMenu(); _game.GoToTitle(); });
+
+            blocker.transform.SetAsLastSibling();
+        }
+
+        void CloseSettingsMenu()
+        {
+            if (_menuBlocker != null) Destroy(_menuBlocker);
+            _menuBlocker = null;
+        }
+
+        // ── ESC = 설정 창 ────────────────────────────────────────
+        InputAction _escape;
+
+        void OnEnable()
+        {
+            _escape = new InputAction("OpenSettings", InputActionType.Button);
+            _escape.AddBinding("<Keyboard>/escape");
+            _escape.AddBinding("<Gamepad>/start");
+            _escape.Enable();
+        }
+
+        void OnDisable()
+        {
+            _escape?.Dispose();
+            _escape = null;
+        }
+
+        void Update()
+        {
+            if (!UIKit.EscapePressed(_escape)) return;
+            // 설정 창이 떠 있으면 그 ESC는 설정 창이 닫는 데 쓴다 (닫자마자 다시 열리지 않게)
+            if (SettingsPanel.IsOpen || SettingsPanel.ClosedThisFrame) return;
+            // 도감이 열려 있으면 먼저 도감을 닫는다
+            var codex = GetComponent<CodexUI>();
+            if (codex != null && codex.IsOpen) { codex.Close(); return; }
+            CloseSettingsMenu();
+            SettingsPanel.Open();
         }
 
         void OnDestroy()
