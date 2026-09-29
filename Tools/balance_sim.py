@@ -116,7 +116,7 @@ def _price_ranks():
     return rank
 
 # 깊이 d인 칸의 가격 순번 = round(DEPTH_RANK_SCALE × d). 같은 깊이는 같은 순번.
-DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "5"))   # 5 → 클리어 중앙 4.44h (8회)
+DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "4.75"))   # 히든 아이템 삭제 후 4.75 → 클리어 중앙 4.49h (12회)
 
 def _depth_ranks(scale):
     depth = [-1] * len(SLOTS)
@@ -270,7 +270,7 @@ DESCEND_SECONDS = 6.0
 DEPTH_RAMP_SECONDS = 25.0
 
 # 히든 아이템 — 구역당 2개, 총 8개. 하나당 재화 +5% (가산, 영구)
-HIDDEN_TOTAL = 8
+HIDDEN_TOTAL = 0   # 히든 아이템 삭제 (2026-09-29)
 HIDDEN_BONUS = 0.05
 
 BOSS_REWARD_MULT = 12

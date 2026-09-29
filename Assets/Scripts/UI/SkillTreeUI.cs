@@ -1006,6 +1006,11 @@ namespace FishGame.UI
             ile.preferredWidth = 30f; ile.preferredHeight = 30f;
 
             _tipTitle = TipText((RectTransform)head.transform, "Title", 28f, FontStyles.Bold, TextAlignmentOptions.Center);
+            // 제목은 한 줄 — 가로 레이아웃 안에서 줄바꿈을 켜 두면 폭이 0으로 잡혀 글자가 세로로 쌓인다
+            _tipTitle.textWrappingMode = TextWrappingModes.NoWrap;
+            _tipTitle.enableAutoSizing = true;
+            _tipTitle.fontSizeMin = 18f;
+            _tipTitle.fontSizeMax = 28f;
             _tipCategory = TipText(_tip, "Category", 15f, FontStyles.Normal, TextAlignmentOptions.Center);
             _tipCategory.color = new Color(0.56f, 0.72f, 0.74f);
             TipDivider();

@@ -129,6 +129,15 @@ namespace FishGame.UI
             UIKit.Place((RectTransform)reset.transform, new Vector2(0f, 0f), new Vector2(44f, 36f), new Vector2(220f, 56f));
             reset.onClick.AddListener(() => { GameSettings.ResetToDefaults(); RefreshAll(); });
 
+            // 타이틀로 — 타이틀 화면에서 연 설정 창에는 두지 않는다
+            if (FindAnyObjectByType<TitleScreen>() == null && FishGame.Core.GameManager.Instance != null)
+            {
+                var toTitle = UIKit.Button(w, "ToTitle", "타이틀로", new Vector2(220f, 56f));
+                UIKit.Place((RectTransform)toTitle.transform, new Vector2(0.5f, 0f), new Vector2(0f, 36f), new Vector2(220f, 56f),
+                            new Vector2(0.5f, 0f));
+                toTitle.onClick.AddListener(GoToTitle);
+            }
+
             var done = UIKit.Button(w, "Done", "닫기", new Vector2(220f, 56f), primary: true);
             UIKit.Place((RectTransform)done.transform, new Vector2(1f, 0f), new Vector2(-44f, 36f), new Vector2(220f, 56f));
             done.onClick.AddListener(Close);
@@ -351,6 +360,25 @@ namespace FishGame.UI
         {
             // 연 그 프레임의 ESC(여는 데 쓴 키)로 바로 닫히지 않게
             if (Time.frameCount != _openedFrame && UIKit.EscapePressed(_escape)) Close();
+        }
+
+        /// <summary>
+        /// 설정을 저장하고 타이틀로. 판 중이면 "포기"처럼 판을 끝내 그때까지 번 재화를 정산한 뒤 떠난다.
+        /// </summary>
+        void GoToTitle()
+        {
+            var game = FishGame.Core.GameManager.Instance;
+            if (game == null) return;
+            Close();
+
+            var run = FishGame.Gameplay.RunManager.Instance;
+            if (run != null && run.IsRunning)
+            {
+                run.SetPaused(false);
+                run.EndRun(RunEndReason.Quit);
+            }
+            Time.timeScale = 1f;   // 히트스톱 중이었어도 멈춘 채로 넘어가지 않게
+            game.GoToTitle();
         }
 
         public void Close()

@@ -95,6 +95,9 @@ namespace FishGame.UI
             go.transform.SetParent(parent, false);
             var img = go.AddComponent<Image>();
             img.raycastTarget = false;
+            // 테두리 · 모서리 장식은 꾸밈일 뿐 — 레이아웃 그룹이 있는 패널(툴팁 등)에 붙으면
+            // 줄 하나로 끼어들어 내용이 밀리고 크기가 깨졌다
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
             return img;
         }
 

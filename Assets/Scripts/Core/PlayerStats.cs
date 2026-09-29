@@ -114,7 +114,8 @@ namespace FishGame.Core
             s.MissileCount  = s.HasMissile ? Mathf.Max(1, 1 + missileExtra) : 0;
 
             ApplyCodexBonuses(s, db, progress);
-            ApplyHiddenItemBonus(s, db, progress);
+            // 히든 아이템을 게임에서 뺐으므로 예전에 모은 보너스도 적용하지 않는다 (재화 배율이 세이브마다 달라지지 않게)
+            // ApplyHiddenItemBonus(s, db, progress);
 
             // 입 크기 상한 — 도감 보너스까지 합친 뒤에 건다
             s.MouthMultiplier = Mathf.Min(db.maxMouthMultiplier, s.MouthMultiplier);

@@ -34,6 +34,9 @@ namespace FishGame.Gameplay
         [SerializeField] int outlineSortingOrder = -100;
         [SerializeField] int obstacleSortingOrder = -90;
 
+        static readonly bool EnableObstacles = false;
+        static readonly bool EnableHiddenItems = false;
+
         WorldLayout _layout;
         readonly List<ZoneGate> _gates = new List<ZoneGate>();
         readonly List<HiddenItem> _hiddenItems = new List<HiddenItem>();
@@ -62,10 +65,12 @@ namespace FishGame.Gameplay
             BuildWaterMesh(left, right);
             BuildWaterGrid(left, right, rowZone);
             BuildWalls(left, right);
-            BuildObstacles();          // 히든 아이템보다 먼저 — 아이템이 장애물 안에 박히지 않게
+            // 장애물 · 히든 아이템은 기획에서 뺐다 (구역 데이터는 남겨 두지만 만들지 않는다).
+            // 되살리려면 위의 EnableObstacles · EnableHiddenItems를 true로.
+            if (EnableObstacles) BuildObstacles();
             BuildGates();
             BuildBossStructure();
-            BuildHiddenItems(collectedHiddenIds);
+            if (EnableHiddenItems) BuildHiddenItems(collectedHiddenIds);
 
             return _layout;
         }

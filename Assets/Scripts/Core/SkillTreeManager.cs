@@ -14,7 +14,7 @@ namespace FishGame.Core
     ///   · 칸 하나는 한 번만 찍는다 (이미 찍었으면 MaxLevel).
     ///   · 선으로 이어진 이웃 칸 중 하나라도 찍혀 있어야 열린다 (아니면 PrerequisiteLocked).
     ///     시작 칸은 처음부터 찍힌 것으로 본다.
-    ///   · 가격은 칸마다 고정이다. 시작 칸에서 떨어진 칸 수(깊이) × 5 번째 곡선 값
+    ///   · 가격은 칸마다 고정이다. 시작 칸에서 떨어진 칸 수(깊이) × 4.75 번째 곡선 값
     ///     (SkillCostCurve.CostOfNode) × 종류별 costMultiplier. 무엇을 찍어도 다른 칸 가격은 변하지 않는다.
     ///     (예전엔 "지금까지 찍은 칸 수"로 정해서, 하나 찍을 때마다 모든 칸 가격이 올랐다)
     /// </summary>
@@ -68,12 +68,12 @@ namespace FishGame.Core
         static int[] _ranks;
 
         /// <summary>시작 칸에서 한 칸 멀어질 때마다 곡선에서 몇 칸씩 건너뛰는가. balance_sim.py의 DEPTH_RANK_SCALE.</summary>
-        const int DepthRankScale = 5;
+        const float DepthRankScale = 4.75f;
 
         /// <summary>
-        /// 칸마다 가격 순번 = 시작 칸에서 떨어진 칸 수(BFS 깊이) × 5. 같은 깊이는 같은 가격대(종류별 배율만 다름).
+        /// 칸마다 가격 순번 = 시작 칸에서 떨어진 칸 수(BFS 깊이) × 4.75 (반올림). 같은 깊이는 같은 가격대(종류별 배율만 다름).
         /// 한 갈래를 깊이 파고들어도 넓게 찍어도 가격이 흔들리지 않는다.
-        /// 시뮬레이션(25회 기준 조정): 보스 클리어 중앙 약 4.4시간 — 예전 전역 곡선과 같은 목표.
+        /// 시뮬레이션: 보스 클리어 중앙 약 4.5시간 (히든 아이템 삭제 후 재조정) — 예전 전역 곡선과 같은 목표.
         /// (전역 순번을 BFS 순서로 그대로 나눠 주면 깊은 칸이 처음부터 너무 비싸 클리어가 127시간이 됐다)
         /// </summary>
         static int[] PriceRanks(GameDatabase db)
@@ -101,9 +101,9 @@ namespace FishGame.Core
             for (int i = 0; i < count; i++) maxDepth = Mathf.Max(maxDepth, depth[i]);
             var ranks = new int[count];
             for (int i = 0; i < count; i++)
-                ranks[i] = depth[i] > 0 ? DepthRankScale * depth[i]
+                ranks[i] = depth[i] > 0 ? Mathf.Max(1, Mathf.RoundToInt(DepthRankScale * depth[i]))   // 파이썬 round와 같은 은행가 반올림
                          : depth[i] == 0 ? 0
-                         : DepthRankScale * (maxDepth + 1);          // 시작 칸과 이어지지 않은 칸(도면 오류)은 맨 뒤 가격
+                         : Mathf.RoundToInt(DepthRankScale * (maxDepth + 1));          // 시작 칸과 이어지지 않은 칸(도면 오류)은 맨 뒤 가격
             _rankDb = db; _rankCount = count; _ranks = ranks;
             return ranks;
         }

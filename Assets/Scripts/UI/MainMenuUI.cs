@@ -180,6 +180,9 @@ namespace FishGame.UI
 
         void Update()
         {
+            var __kb = Keyboard.current;
+            if (__kb != null && __kb.anyKey.wasPressedThisFrame)
+                foreach (var k in __kb.allKeys) if (k.wasPressedThisFrame) Debug.Log($"[ESCDBG] key {k.name} esc={UIKit.EscapePressed(_escape)} open={SettingsPanel.IsOpen} closed={SettingsPanel.ClosedThisFrame}");
             if (!UIKit.EscapePressed(_escape)) return;
             // 설정 창이 떠 있으면 그 ESC는 설정 창이 닫는 데 쓴다 (닫자마자 다시 열리지 않게)
             if (SettingsPanel.IsOpen || SettingsPanel.ClosedThisFrame) return;
