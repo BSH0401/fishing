@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FishGame.Data;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace FishGame.Core
     ///   · 칸 하나는 한 번만 찍는다 (이미 찍었으면 MaxLevel).
     ///   · 선으로 이어진 이웃 칸 중 하나라도 찍혀 있어야 열린다 (아니면 PrerequisiteLocked).
     ///     시작 칸은 처음부터 찍힌 것으로 본다.
-    ///   · 가격은 칸마다 고정이다. 시작 칸에서 떨어진 칸 수(깊이) × 4.75 번째 곡선 값
+    ///   · 가격은 칸마다 고정이다. 시작 칸에서 떨어진 칸 수(깊이) × 4.6 번째 곡선 값
     ///     (SkillCostCurve.CostOfNode) × 종류별 costMultiplier. 무엇을 찍어도 다른 칸 가격은 변하지 않는다.
     ///     (예전엔 "지금까지 찍은 칸 수"로 정해서, 하나 찍을 때마다 모든 칸 가격이 올랐다)
     /// </summary>
@@ -60,20 +61,30 @@ namespace FishGame.Core
             if (slot == null || slot.skill == null || slot.IsRoot) return 0d;
             int[] ranks = PriceRanks(db);
             int rank = index < ranks.Length ? Mathf.Max(1, ranks[index]) : 1;
-            return slot.skill.GetCostAtRank(rank);
+            double cost = slot.skill.GetCostAtRank(rank);
+            return IsEarlyActive(slot.skill.effectType) ? Math.Ceiling(cost * EarlyActiveSurcharge) : cost;
         }
+
+        /// <summary>
+        /// 시작 칸 바로 옆의 액티브 해금(부스터 · 청소기 · 황금 미끼)은 너무 싸서 첫 판 만에 찍혔다.
+        /// 초반 목표가 되게 가격을 5배로 올린다. (balance_sim.py의 EARLY_ACTIVE_SURCHARGE)
+        /// </summary>
+        const double EarlyActiveSurcharge = 5d;
+
+        static bool IsEarlyActive(SkillEffectType t) =>
+            t == SkillEffectType.UnlockBooster || t == SkillEffectType.UnlockVacuum || t == SkillEffectType.UnlockGoldenBait;
 
         static GameDatabase _rankDb;
         static int _rankCount = -1;
         static int[] _ranks;
 
         /// <summary>시작 칸에서 한 칸 멀어질 때마다 곡선에서 몇 칸씩 건너뛰는가. balance_sim.py의 DEPTH_RANK_SCALE.</summary>
-        const float DepthRankScale = 4.75f;
+        const float DepthRankScale = 4.6f;
 
         /// <summary>
-        /// 칸마다 가격 순번 = 시작 칸에서 떨어진 칸 수(BFS 깊이) × 4.75 (반올림). 같은 깊이는 같은 가격대(종류별 배율만 다름).
+        /// 칸마다 가격 순번 = 시작 칸에서 떨어진 칸 수(BFS 깊이) × 4.6 (반올림). 같은 깊이는 같은 가격대(종류별 배율만 다름).
         /// 한 갈래를 깊이 파고들어도 넓게 찍어도 가격이 흔들리지 않는다.
-        /// 시뮬레이션: 보스 클리어 중앙 약 4.5시간 (히든 아이템 삭제 후 재조정) — 예전 전역 곡선과 같은 목표.
+        /// 시뮬레이션: 보스 클리어 중앙 약 4.5시간 (히든 삭제 · 초반 액티브 5배 반영 후 재조정) — 예전 전역 곡선과 같은 목표.
         /// (전역 순번을 BFS 순서로 그대로 나눠 주면 깊은 칸이 처음부터 너무 비싸 클리어가 127시간이 됐다)
         /// </summary>
         static int[] PriceRanks(GameDatabase db)

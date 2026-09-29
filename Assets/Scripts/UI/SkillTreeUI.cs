@@ -742,9 +742,10 @@ namespace FishGame.UI
             var progress = _game.Progress;
             int affordable = 0;
 
+            RecomputeVisible();
             foreach (var btn in _buttons)
             {
-                // 찍은 칸과 "바로 다음에 찍을 수 있는 칸"만 보인다. 그 너머는 찍어서 열어야 드러난다
+                // 찍은 칸과 그 앞 두 칸까지만 보인다 (바로 앞은 찍을 수 있고, 그다음은 잠긴 채로 미리 보임)
                 bool visible = IsVisible(btn.SlotIndex);
                 if (btn.gameObject.activeSelf != visible) btn.gameObject.SetActive(visible);
                 if (!visible) continue;
@@ -771,8 +772,37 @@ namespace FishGame.UI
             }
         }
 
-        /// <summary>화면에 드러난 칸인가 — 시작 칸 · 찍은 칸 · 찍은 칸과 선으로 바로 이어진 칸.</summary>
-        bool IsVisible(int slot) => SkillTreeManager.IsReachable(_game.Database, slot, _game.Progress);
+        /// <summary>찍은 칸에서 몇 칸 앞까지 보여 줄지. 1 = 바로 찍을 수 있는 칸, 2 = 그다음 칸까지 (잠긴 채로 미리 보임).</summary>
+        const int RevealDepth = 2;
+
+        readonly HashSet<int> _visible = new HashSet<int>();
+
+        /// <summary>화면에 드러난 칸인가 — 시작 칸 · 찍은 칸 · 거기서 RevealDepth 칸 안에 있는 칸.</summary>
+        bool IsVisible(int slot) => _visible.Contains(slot);
+
+        /// <summary>찍은 칸들에서 선을 따라 RevealDepth 칸까지 퍼져 나가며 보일 칸을 모은다.</summary>
+        void RecomputeVisible()
+        {
+            _visible.Clear();
+            var db = _game.Database;
+            var progress = _game.Progress;
+            var frontier = new List<int>();
+            for (int i = 0; i < db.skillTree.Count; i++)
+                if (SkillTreeManager.IsPurchased(db, i, progress)) { _visible.Add(i); frontier.Add(i); }
+
+            for (int step = 0; step < RevealDepth; step++)
+            {
+                var next = new List<int>();
+                foreach (int u in frontier)
+                {
+                    var slot = db.GetSlot(u);
+                    if (slot == null) continue;
+                    foreach (int n in slot.links)
+                        if (n >= 0 && n < db.skillTree.Count && _visible.Add(n)) next.Add(n);
+                }
+                frontier = next;
+            }
+        }
 
         void RefreshLines()
         {
@@ -869,10 +899,12 @@ namespace FishGame.UI
                 }
                 bool done = bought == p.Slots.Count;
                 bool active = bought > 0 || open > 0;
+                bool anyVisible = false;
+                foreach (int i in p.Slots) if (IsVisible(i)) { anyVisible = true; break; }
 
                 // 아직 한 칸도 드러나지 않은 모듈 판은 통째로 숨긴다
-                if (p.Fill.gameObject.activeSelf != active) p.Fill.gameObject.SetActive(active);
-                if (!active) continue;
+                if (p.Fill.gameObject.activeSelf != anyVisible) p.Fill.gameObject.SetActive(anyVisible);
+                if (!anyVisible) continue;
 
                 if (p.Border != null)
                     p.Border.color = done ? new Color(1f, 0.84f, 0.4f, 0.75f)

@@ -116,7 +116,7 @@ def _price_ranks():
     return rank
 
 # 깊이 d인 칸의 가격 순번 = round(DEPTH_RANK_SCALE × d). 같은 깊이는 같은 순번.
-DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "4.75"))   # 히든 아이템 삭제 후 4.75 → 클리어 중앙 4.49h (12회)
+DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "4.6"))   # 초반 액티브 5배 반영 후 4.6 → 클리어 중앙 4.62h (12회)
 
 def _depth_ranks(scale):
     depth = [-1] * len(SLOTS)
@@ -128,6 +128,10 @@ def _depth_ranks(scale):
                 depth[n] = depth[u] + 1
                 q.append(n)
     return [max(1, round(scale * d)) for d in depth]
+
+# 시작 칸 옆 액티브 해금(부스터 · 청소기 · 황금 미끼)은 첫 구매 가격 5배 (C#: SkillTreeManager.EarlyActiveSurcharge)
+EARLY_ACTIVES = {"unlock_booster", "unlock_vacuum", "unlock_bait"}
+EARLY_ACTIVE_SURCHARGE = 5.0
 
 PRICE_RANK = _depth_ranks(DEPTH_RANK_SCALE) if DEPTH_RANK_SCALE > 0 else _price_ranks()
 FIXED_SLOT_PRICES = True
@@ -397,7 +401,10 @@ class Build:
         if FIXED_SLOT_PRICES:
             # 칸마다 고정 가격 — 시작 칸에서 가까운 순서(BFS 순번)로 곡선의 N번째 값을 미리 정해 둔다.
             # 무엇을 찍어도 다른 칸 가격은 변하지 않는다. (C#: SkillTreeManager.SlotCost)
-            return math.ceil(round(cost_of_node(PRICE_RANK[i]) * TYPE_BY_ID[SLOTS[i]["type"]][3], 6))
+            base = math.ceil(round(cost_of_node(PRICE_RANK[i]) * TYPE_BY_ID[SLOTS[i]["type"]][3], 6))
+            if SLOTS[i]["type"] in EARLY_ACTIVES:
+                base = math.ceil(base * EARLY_ACTIVE_SURCHARGE)
+            return base
         return self.price_of_type(SLOTS[i]["type"])
 
     def buy(self, i):
