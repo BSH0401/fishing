@@ -1,4 +1,3 @@
-using FishGame.UI;
 using UnityEngine;
 
 namespace FishGame.Gameplay
@@ -15,8 +14,8 @@ namespace FishGame.Gameplay
     [DisallowMultipleComponent]
     public class EdibilityAura : MonoBehaviour
     {
-        static readonly Color EdibleColor = new Color(0.35f, 1f, 0.55f, 0.38f);
-        static readonly Color DangerColor = new Color(1f, 0.26f, 0.26f, 0.5f);
+        static readonly Color EdibleColor = new Color(0.3f, 1f, 0.45f, 0.6f);
+        static readonly Color DangerColor = new Color(1f, 0.22f, 0.22f, 0.7f);
 
         const float WidthScale = 1.45f;    // 몸 그림 폭 대비 빛 크기
         const float HeightScale = 2.1f;    // 물고기 그림은 납작해서 세로를 더 키운다
@@ -36,8 +35,31 @@ namespace FishGame.Gameplay
             var go = new GameObject("EdibilityAura");
             go.transform.SetParent(_body.Renderer.transform, false);
             _aura = go.AddComponent<SpriteRenderer>();
-            _aura.sprite = LabArt.SoftDot;
+            _aura.sprite = GlowSprite;
             _aura.color = Color.clear;
+        }
+
+        // SoftDot은 가장자리로 너무 빨리 흐려져 물 색에 묻힌다 — 안쪽은 꽉 차고 바깥 40%만 흐려지는 빛
+        static Sprite _glow;
+        static Sprite GlowSprite
+        {
+            get
+            {
+                if (_glow != null) return _glow;
+                const int n = 64;
+                var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { name = "EdibilityGlow", wrapMode = TextureWrapMode.Clamp };
+                var px = new Color32[n * n];
+                for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float u = (x + 0.5f) / n * 2f - 1f, v = (y + 0.5f) / n * 2f - 1f;
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    float a = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((1f - r) / 0.4f));
+                    px[y * n + x] = new Color32(255, 255, 255, (byte)(255f * a));
+                }
+                tex.SetPixels32(px); tex.Apply(false, true);
+                return _glow = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect);
+            }
         }
 
         /// <summary>종이 바뀌면(풀 재사용) 그림 크기에 맞춰 빛을 다시 잰다.</summary>
