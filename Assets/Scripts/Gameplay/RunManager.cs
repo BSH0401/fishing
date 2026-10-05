@@ -38,6 +38,8 @@ namespace FishGame.Gameplay
         public float TimeRemaining { get; private set; }
         public float MaxTime { get; private set; }
         public float ElapsedSeconds { get; private set; }
+        /// <summary>일시정지를 뺀 실제 플레이 시간(초). 결과 화면에 그대로 보여 준다.</summary>
+        public float PlaySeconds { get; private set; }
         public double CurrencyEarned { get; private set; }
         public int FishEaten { get; private set; }
         public bool BossKilled { get; private set; }
@@ -126,6 +128,7 @@ namespace FishGame.Gameplay
             MaxTime = Stats.MaxSurvivalTime;
             TimeRemaining = MaxTime;
             ElapsedSeconds = 0f;
+            PlaySeconds = 0f;
             CurrencyEarned = 0d;
             FishEaten = 0;
             HiddenItemsThisRun = 0;
@@ -254,7 +257,10 @@ namespace FishGame.Gameplay
             get
             {
                 if (Database == null) return 1f;
-                float m = 1f + (ElapsedSeconds / 60f) * Database.timeDrainAccelerationPer60s;
+                // 처음 MaxTime초 동안은 정직하게 1배 — 안 먹고 버티면 정확히 제한시간만큼 살고,
+                // 먹은 만큼 그보다 오래 산다. 그 뒤로 가속이 붙는다. (QA R10: 30초 버텼는데 20초로 찍히던 문제)
+                float over = Mathf.Max(0f, ElapsedSeconds - MaxTime);
+                float m = 1f + (over / 60f) * Database.timeDrainAccelerationPer60s;
                 return Mathf.Min(Database.maxTimeDrainMultiplier, m);
             }
         }
@@ -285,6 +291,8 @@ namespace FishGame.Gameplay
 
             float dt = Time.deltaTime;
             ElapsedSeconds += dt;
+            // 결과 화면용 실제 플레이 시간 — 히트스톱(timeScale 0)·개발자 배속과 상관없이 벽시계로 센다
+            PlaySeconds += Mathf.Min(Time.unscaledDeltaTime, 0.25f);
             if (!FishGame.Utils.DevFlags.InfiniteTime)
                 TimeRemaining -= dt * CurrentDrainMultiplier;
 
@@ -437,7 +445,7 @@ namespace FishGame.Gameplay
             Bait.DespawnAll();
 
             // 순서 중요: 결과 UI가 GameManager.LastResult를 읽으므로 정산을 먼저 끝낸다.
-            GameManager.Instance?.FinishRun(reason, CurrencyEarned, FishEaten, ElapsedSeconds,
+            GameManager.Instance?.FinishRun(reason, CurrencyEarned, FishEaten, PlaySeconds,
                                             BossKilled, DeepestZoneThisRun, HiddenItemsThisRun);
             OnRunEnded?.Invoke(reason);
         }

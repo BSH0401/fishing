@@ -117,7 +117,7 @@ namespace FishGame.UI
                 statsText.text =
                     $"도달 구역  {route}\n" +
                     $"잡아먹은 물고기  {result.FishEaten}마리\n" +
-                    $"생존 시간  {NumberFormatter.FormatTime(result.SurvivedSeconds)}" +
+                    $"플레이 시간  {NumberFormatter.FormatTime(result.SurvivedSeconds)}" +
                     (result.HiddenItemsFound > 0
                         ? $"\n히든 아이템  +{result.HiddenItemsFound}개  <size=80%>(재화 +{result.HiddenItemsFound * (gm?.Database != null ? gm.Database.hiddenItemCurrencyBonus : 0.05f) * 100f:0.#}% 영구)</size>"
                         : "");

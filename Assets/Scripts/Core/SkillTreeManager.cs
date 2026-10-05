@@ -79,7 +79,7 @@ namespace FishGame.Core
         static int[] _ranks;
 
         /// <summary>시작 칸에서 한 칸 멀어질 때마다 곡선에서 몇 칸씩 건너뛰는가. balance_sim.py의 DEPTH_RANK_SCALE.</summary>
-        const float DepthRankScale = 4.6f;
+        const float DepthRankScale = 6.0f;   // R10 노가다 완화 리튠 (재화 2배 · 성장 0.5 · 소모 가속 1.0과 한 세트)
 
         /// <summary>
         /// 칸마다 가격 순번 = 시작 칸에서 떨어진 칸 수(BFS 깊이) × 4.6 (반올림). 같은 깊이는 같은 가격대(종류별 배율만 다름).

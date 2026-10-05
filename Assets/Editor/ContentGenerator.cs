@@ -165,7 +165,7 @@ namespace FishGame.EditorTools
         static readonly ZoneDef[] Zones =
         {
             new ZoneDef {
-                file = "Zone_1_Tank", display = "어항", currencyMult = 0.4286f,
+                file = "Zone_1_Tank", display = "어항", currencyMult = 1.2f,      // R10: 0.4286 → 1.2 (첫 구역 노가다 완화)
                 height = 46f,
                 profile = P((0f, 22f), (0.45f, 21f), (0.80f, 14f), (1f, 7f)),
                 hasExit = true, exitHalfWidth = 7f, exitHeight = 16f, exitRequiredSize = 3.1f,
@@ -176,7 +176,7 @@ namespace FishGame.EditorTools
                 desc = "탈출은 여기서 시작된다. 바닥의 배수구가 유일한 출구다." },
 
             new ZoneDef {
-                file = "Zone_2_Sewer", display = "하수구", currencyMult = 0.5162f,
+                file = "Zone_2_Sewer", display = "하수구", currencyMult = 1.0f,     // R10: 0.5162 → 1.0
                 height = 110f,
                 profile = P((0f, 30f), (0.12f, 52f), (0.88f, 52f), (1f, 34f)),
                 hasExit = true, exitHalfWidth = 15f, exitHeight = 22f, exitRequiredSize = 8.1f,
@@ -371,7 +371,7 @@ namespace FishGame.EditorTools
             db.voltStunCapRatio = 0.6f;      // 마비 ≤ 쿨타임의 60%
             db.activeRangeScalesWithSize = true;
 
-            db.timeDrainAccelerationPer60s = 2.2f;
+            db.timeDrainAccelerationPer60s = 1.0f;   // R10: 2.2 → 1.0
             db.maxTimeDrainMultiplier = 10f;
             db.deathCurrencyPenalty = 0.30f;
 
@@ -382,7 +382,7 @@ namespace FishGame.EditorTools
 
             // 깊이 ↔ 가치 — 맵 전체에 걸친 연속 곡선.
             // 구역 배율은 구간 페이싱용이고, 매끄러운 상승은 이 곡선이 맡는다.
-            db.globalValueScale = 1f;
+            db.globalValueScale = 2f;   // R10: 노가다 완화 — 재화 2배
             db.depthRichness = 3f;
             db.eatSizeTolerance = 1.0f;
 
@@ -395,7 +395,7 @@ namespace FishGame.EditorTools
             db.codexMaxTiers = 10;
 
             db.inRunGrowthEnabled = true;
-            db.growthMassEfficiency = 0.15f;
+            db.growthMassEfficiency = 0.5f;   // R10: 판 안에서 쑥쑥 크게
             db.growthMaxMultiplier = 2.5f;
 
             EnsureSoundBank();

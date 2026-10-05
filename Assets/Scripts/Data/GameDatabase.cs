@@ -125,20 +125,20 @@ namespace FishGame.Data
         public bool inRunGrowthEnabled = true;
         [Tooltip("질량 보존식으로 자란다: 새 크기 = √(내 크기² + 먹이 크기² × 효율)\n" +
                  "덕분에 커질수록 잔챙이로는 잘 안 크는 자연스러운 감속이 생긴다.")]
-        [Range(0.01f, 1f)] public float growthMassEfficiency = 0.15f;
+        [Range(0.01f, 1f)] public float growthMassEfficiency = 0.5f;
         [Tooltip("한 판에서 커질 수 있는 최대 배율 (판 시작 크기 대비)")]
         [Min(1f)] public float growthMaxMultiplier = 2.5f;
 
         [Header("제한시간 압박")]
         [Tooltip("경과 60초마다 초당 제한시간 소모가 이만큼 늘어난다.\n" +
                  "0이면 강화가 쌓였을 때 한 판이 무한정 길어져 플레이 루프가 무너진다.")]
-        [Range(0f, 6f)] public float timeDrainAccelerationPer60s = 2.2f;
+        [Range(0f, 6f)] public float timeDrainAccelerationPer60s = 1.0f;
         [Min(1f)] public float maxTimeDrainMultiplier = 10f;
 
         [Header("깊이 ↔ 가치")]
         [Tooltip("모든 재화에 곱해지는 전역 배율. 총 플레이타임을 맞추는 유일한 손잡이다.\n" +
                  "Tools/tune.py 가 잡아준 값을 넣는다.")]
-        [Min(0.0001f)] public float globalValueScale = 1f;
+        [Min(0.0001f)] public float globalValueScale = 2f;
 
         [Tooltip("맵 바닥에서 얻는 재화가 맵 천장보다 몇 배인지.\n" +
                  "깊이에 따라 매끄럽게(지수적으로) 올라가므로 구역 경계에서 값이 튀지 않는다.\n" +

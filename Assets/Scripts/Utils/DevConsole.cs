@@ -62,9 +62,36 @@ namespace FishGame.Utils
                 _confirmWipe = false;
             }
 
+            // F12 — 게임 화면 스크린샷 (개발자 표시는 빼고, 2배 해상도로 프로젝트/Screenshots에 저장)
+            if (kb != null && kb.f12Key.wasPressedThisFrame && !_capturing)
+                StartCoroutine(CaptureScreenshot());
+
             if (!_open) DevFlags.PointerOverPanel = false;
 
             ApplyTimeScale();
+        }
+
+        bool _capturing;
+
+        System.Collections.IEnumerator CaptureScreenshot()
+        {
+            _capturing = true;
+            bool wasOpen = _open;
+            _open = false;
+            yield return null;                       // 개발자 창 · 표시가 빠진 화면이 한 번 그려지게
+            yield return new WaitForEndOfFrame();
+
+            string dir = System.IO.Path.Combine(Application.dataPath, "..", "Screenshots");
+            System.IO.Directory.CreateDirectory(dir);
+            string path = System.IO.Path.GetFullPath(System.IO.Path.Combine(dir,
+                $"Fishing_{System.DateTime.Now:yyyyMMdd_HHmmss}.png"));
+            ScreenCapture.CaptureScreenshot(path, 2);
+            Debug.Log($"[DevConsole] 스크린샷 저장: {path}");
+
+            yield return null;
+            yield return null;
+            _open = wasOpen;
+            _capturing = false;
         }
 
         /// <summary>
@@ -85,6 +112,7 @@ namespace FishGame.Utils
         // ══════════════════════════════════════════════════════════
         void OnGUI()
         {
+            if (_capturing) return;
             EnsureStyles();
 
             if (!_open)

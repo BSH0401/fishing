@@ -57,7 +57,7 @@ MonoBehaviour:
   targetPopulation: 30
   spawnInterval: 0.28
   spawnMarginFromPlayer: 16.64
-  currencyMultiplier: 0.1284
+  currencyMultiplier: 1
   obstacles:
   - shape: 1
     depthT: 0.42

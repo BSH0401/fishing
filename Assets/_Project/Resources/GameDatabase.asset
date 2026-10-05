@@ -1264,11 +1264,11 @@ MonoBehaviour:
   eatSizeTolerance: 1
   deathCurrencyPenalty: 0.3
   inRunGrowthEnabled: 1
-  growthMassEfficiency: 0.15
+  growthMassEfficiency: 0.5
   growthMaxMultiplier: 2.5
-  timeDrainAccelerationPer60s: 2.2
+  timeDrainAccelerationPer60s: 1
   maxTimeDrainMultiplier: 10
-  globalValueScale: 1
+  globalValueScale: 2
   depthRichness: 3
   gateUsesCurrentSize: 1
   recordDeepestZone: 1

@@ -19,7 +19,7 @@ python3 balance_sim.py --clear      → 클리어 시점에 무엇을 찍었나
 python3 balance_sim.py --full       → 풀트리 상태 점검
 python3 balance_sim.py --curve      → 코스트 곡선 확인
 """
-import math, random, sys, statistics
+import math, random, sys, statistics, os
 
 # ══════════════════════════════════════════════════════════════
 #  코스트 곡선 (SkillNode.cs의 SkillCostCurve와 동일해야 함)
@@ -80,7 +80,7 @@ BASE_TIME   = 30.0
 BASE_SPEED  = 6.5
 MAX_SPEED   = 24.0
 SPEED_EXP   = 0.5          # 크기 배율 → 속도 배율 지수
-DRAIN_ACCEL_PER_60S = 2.2
+DRAIN_ACCEL_PER_60S = float(os.environ.get("DRAIN_ACCEL", "1.0"))   # R10: 2.2 → 1.0 (판이 더 길고 덜 쫓기게)
 MAX_DRAIN = 10.0
 MENU_SECONDS_PER_RUN = 10.0
 DEATH_PENALTY = 0.30
@@ -116,7 +116,7 @@ def _price_ranks():
     return rank
 
 # 깊이 d인 칸의 가격 순번 = round(DEPTH_RANK_SCALE × d). 같은 깊이는 같은 순번.
-DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "4.6"))   # 초반 액티브 5배 반영 후 4.6 → 클리어 중앙 4.62h (12회)
+DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "6.0"))   # R10 노가다 완화 리튠 → 클리어 중앙 ~2.5h
 
 def _depth_ranks(scale):
     depth = [-1] * len(SLOTS)
@@ -182,8 +182,8 @@ UTILITY = {
 # 구역 배율은 구간 페이싱을 잡는 손잡이다(tune.py가 정한다).
 # 깊이에 따른 매끄러운 상승은 아래 DEPTH_RICHNESS 곡선이 따로 맡는다.
 ZONES = [
-    ("어항",   0.428621,  3.1,  0.877,  0.385, 1.029, 0.30,  46.0, 16.0),
-    ("하수구", 0.516234,  8.1,  2.866,  1.566, 1.234, 1.00, 110.0, 22.0),
+    ("어항",   1.2,       3.1,  0.877,  0.385, 1.029, 0.30,  46.0, 16.0),
+    ("하수구", 1.0,       8.1,  2.866,  1.566, 1.234, 1.00, 110.0, 22.0),
     ("강",     0.197919, 21.0,  7.676,  6.528, 1.537, 2.70, 260.0, 40.0),
     ("바다",   0.209360,  0.0, 17.800, 19.640, 1.740, 6.50, 520.0,  0.0),
 ]
@@ -245,7 +245,7 @@ BOSS_DEPTH01 = 0.46
 # ── 깊이 ↔ 가치 (WorldLayout.ValueMultiplierAt와 같은 식) ──────
 #     배율 = GLOBAL_VALUE_SCALE × DEPTH_RICHNESS ^ (수면→바닥 진행도)
 # 연속 함수라 구역 경계에서 값이 튀지 않고, 내려갈수록 반드시 오른다.
-GLOBAL_VALUE_SCALE = 1.0
+GLOBAL_VALUE_SCALE = float(os.environ.get("GLOBAL_VALUE_SCALE", "2.0"))   # R10: 재화 2배
 DEPTH_RICHNESS = 3.0
 
 WORLD_HEIGHT = sum(z[7] + z[8] for z in ZONES)
@@ -282,7 +282,7 @@ BOSS_REWARD_MULT = 12
 # ── 인게임 성장 (먹을수록 커진다) ──────────────────────────────
 # 질량 보존식: 새 크기 = √(내 크기² + 먹이 크기² × 효율)
 GROWTH_ENABLED = True
-GROWTH_EFFICIENCY = 0.15
+GROWTH_EFFICIENCY = float(os.environ.get("GROWTH_EFF", "0.5"))   # R10: 0.15 → 0.5 (판 안에서 커지는 맛)
 GROWTH_MAX_MULT = 2.5
 
 # ── 상한 (GameDatabase와 동일) ─────────────────────────────────
@@ -516,6 +516,16 @@ def pick_start_zone(build):
     return z
 
 
+def drain_mult(elapsed, max_time):
+    """초당 제한시간 소모 배수. 첫 max_time초는 정직하게 1배 — 안 먹고 버티면 정확히 제한시간만큼 산다.
+    (C#: RunManager.CurrentDrainMultiplier)"""
+    over = max(0.0, elapsed - max_time) if DRAIN_GRACE else elapsed
+    return min(MAX_DRAIN, 1.0 + (over / 60.0) * DRAIN_ACCEL_PER_60S)
+
+
+DRAIN_GRACE = os.environ.get("DRAIN_GRACE", "1") == "1"
+
+
 def simulate_run(build, rng):
     """
     한 판. 시작 구역에서 출발해 먹고 커지며 아래로 내려간다.
@@ -542,7 +552,7 @@ def simulate_run(build, rng):
         # ── 아래로 ──
         # 통로는 '지금 크기'로 열린다. 열렸으면 내려간다 — 아래가 항상 더 값지다.
         if zone < len(ZONES) - 1 and size >= gate:
-            drain = min(MAX_DRAIN, 1.0 + (elapsed / 60.0) * DRAIN_ACCEL_PER_60S)
+            drain = drain_mult(elapsed, build.max_time)
             t -= DESCEND_SECONDS * drain
             elapsed += DESCEND_SECONDS
             zone += 1
@@ -560,7 +570,7 @@ def simulate_run(build, rng):
         itv = eat_interval(build, fish_size, size, zone)
         mps = missile_kills_per_second(build, fish_size, size)
 
-        drain = min(MAX_DRAIN, 1.0 + (elapsed / 60.0) * DRAIN_ACCEL_PER_60S)
+        drain = drain_mult(elapsed, build.max_time)
         t -= itv * drain
         elapsed += itv
         time_in_zone += itv
@@ -624,6 +634,41 @@ def greedy_buy(build, currency):
         currency -= p
 
 
+def greedy_buy_eager(build, currency):
+    """
+    가격이 칸마다 고정이라 아무 칸이나 먼저 사도 다른 칸 값이 오르지 않는다.
+    실제 플레이어처럼: 목표 경로의 첫 칸을 살 수 있으면 사고, 못 사면 지금 살 수 있는
+    칸 중 효용/가격이 가장 좋은 걸 산다 (살 게 없을 때까지).
+    """
+    while True:
+        step = build.best_path_step()
+        if step >= 0 and build.price(step) <= currency:
+            currency -= build.price(step)
+            build.buy(step)
+            continue
+        best, best_score = -1, -1.0
+        for i in range(len(SLOTS)):
+            if not build.available(i):
+                continue
+            pr = build.price(i)
+            if pr > currency:
+                continue
+            sc = build.utility(SLOTS[i]["type"]) / max(1.0, pr)
+            if sc > best_score:
+                best, best_score = i, sc
+        if best < 0:
+            return currency
+        currency -= build.price(best)
+        build.buy(best)
+
+
+BUYER = os.environ.get("BUYER", "eager")   # 칸 가격이 고정이라 실제 플레이어는 살 수 있으면 바로 산다
+
+
+# 페이싱 지표 — "노가다" 체감: 판 길이 · 구매가 일어난 판 비율 · 가장 긴 빈손 연속
+PACING = {}
+
+
 def play_through(seed, post_clear_hours=0.0):
     """
     게임 전체를 돌린다. post_clear_hours > 0이면 클리어 후에도 계속해
@@ -631,6 +676,7 @@ def play_through(seed, post_clear_hours=0.0):
     반환: build, runs, 클리어까지 초, milestones, phases, 풀트리 누적 h(못 채우면 None)
     """
     rng = random.Random(seed)
+    PACING.clear(); PACING.update(runs=0, run_sec=0.0, buy_runs=0, dry=0, max_dry=0)
     build = Build()
     currency, total_seconds, runs = 0.0, 0.0, 0
 
@@ -667,7 +713,17 @@ def play_through(seed, post_clear_hours=0.0):
             if post_clear_hours <= 0:
                 break
 
-        currency = greedy_buy(build, currency)
+        _before = build.nodes_bought
+        currency = (greedy_buy_eager if BUYER == "eager" else greedy_buy)(build, currency)
+        if not cleared:
+            PACING["runs"] += 1
+            PACING["run_sec"] += elapsed
+            if build.nodes_bought > _before:
+                PACING["buy_runs"] += 1
+                PACING["dry"] = 0
+            else:
+                PACING["dry"] += 1
+                PACING["max_dry"] = max(PACING["max_dry"], PACING["dry"])
 
         if cleared:
             if build.nodes_bought >= SLOT_COUNT:
@@ -696,6 +752,9 @@ def report(seed=7, post_hours=40.0):
     print(f"클리어        : {clear_seconds/3600:.2f} 시간")
     print(f"풀트리 완성   : {('%.2f 시간 (클리어 후 +%.2f)' % (full_h, full_h - clear_seconds/3600)) if full_h else '못 채움'}")
     print(f"총 런 수      : {runs}")
+    if PACING.get("runs"):
+        print(f"클리어 전 페이싱: 평균 판 {PACING['run_sec']/PACING['runs']:.0f}초 · "
+              f"구매한 판 {100*PACING['buy_runs']/PACING['runs']:.0f}% · 최장 빈손 {PACING['max_dry']}판")
     print(f"찍은 노드     : {build.nodes_bought}/{SLOT_COUNT}개")
     print(f"최종 기본크기 : {build.size:.1f}  (성장 상한 {build.size*GROWTH_MAX_MULT:.1f} / 보스 {BOSS_SIZE})"
           f"  장갑 {build.armor_levels}개")

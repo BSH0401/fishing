@@ -62,6 +62,8 @@ namespace FishGame.Gameplay
             _rb = GetComponent<Rigidbody2D>();
             _body = GetComponent<FishBody>();
             _motor = GetComponent<FishMotor>();
+            // 먹을 수 있나 / 위험한가를 색으로 보여 주는 빛 (QA R10)
+            if (GetComponent<EdibilityAura>() == null) gameObject.AddComponent<EdibilityAura>();
 
             if (!_filterReady)
             {
