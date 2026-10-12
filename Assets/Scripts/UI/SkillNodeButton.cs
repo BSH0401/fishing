@@ -65,6 +65,10 @@ namespace FishGame.UI
 
         Image _shadow;
         Image _chip;
+        Image _icon;                  // 알약 칸 이름 왼쪽의 아이콘
+        bool _artShape;               // 일반 칸: 도형 대신 직접 그린 아이콘
+        bool _artPill;                // 알약 칸: 도형 대신 직접 그린 둥근 판
+        Sprite _pillOn, _pillOff;
         RectTransform _visual;        // 크기·흔들림 애니메이션은 이 묶음에만 건다 (클릭 판정은 그대로)
         Color _shapeBase = Color.white;
         float _glowPhase;
@@ -102,17 +106,29 @@ namespace FishGame.UI
 
             BuildVisualGroup();
 
+            // 직접 그린 그림이 있으면 기본 도형 대신 그림 자체가 칸이 된다.
+            //   일반 칸: 아이콘이 도형을 대신한다 (테두리 빛도 아이콘 실루엣으로)
+            //   알약 칸: 둥근 판(SkillIcons/Pill_On · Pill_Off)이 알약을 대신하고, 아이콘은 이름 왼쪽에 얹는다
+            Sprite iconSprite = slot.IsRoot ? null : SkillIcons.For(slot.skill.effectType);
+            _pillOn = _isPill ? SkillIcons.PillOn : null;
+            _pillOff = _isPill ? SkillIcons.PillOff : null;
+            _artShape = !_isPill && iconSprite != null;
+            _artPill = _isPill && _pillOn != null;
+
+            if (_artShape) sprite = iconSprite;
+            else if (_artPill) sprite = _pillOff != null ? _pillOff : _pillOn;
+
             if (shapeImage != null)
             {
                 shapeImage.sprite = sprite;
-                shapeImage.preserveAspect = !_isPill;
-                shapeImage.rectTransform.sizeDelta = Size;
+                shapeImage.preserveAspect = _artShape || !_isPill;
+                shapeImage.rectTransform.sizeDelta = _artShape ? Size * 0.95f : Size;
             }
             if (haloImage != null)
             {
                 haloImage.sprite = sprite;
-                haloImage.preserveAspect = !_isPill;
-                haloImage.rectTransform.sizeDelta = Size + new Vector2(10f, 10f);
+                haloImage.preserveAspect = _artShape || !_isPill;
+                haloImage.rectTransform.sizeDelta = (_artShape ? Size * 0.95f : Size) + new Vector2(10f, 10f);
             }
             if (glowImage != null)
             {
@@ -127,12 +143,24 @@ namespace FishGame.UI
                 _shadow.rectTransform.anchoredPosition = new Vector2(3f, -6f);
             }
 
+            SetupIcon(_isPill ? iconSprite : null);   // 일반 칸은 아이콘이 이미 도형 자리에 들어갔다
+
             if (nameText != null)
             {
                 nameText.gameObject.SetActive(_isPill);
                 nameText.text = slot.IsRoot ? "시작" : slot.skill.displayName;
-                nameText.rectTransform.sizeDelta = Size;
+                // 알약 칸에 아이콘이 있으면 아이콘은 왼쪽, 이름은 오른쪽으로 비켜 준다
+                bool iconOnPill = _isPill && iconSprite != null;
+                nameText.rectTransform.sizeDelta = iconOnPill ? new Vector2(Size.x - PillIconSlot, Size.y) : Size;
+                nameText.rectTransform.anchoredPosition = iconOnPill ? new Vector2(PillIconSlot * 0.5f, 0f) : Vector2.zero;
                 nameText.fontStyle = FontStyles.Bold;
+                if (iconOnPill && !nameText.enableAutoSizing)
+                {
+                    // 좁아진 자리에 "황금 미끼"처럼 긴 이름도 들어가게
+                    nameText.fontSizeMax = nameText.fontSize;
+                    nameText.fontSizeMin = 12f;
+                    nameText.enableAutoSizing = true;
+                }
             }
             if (costText != null)
             {
@@ -145,6 +173,45 @@ namespace FishGame.UI
                 ((RectTransform)lockIcon.transform).anchoredPosition = new Vector2(Size.x * 0.5f - 6f, Size.y * 0.5f - 6f);
 
             name = $"Slot_{slot.id}";
+        }
+
+        const float PillIconSlot = 52f;    // 알약 칸 왼쪽에 아이콘이 차지하는 폭
+
+        /// <summary>도형 위에 아이콘을 얹는다. 도형 칸은 가운데 크게, 알약 칸은 이름 왼쪽에.</summary>
+        void SetupIcon(Sprite sprite)
+        {
+            if (sprite == null)
+            {
+                if (_icon != null) _icon.gameObject.SetActive(false);
+                return;
+            }
+            if (_icon == null)
+            {
+                _icon = NewImage("Icon", _visual);
+                _icon.preserveAspect = true;
+                // 도형 바로 앞, 이름 · 가격표보다 뒤
+                if (shapeImage != null) _icon.transform.SetSiblingIndex(shapeImage.transform.GetSiblingIndex() + 1);
+            }
+            _icon.gameObject.SetActive(true);
+            _icon.sprite = sprite;
+            var rt = _icon.rectTransform;
+            if (_isPill)
+            {
+                // 알약 끝이 둥글어서 너무 바깥에 두면 테두리 밖으로 삐져나온다 — 안쪽으로 들여 둔다
+                float h = Size.y * 0.78f;   // 아이콘 그림은 본체 중심 기준 정사각형(여백 포함)이라 조금 크게
+                rt.sizeDelta = new Vector2(h, h);
+                rt.anchoredPosition = new Vector2(-Size.x * 0.5f + PillIconSlot * 0.5f + 10f, 0f);
+            }
+            else
+            {
+                rt.sizeDelta = Size * 0.74f;
+                rt.anchoredPosition = Vector2.zero;
+            }
+        }
+
+        void SetIcon(Color c)
+        {
+            if (_icon != null) _icon.color = c;
         }
 
         /// <summary>
@@ -274,12 +341,13 @@ namespace FishGame.UI
                 State = PurchaseResult.MaxLevel;
                 Purchased = true;
                 Affordable = false;
-                SetShape(new Color(0.30f, 0.62f, 0.95f));
+                if (_artPill) SetPillArt(true);
+                SetShape(_artPill ? Color.white : new Color(0.30f, 0.62f, 0.95f));
                 SetHalo(true, haloColor);
                 SetGlow(true, new Color(0.35f, 0.7f, 1f, 0.45f));
                 SetCost(false, "", Color.white);
                 if (lockIcon != null) lockIcon.SetActive(false);
-                if (nameText != null) nameText.color = Color.white;
+                if (nameText != null) nameText.color = _artPill ? PillOnText : Color.white;
                 if (_shadow != null) _shadow.enabled = true;
                 return;
             }
@@ -290,27 +358,36 @@ namespace FishGame.UI
             bool locked = State == PurchaseResult.PrerequisiteLocked;
             Color cat = TypeColor;
 
+            // 아이콘: 찍음·살 수 있음은 원색, 돈 부족은 어둡게, 잠김은 바다에 가라앉은 실루엣
+            SetIcon(Purchased || Affordable ? Color.white
+                    : !locked ? new Color(0.62f, 0.62f, 0.62f, 0.95f)
+                    : new Color(0.07f, 0.13f, 0.16f, 0.75f));
+
+            // 그림 칸은 계열 색으로 물들이지 않는다 — 원래 색을 살리고 밝기로만 상태를 보여 준다
+            bool art = _artShape || _artPill;
+            if (_artPill) SetPillArt(Purchased);
+
             if (Purchased)
             {
-                SetShape(cat);
+                SetShape(art ? Color.white : cat);
                 SetHalo(true, haloColor);
                 SetGlow(true, new Color(cat.r, cat.g, cat.b, 0.38f));
             }
             else if (Affordable)
             {
-                SetShape(Color.Lerp(cat, Color.white, 0.08f) * new Color(0.92f, 0.92f, 0.92f, 1f));
+                SetShape(art ? Color.white : Color.Lerp(cat, Color.white, 0.08f) * new Color(0.92f, 0.92f, 0.92f, 1f));
                 SetHalo(true, readyRimColor);
                 SetGlow(true, readyGlowColor);           // 알파는 Update가 맥동시킨다
             }
             else if (!locked)
             {
-                SetShape(new Color(cat.r * 0.55f, cat.g * 0.55f, cat.b * 0.55f, 0.95f));
+                SetShape(art ? new Color(0.58f, 0.58f, 0.58f, 0.95f) : new Color(cat.r * 0.55f, cat.g * 0.55f, cat.b * 0.55f, 0.95f));
                 SetHalo(true, new Color(0.45f, 0.85f, 0.85f, 0.35f));
                 SetGlow(false, Color.clear);
             }
             else
             {
-                SetShape(lockedColor);
+                SetShape(art ? new Color(0.07f, 0.13f, 0.16f, 0.8f) : lockedColor);
                 SetHalo(false, Color.clear);
                 SetGlow(false, Color.clear);
             }
@@ -323,10 +400,21 @@ namespace FishGame.UI
 
             if (lockIcon != null) lockIcon.SetActive(false);   // 잠김은 실루엣으로 충분히 읽힌다
             if (nameText != null)
-                nameText.color = locked ? new Color(0.45f, 0.55f, 0.58f) : Color.white;
+                nameText.color = locked ? new Color(0.45f, 0.55f, 0.58f)
+                               : _artPill && Purchased ? PillOnText : Color.white;
 
             // 잠긴 칸도 눌러서 설명은 볼 수 있게 둔다
             if (button != null) button.interactable = true;
+        }
+
+        static readonly Color PillOnText = new Color(0.03f, 0.16f, 0.22f);   // 하늘색 판 위에서는 흰 글씨가 묻힌다
+
+        /// <summary>알약 그림 판 교체 — 찍음(시작 칸 포함)은 하늘색, 아직은 회색.</summary>
+        void SetPillArt(bool on)
+        {
+            var sp = on ? _pillOn : (_pillOff != null ? _pillOff : _pillOn);
+            if (shapeImage != null) shapeImage.sprite = sp;
+            if (haloImage != null) haloImage.sprite = sp;
         }
 
         void SetShape(Color c)
