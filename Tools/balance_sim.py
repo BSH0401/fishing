@@ -80,6 +80,10 @@ BASE_TIME   = 30.0
 BASE_SPEED  = 6.5
 MAX_SPEED   = 24.0
 SPEED_EXP   = 0.5          # 크기 배율 → 속도 배율 지수
+TIME_REWARD_SCALE = float(os.environ.get("TIME_SCALE", "0.1"))   # R12: 먹을 때 얻는 시간 1/10
+SMALL_PREY_FULL = 0.5
+SMALL_PREY_MIN = 0.2
+DENSITY_MULT = 1.5                                               # R12: 구역 개체 수 1.5배
 DRAIN_ACCEL_PER_60S = float(os.environ.get("DRAIN_ACCEL", "1.0"))   # R10: 2.2 → 1.0 (판이 더 길고 덜 쫓기게)
 MAX_DRAIN = 10.0
 MENU_SECONDS_PER_RUN = 10.0
@@ -116,7 +120,7 @@ def _price_ranks():
     return rank
 
 # 깊이 d인 칸의 가격 순번 = round(DEPTH_RANK_SCALE × d). 같은 깊이는 같은 순번.
-DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "6.0"))   # R10 노가다 완화 리튠 → 클리어 중앙 ~2.5h
+DEPTH_RANK_SCALE = float(os.environ.get("DEPTH_RANK_SCALE", "5.5"))   # R12 리튠 (시야→이속 22칸 · 시간 1/10) → 클리어 중앙 ~2.4h
 
 def _depth_ranks(scale):
     depth = [-1] * len(SLOTS)
@@ -148,14 +152,14 @@ TYPES = [
 
     ("battery",  "add",  1.00,  1.0),   # 커다란 배터리 : 제한시간 +1초
     ("teeth",    "mult", 0.02,  1.0),   # 치아 교정     : 입·흡입력 +2%
-    ("camera",   "mult", 0.035, 1.0),   # 카메라 장착   : 시야 +3.5%
+    ("move_speed", "mult", 0.02, 1.0),  # 꼬리지느러미  : 이동속도 +2% (R12: 옛 카메라 22칸)
     ("cell",     "mult", 0.025, 1.0),   # 물고기 전지   : 시간 회복 +2.5%
     ("acid",     "mult", 0.04,  1.2),   # 위액 산성도   : 재화 +4%
     ("armor",    "mult", 0.10,  2.0),   # 덧붙인 장갑   : 크기·속도 +10% (진행의 축)
 
     ("booster_range", "mult", 0.50, 1.0),
     ("booster_power", "unlock", 1,  6.0),
-    ("vacuum_range",  "mult", 0.60, 1.0),
+    ("vacuum_cooldown", "mult", 0.25, 1.0),   # R12: 청소기 범위 강화 → 쿨타임 ÷(1+0.25·lv)
     ("armor_stack",   "add",  1.00, 3.0),
     ("bait_range",    "mult", 0.50, 1.0),
     ("bait_count",    "add",  1.00, 2.0),
@@ -167,10 +171,10 @@ MAX_LEVEL = {t[0]: sum(1 for s in SLOTS if s["type"] == t[0]) for t in TYPES}
 
 # 그리디 구매용 효용 — 실제 플레이어가 대충 무엇을 먼저 원하나
 UTILITY = {
-    "armor": 50, "acid": 14, "teeth": 6, "cell": 5, "camera": 2.5, "battery": 8,
+    "armor": 50, "acid": 14, "teeth": 6, "cell": 5, "move_speed": 7, "battery": 8,
     "unlock_missile": 60, "unlock_vacuum": 45, "unlock_armor": 35, "unlock_booster": 30,
     "unlock_bait": 30, "unlock_volt": 25, "booster_power": 20,
-    "booster_range": 6, "vacuum_range": 6, "bait_range": 5, "volt_power": 6,
+    "booster_range": 6, "vacuum_cooldown": 6, "bait_range": 5, "volt_power": 6,
     "missile_power": 10, "armor_stack": 12, "bait_count": 6,
 }
 
@@ -289,7 +293,7 @@ GROWTH_MAX_MULT = 2.5
 MAX_PLAYER_SIZE = 56.0        # 절대 크기 상한
 MAX_MOUTH_MULT = 2.6          # 치아 교정 효과 상한
 # 액티브 강화는 가산으로 쌓인다 (복리 아님) — PlayerStats.Build와 같게
-LINEAR_NODES = {"booster_range", "vacuum_range", "bait_range", "volt_power", "missile_power"}
+LINEAR_NODES = {"booster_range", "vacuum_cooldown", "bait_range", "volt_power", "missile_power"}
 # 구역 출구로 빠져나갈 수 있는 최대 몸 크기 = 통로 반폭 × 2 × 0.9
 ZONE_EXIT_HALF_WIDTH = [7.0, 15.0, 32.0, None]
 
@@ -374,7 +378,7 @@ class Build:
     @property
     def speed(self):
         base = BASE_SPEED * ((1.10 ** self.armor_levels) ** SPEED_EXP)
-        return min(MAX_SPEED * 1.5, min(MAX_SPEED, base) * (1 + self.codex_bonus("speed")))
+        return min(MAX_SPEED * 1.5, min(MAX_SPEED, base) * (1 + self.codex_bonus("speed"))) * self.mult("move_speed")
     @property
     def max_time(self):  return BASE_TIME + self.lv["battery"] + self.codex_bonus("maxt")
     @property
@@ -475,10 +479,11 @@ def eat_interval(build, fish_size, size=None, zone=None):
     else:
         edible = min(0.94, max(0.02, 0.55 * (size / fish_size)))
     reach = (build.speed / BASE_SPEED) * (build.mouth ** 0.6)
-    itv = 1.9 / (reach * edible)
+    itv = 1.9 / (reach * edible) / (DENSITY_MULT ** 0.5)   # R12: 구역 개체 수 1.5배
 
     if build.has("unlock_vacuum"):
-        itv *= 0.80 / (build.mult("vacuum_range") ** 0.15)
+        # R12: 누르고 있기 → 1.5초 흡입 / 6초 쿨타임, 범위 절반 — 효과를 낮게 잡는다
+        itv *= 0.90 / (build.mult("vacuum_cooldown") ** 0.15)
     if build.has("unlock_bait"):
         itv *= 0.86 / ((build.mult("bait_range") * (1 + build.lv["bait_count"] * 0.15)) ** 0.12)
     if build.has("unlock_booster"):
@@ -607,7 +612,9 @@ def simulate_run(build, rng):
 
         for w, fsize, fmoney, ftime, rank in preys:
             money += fmoney * build.money_mult * depth_mult
-            t = min(build.max_time, t + ftime * build.time_mult)
+            # R12: 시간 보상 1/10 + 내 크기의 절반보다 작은 먹이는 비례해서 줄인다 (최소 20%)
+            small = min(1.0, max(SMALL_PREY_MIN, (fsize / max(0.01, size)) / SMALL_PREY_FULL))
+            t = min(build.max_time, t + ftime * build.time_mult * TIME_REWARD_SCALE * small)
             build.add_kill(zone, rank)
             if GROWTH_ENABLED:
                 max_size = max(build.size, min(run_cap, zone_size_cap(zone)))
@@ -832,7 +839,7 @@ def full_tree(runs=300):
     print(f"  재화 배율 ×{b.money_mult:.1f}   시간 회복 ×{b.time_mult:.2f}")
     vm = b.mult("volt_power")
     print(f"  볼트 마비 {min(2.0 * vm, 10 * 0.6):.1f}초 / 쿨 10초 (상한 6초)   "
-          f"청소기 반경 = 몸 반경의 {5 * b.mult('vacuum_range') / 0.5:.0f}배")
+          f"청소기 쿨타임 ×{1 / b.mult('vacuum_cooldown'):.2f}")
 
     rng = random.Random(1)
     lens, boss, deaths, money = [], 0, 0, []

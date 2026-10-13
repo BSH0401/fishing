@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0e52eb336fc30448ba19f53a13a35b9, type: 3}
-  m_Name: Skill_vacuum_range
+  m_Name: Skill_move_speed
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.SkillNode
-  id: vacuum_range
-  displayName: "\uCCAD\uC18C\uAE30 \uBC94\uC704 \uAC15\uD654"
+  id: move_speed
+  displayName: "\uAF2C\uB9AC\uC9C0\uB290\uB7EC\uBBF8 \uAC15\uD654"
   tooltip: 
-  description: "\uCCAD\uC18C\uAE30 \uD6A8\uACFC \uBC94\uC704 +60%."
+  description: "\uAE30\uBCF8 \uC774\uB3D9\uC18D\uB3C4 2% \uC99D\uAC00."
   icon: {fileID: 0}
-  effectType: 202
-  valuePerLevel: 0.6
-  maxLevel: 4
+  effectType: 106
+  valuePerLevel: 0.02
+  maxLevel: 22
   costMultiplier: 1

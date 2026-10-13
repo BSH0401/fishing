@@ -35,6 +35,8 @@ namespace FishGame.Data
         TimeGain = 104,
         /// <summary>위액 산성도 증가 — 포식 시 얻는 재화 +10% (복리)</summary>
         CurrencyGain = 105,
+        /// <summary>꼬리지느러미 강화 — 기본 이동속도 +2% (복리). 시야 강화(카메라) 자리를 대신한다 (R12)</summary>
+        MoveSpeed = 106,
 
         // ── 액티브 강화 ─────────────────────────────────────────
         /// <summary>부스터 거리 강화 — 이동 거리 +30% (복리)</summary>
@@ -53,6 +55,8 @@ namespace FishGame.Data
         VoltPower = 206,
         /// <summary>미사일 발사 강화 — 범위 +50%, 미사일 개수 +1</summary>
         MissilePower = 207,
+        /// <summary>청소기 쿨타임 감소 — 재사용 대기 ÷(1 + 값 × 레벨). 청소기 범위 강화 칸을 대신한다 (R12)</summary>
+        VacuumCooldown = 208,
     }
 
     public static class SkillEffectTypeExtensions
@@ -89,6 +93,7 @@ namespace FishGame.Data
                 case SkillEffectType.BodyScale:
                 case SkillEffectType.MouthPower:
                 case SkillEffectType.Vision:
+                case SkillEffectType.MoveSpeed:
                 case SkillEffectType.TimeGain:
                 case SkillEffectType.CurrencyGain:
                     return true;
@@ -105,7 +110,8 @@ namespace FishGame.Data
             {
                 case SkillEffectType.BoosterRange:
                 case SkillEffectType.BoosterPower:     return SkillEffectType.UnlockBooster;
-                case SkillEffectType.VacuumRange:      return SkillEffectType.UnlockVacuum;
+                case SkillEffectType.VacuumRange:
+                case SkillEffectType.VacuumCooldown:   return SkillEffectType.UnlockVacuum;
                 case SkillEffectType.ScaleArmorStack:  return SkillEffectType.UnlockScaleArmor;
                 case SkillEffectType.BaitRange:
                 case SkillEffectType.BaitCount:        return SkillEffectType.UnlockGoldenBait;

@@ -139,7 +139,7 @@ namespace FishGame.UI
             {
                 // fillAmount는 "남은 쿨타임" 어둡게 덮는 방식
                 SetFill(boosterFill, _player.BoosterCooldownNormalized);
-                SetFill(vacuumFill,  _player.IsVacuuming ? 0f : 1f);
+                SetFill(vacuumFill,  _player.VacuumCooldownNormalized);
                 SetFill(baitFill,    _player.BaitCooldownNormalized);
                 SetFill(voltFill,    _player.VoltCooldownNormalized);
                 SetFill(missileFill, _player.MissileCooldownNormalized);
@@ -241,7 +241,9 @@ namespace FishGame.UI
         {
             if (floatingText == null || _player == null) return;
             floatingText.Spawn(_player.transform.position,
-                $"+{NumberFormatter.Format(currency)}  +{timeGain:0.0}s");
+                // R12: 시간 보상이 1/10이 되어 0.1초 단위로는 "+0.0s"가 찍힌다 — 소수 둘째 자리까지
+                timeGain >= 0.995f ? $"+{NumberFormatter.Format(currency)}  +{timeGain:0.0}s"
+                                   : $"+{NumberFormatter.Format(currency)}  +{timeGain:0.00}s");
         }
 
         void HandleBossReleased()

@@ -69,8 +69,9 @@ namespace FishGame.Player
         Vector2 _boosterVelocity;
         readonly HashSet<FishBody> _boosterHits = new HashSet<FishBody>();
 
-        // 청소기
+        // 청소기 — R12: 누르면 잠깐(vacuumDuration) 빨아들이고 재사용 대기(vacuumCooldown)
         bool _vacuumActive;
+        float _vacuumTimer, _vacuumCooldownTimer;
 
         // 비늘 경화
         int _armorRemaining;
@@ -93,6 +94,15 @@ namespace FishGame.Player
         public float Size => _body != null ? _body.Size : 1f;
         public bool IsBoosting => _boosterTimer > 0f;
         public bool IsVacuuming => _vacuumActive;
+
+        float VacuumCooldownSeconds =>
+            (_db != null ? _db.vacuumCooldown : 6f) * (_stats != null ? _stats.VacuumCooldownMultiplier : 1f);
+
+        /// <summary>청소기 재사용 준비도 0~1 (1 = 바로 쓸 수 있음). 빨아들이는 중에는 0.</summary>
+        public float VacuumCooldownNormalized =>
+            _stats == null || !_stats.HasVacuum ? 1f
+            : _vacuumActive ? 0f
+            : Mathf.Clamp01(1f - _vacuumCooldownTimer / Mathf.Max(0.01f, VacuumCooldownSeconds));
         public bool IsInvulnerable => Time.time < _invulnerableUntil;
         public int ArmorRemaining => _armorRemaining;
         public int ArmorMax => _stats != null ? _stats.ArmorStacks : 0;
@@ -225,6 +235,7 @@ namespace FishGame.Player
             _boosterTimer = _boosterCooldown = 0f;
             _boosterHits.Clear();
             _vacuumActive = false;
+            _vacuumTimer = _vacuumCooldownTimer = 0f;
             _armorRemaining = stats.ArmorStacks;
             _invulnerableUntil = 0f;
 
@@ -268,7 +279,7 @@ namespace FishGame.Player
                 HandleBoosterInput();
                 HandleVacuumInput();
             }
-            else _vacuumActive = false;
+            // 개발자 창 위에서는 새로 발동하지 않을 뿐, 이미 빨아들이는 중이면 시간대로 끝난다
             UpdateIndicators();
         }
 
@@ -333,6 +344,13 @@ namespace FishGame.Player
             if (_boosterTimer > 0f) _boosterTimer -= dt;
             if (_boosterCooldown > 0f) _boosterCooldown -= dt;
 
+            if (_vacuumActive)
+            {
+                _vacuumTimer -= dt;
+                if (_vacuumTimer <= 0f) { _vacuumActive = false; _vacuumCooldownTimer = VacuumCooldownSeconds; }
+            }
+            else if (_vacuumCooldownTimer > 0f) _vacuumCooldownTimer -= dt;
+
             if (_stats.HasGoldenBait)
             {
                 _baitTimer -= dt;
@@ -358,7 +376,7 @@ namespace FishGame.Player
             if (!_stats.HasBooster || _boosterCooldown > 0f) return;
             if (!_input.Booster.WasPressedThisFrame()) return;
 
-            Vector2 dir = _moveInput.sqrMagnitude > 0.01f ? _moveInput.normalized : _motor.Facing;
+            Vector2 dir = BoosterDirection();
             float distance = _db.boosterDistance * _body.Size * _stats.BoosterDistanceMultiplier;
 
             _boosterVelocity = dir * (distance / Mathf.Max(0.02f, _db.boosterDuration));
@@ -369,6 +387,26 @@ namespace FishGame.Player
             if (boosterEffect != null) boosterEffect.Play();
             Juice.Shake(0.18f);
             PlaySfx(AudioManager.Instance.Bank?.booster);
+        }
+
+        /// <summary>
+        /// 대쉬 방향. R12: 바라보는 방향이 아니라 마우스가 있는 쪽으로 (QA 요청).
+        /// 마우스가 없거나(게임패드) 몸 위에 있으면 예전처럼 입력 방향 → 바라보는 방향.
+        /// </summary>
+        Vector2 BoosterDirection()
+        {
+            if (UnityEngine.InputSystem.Mouse.current != null)
+            {
+                if (_cam == null) _cam = Camera.main;
+                if (_cam != null)
+                {
+                    Vector2 screen = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+                    Vector3 world = _cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, -_cam.transform.position.z));
+                    Vector2 to = (Vector2)world - _rb.position;
+                    if (to.sqrMagnitude > _body.Size * _body.Size * 0.04f) return to.normalized;
+                }
+            }
+            return _moveInput.sqrMagnitude > 0.01f ? _moveInput.normalized : _motor.Facing;
         }
 
         /// <summary>이번 물리 프레임에 장애물 안으로 들어가는가. 한 프레임 앞을 내다본다.</summary>
@@ -429,11 +467,11 @@ namespace FishGame.Player
                 if (other == null || other == _body || !other.IsAlive) continue;
                 if (!_boosterHits.Add(other)) continue;
 
-                // 위력 강화 전에는 "조금 더 큰 것까지"만 먹을 수 있다
-                if (!_stats.BoosterPierceAnySize)
+                // 부스터로 먹을 수 있는 크기: 기본은 "조금 더 큰 것"(1.15배), 위력 강화 후 1.6배.
+                // R12: 예전엔 위력 강화 후 크기 무시라 두 단계 이상 큰 물고기까지 삼켜 능력이 과했다 (QA 12 · 16)
                 {
-                    float limit = _body.Size * _db.boosterEatSizeMultiplier;
-                    if (other.Size > limit) continue;
+                    float mult = _stats.BoosterPierceAnySize ? _db.boosterPowerEatSizeMultiplier : _db.boosterEatSizeMultiplier;
+                    if (other.Size > _body.Size * mult) continue;
                 }
                 // 보스는 부스터로 삼킬 수 없다 — 크기 43을 넘겨서 직접 물어야 클리어.
                 // (위력 강화로 보스까지 먹히면 바다에 들어가자마자 클리어가 되어 밸런스가 무너진다)
@@ -444,9 +482,16 @@ namespace FishGame.Player
         }
 
         // ── 청소기 ──────────────────────────────────────────────
+        /// <summary>
+        /// R12: 누르고 있는 동안 계속 빨아들이던 방식 → 한 번 누르면 vacuumDuration초 흡입 후 재사용 대기.
+        /// 켜 둘수록 이득이라 끌 이유가 없다는 QA(13)와, 범위가 너무 크다는 의견을 함께 반영했다.
+        /// </summary>
         void HandleVacuumInput()
         {
-            _vacuumActive = _stats.HasVacuum && _input.Vacuum.IsPressed();
+            if (!_stats.HasVacuum || _vacuumActive || _vacuumCooldownTimer > 0f) return;
+            if (!_input.Vacuum.WasPressedThisFrame()) return;
+            _vacuumActive = true;
+            _vacuumTimer = _db.vacuumDuration;
         }
 
         void ApplyVacuum(float dt)

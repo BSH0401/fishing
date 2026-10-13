@@ -18,6 +18,7 @@ namespace FishGame.Core
         public float VisionMultiplier = 1f;
         public float TimeGainMultiplier = 1f;
         public float CurrencyMultiplier = 1f;
+        public float MoveSpeedMultiplier = 1f;   // 꼬리지느러미 강화
         /// <summary>지금까지 모은 히든 아이템 수. 결과 화면 표시용.</summary>
         public int HiddenItemsFound;
 
@@ -33,6 +34,7 @@ namespace FishGame.Core
         public float BoosterDistanceMultiplier = 1f;
         public bool  BoosterPierceAnySize;      // 부스터 위력 강화
         public float VacuumRangeMultiplier = 1f;
+        public float VacuumCooldownMultiplier = 1f;   // 청소기 쿨타임 감소 (1 = 그대로, 0.5 = 절반)
         public int   ArmorStacks;               // 비늘 경화 방어 횟수
         public float BaitRangeMultiplier = 1f;
         public int   BaitCount = 1;
@@ -82,7 +84,9 @@ namespace FishGame.Core
                     case SkillEffectType.SurvivalTime:  s.MaxSurvivalTime += v * level; break;
                     case SkillEffectType.BodyScale:     sizeMult *= compounded;         break;
                     case SkillEffectType.MouthPower:    s.MouthMultiplier *= compounded; break;
-                    case SkillEffectType.Vision:        s.VisionMultiplier *= compounded; break;
+                    // 시야 강화는 트리에서 빠졌다 (R12) — 예전 데이터가 남아 있어도 적용하지 않는다
+                    case SkillEffectType.Vision:        break;
+                    case SkillEffectType.MoveSpeed:     s.MoveSpeedMultiplier *= compounded; break;
                     case SkillEffectType.TimeGain:      s.TimeGainMultiplier *= compounded; break;
                     case SkillEffectType.CurrencyGain:  s.CurrencyMultiplier *= compounded; break;
 
@@ -90,6 +94,7 @@ namespace FishGame.Core
                     case SkillEffectType.BoosterRange:     s.BoosterDistanceMultiplier *= linear;     break;
                     case SkillEffectType.BoosterPower:     s.BoosterPierceAnySize = true;             break;
                     case SkillEffectType.VacuumRange:      s.VacuumRangeMultiplier *= linear;         break;
+                    case SkillEffectType.VacuumCooldown:   s.VacuumCooldownMultiplier /= linear;      break;
                     case SkillEffectType.ScaleArmorStack:  armorExtra += level;                       break;
                     case SkillEffectType.BaitRange:        s.BaitRangeMultiplier *= linear;           break;
                     case SkillEffectType.BaitCount:        baitExtra += level;                        break;
@@ -106,7 +111,8 @@ namespace FishGame.Core
 
             // 속도 — 크기와 함께 오르되 지수로 완화 (안 그러면 후반에 조작 불가)
             float speedMult = Pow(sizeMult, db.speedScalingExponent);
-            s.MoveSpeed = Mathf.Min(db.maxMoveSpeed, db.baseMoveSpeed * speedMult);
+            // 꼬리지느러미 강화는 크기 상한(maxMoveSpeed)과 별개로 얹는다 — 상한에 닿은 후반에도 체감되게
+            s.MoveSpeed = Mathf.Min(db.maxMoveSpeed, db.baseMoveSpeed * speedMult) * s.MoveSpeedMultiplier;
 
             // 액티브 강화 — 해금 안 된 스킬의 강화는 무시된다
             s.ArmorStacks   = s.HasScaleArmor ? Mathf.Clamp(1 + armorExtra, 1, db.armorMaxStacks) : 0;

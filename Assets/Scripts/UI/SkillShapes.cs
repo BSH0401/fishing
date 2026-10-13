@@ -50,11 +50,13 @@ namespace FishGame.UI
                 case SkillEffectType.SurvivalTime:    return Shape.Square;
                 case SkillEffectType.BodyScale:       return Shape.Circle;
                 case SkillEffectType.MouthPower:      return Shape.Diamond;
-                case SkillEffectType.Vision:          return Shape.Parallelogram;
+                case SkillEffectType.Vision:
+                case SkillEffectType.MoveSpeed:       return Shape.Parallelogram;
                 case SkillEffectType.TimeGain:        return Shape.Triangle;
                 case SkillEffectType.CurrencyGain:    return Shape.Trapezoid;
                 case SkillEffectType.BoosterRange:    return Shape.Tape;
-                case SkillEffectType.VacuumRange:     return Shape.Card;
+                case SkillEffectType.VacuumRange:
+                case SkillEffectType.VacuumCooldown:  return Shape.Card;
                 case SkillEffectType.ScaleArmorStack: return Shape.DShape;
                 case SkillEffectType.BaitRange:       return Shape.Cloud;
                 case SkillEffectType.BaitCount:       return Shape.Document;

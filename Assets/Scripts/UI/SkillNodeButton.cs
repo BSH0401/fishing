@@ -493,7 +493,8 @@ namespace FishGame.UI
                 case SkillEffectType.SurvivalTime: return new Color(0.36f, 0.64f, 0.96f);  // 배터리 — 파랑
                 case SkillEffectType.BodyScale:    return new Color(0.42f, 0.86f, 0.55f);  // 장갑 — 초록
                 case SkillEffectType.MouthPower:   return new Color(0.95f, 0.43f, 0.40f);  // 치아 — 빨강
-                case SkillEffectType.Vision:       return new Color(0.70f, 0.56f, 0.95f);  // 카메라 — 보라
+                case SkillEffectType.Vision:
+                case SkillEffectType.MoveSpeed:    return new Color(0.70f, 0.56f, 0.95f);  // 꼬리지느러미(옛 카메라 자리) — 보라
                 case SkillEffectType.TimeGain:     return new Color(0.35f, 0.85f, 0.85f);  // 전지 — 청록
                 case SkillEffectType.CurrencyGain: return new Color(0.98f, 0.82f, 0.38f);  // 위액 — 금색
                 default:                           return CategoryColor(t);                 // 액티브 — 주황
@@ -511,6 +512,7 @@ namespace FishGame.UI
                 case SkillEffectType.SurvivalTime:
                 case SkillEffectType.TimeGain:      return "시간";
                 case SkillEffectType.CurrencyGain:  return "재화";
+                case SkillEffectType.MoveSpeed:     return "속도";
                 default:                            return "유틸";
             }
         }

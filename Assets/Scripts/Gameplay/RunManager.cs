@@ -336,6 +336,18 @@ namespace FishGame.Gameplay
         /// 물고기를 먹었을 때 PlayerFish가 호출하는 단일 진입점.
         /// 시간·재화 계산과 도감 누적을 여기서 한다.
         /// </summary>
+        /// <summary>
+        /// 먹이가 내 크기에 비해 얼마나 작은지에 따른 시간 보상 배율.
+        /// 먹이 ≥ 내 크기 × smallPreyFullTimeRatio 이면 1, 그보다 작으면 비례해서 줄되 smallPreyMinTimeFactor 아래로는 안 내려간다.
+        /// </summary>
+        float SmallPreyTimeFactor(FishSpecies species)
+        {
+            if (species == null || Database == null || player == null) return 1f;
+            float full = Mathf.Max(0.01f, Database.smallPreyFullTimeRatio);
+            float ratio = species.size / Mathf.Max(0.01f, player.Size);
+            return Mathf.Clamp(ratio / full, Database.smallPreyMinTimeFactor, 1f);
+        }
+
         public void ReportFishEaten(FishSpecies species, bool wasBoss, int preyZoneIndex = -1)
         {
             if (!IsRunning) return;
@@ -343,7 +355,11 @@ namespace FishGame.Gameplay
             float baseTime = species != null ? species.timeReward : 1f;
             double baseMoney = species != null ? species.currencyReward : 1d;
 
-            float timeGain = baseTime * Stats.TimeGainMultiplier;
+            // R12: 먹을 때 얻는 시간을 1/10로 — 한 판이 끝없이 늘어나던 문제.
+            // 게다가 내 크기에 비해 한참 작은 먹이는 더 적게 준다 → 커질수록 큰 먹이를 노리게 된다.
+            float timeGain = baseTime * Stats.TimeGainMultiplier
+                           * (Database != null ? Database.timeRewardScale : 1f)
+                           * SmallPreyTimeFactor(species);
 
             // 도감 누적 — 보너스 자체는 다음 판의 PlayerStats에 반영된다
             if (species != null && _progress != null) _progress.AddCodexCount(species.CodexKey);

@@ -54,7 +54,7 @@ MonoBehaviour:
   - species: {fileID: 11400000, guid: 5384c385f09c14d438d51d34c8265e68, type: 2}
     weight: 2.5
     maxAlive: 1
-  targetPopulation: 34
+  targetPopulation: 51
   spawnInterval: 0.28
   spawnMarginFromPlayer: 45.44
   currencyMultiplier: 0.1979

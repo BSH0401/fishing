@@ -64,6 +64,9 @@ namespace FishGame.Data
             if (effectType.IsUnlock() || effectType == SkillEffectType.BoosterPower)
                 return level > 0 ? "해금됨" : "미해금";
 
+            if (effectType == SkillEffectType.VacuumCooldown)
+                return $"쿨타임 ×{1d / (1d + valuePerLevel * level):0.##}";
+
             if (effectType.IsMultiplicative())
             {
                 double mult = Math.Pow(1d + valuePerLevel, level);

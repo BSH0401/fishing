@@ -85,8 +85,9 @@ namespace FishGame.Gameplay
             {
                 var slice = _layout.GetSlice(zoneIndex);
                 _homeTop = slice.YTop;
-                // 통로까지는 내려갈 수 있게 조금 여유를 준다 (통로 안에서도 자연스럽게 보이도록)
-                _homeBottom = slice.HasCorridor ? slice.CorridorBottom : slice.YBottom;
+                // R12: 통로에는 들어가지 않는다. 예전엔 통로까지 내려올 수 있어서 닫힌 통로 안에 물고기가 쌓여
+                // 플레이어가 먹으러 갈 수 없는데도 스폰 한도를 차지했다 (QA 17 · 21 · 22)
+                _homeBottom = slice.YBottom;
             }
             else
             {

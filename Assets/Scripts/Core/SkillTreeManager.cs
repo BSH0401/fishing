@@ -62,24 +62,24 @@ namespace FishGame.Core
             int[] ranks = PriceRanks(db);
             int rank = index < ranks.Length ? Mathf.Max(1, ranks[index]) : 1;
             double cost = slot.skill.GetCostAtRank(rank);
-            return IsEarlyActive(slot.skill.effectType) ? Math.Ceiling(cost * EarlyActiveSurcharge) : cost;
+            return IsEarlyActive(slot.skill.effectType) ? Math.Ceiling(cost * Math.Max(1d, db.earlyActiveSurcharge)) : cost;
         }
 
         /// <summary>
         /// 시작 칸 바로 옆의 액티브 해금(부스터 · 청소기 · 황금 미끼)은 너무 싸서 첫 판 만에 찍혔다.
         /// 초반 목표가 되게 가격을 5배로 올린다. (balance_sim.py의 EARLY_ACTIVE_SURCHARGE)
         /// </summary>
-        const double EarlyActiveSurcharge = 5d;
 
         static bool IsEarlyActive(SkillEffectType t) =>
             t == SkillEffectType.UnlockBooster || t == SkillEffectType.UnlockVacuum || t == SkillEffectType.UnlockGoldenBait;
 
         static GameDatabase _rankDb;
         static int _rankCount = -1;
+        static float _rankScale = -1f;
         static int[] _ranks;
 
         /// <summary>시작 칸에서 한 칸 멀어질 때마다 곡선에서 몇 칸씩 건너뛰는가. balance_sim.py의 DEPTH_RANK_SCALE.</summary>
-        const float DepthRankScale = 6.0f;   // R10 노가다 완화 리튠 (재화 2배 · 성장 0.5 · 소모 가속 1.0과 한 세트)
+        // 값은 GameDatabase.skillDepthRankScale (밸런스 시트에서 고칠 수 있다). R12 리튠 5.5 — 클리어 중앙 ~2.4h
 
         /// <summary>
         /// 칸마다 가격 순번 = 시작 칸에서 떨어진 칸 수(BFS 깊이) × 4.6 (반올림). 같은 깊이는 같은 가격대(종류별 배율만 다름).
@@ -90,7 +90,8 @@ namespace FishGame.Core
         static int[] PriceRanks(GameDatabase db)
         {
             int count = db.skillTree != null ? db.skillTree.Count : 0;
-            if (_ranks != null && _rankDb == db && _rankCount == count) return _ranks;
+            float scale = Mathf.Max(0.1f, db.skillDepthRankScale);
+            if (_ranks != null && _rankDb == db && _rankCount == count && Mathf.Approximately(_rankScale, scale)) return _ranks;
 
             var depth = new int[count];
             for (int i = 0; i < count; i++) depth[i] = -1;
@@ -112,10 +113,10 @@ namespace FishGame.Core
             for (int i = 0; i < count; i++) maxDepth = Mathf.Max(maxDepth, depth[i]);
             var ranks = new int[count];
             for (int i = 0; i < count; i++)
-                ranks[i] = depth[i] > 0 ? Mathf.Max(1, Mathf.RoundToInt(DepthRankScale * depth[i]))   // 파이썬 round와 같은 은행가 반올림
+                ranks[i] = depth[i] > 0 ? Mathf.Max(1, Mathf.RoundToInt(scale * depth[i]))   // 파이썬 round와 같은 은행가 반올림
                          : depth[i] == 0 ? 0
-                         : Mathf.RoundToInt(DepthRankScale * (maxDepth + 1));          // 시작 칸과 이어지지 않은 칸(도면 오류)은 맨 뒤 가격
-            _rankDb = db; _rankCount = count; _ranks = ranks;
+                         : Mathf.RoundToInt(scale * (maxDepth + 1));          // 시작 칸과 이어지지 않은 칸(도면 오류)은 맨 뒤 가격
+            _rankDb = db; _rankCount = count; _rankScale = scale; _ranks = ranks;
             return ranks;
         }
 

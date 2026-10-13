@@ -169,7 +169,7 @@ namespace FishGame.EditorTools
                 height = 46f,
                 profile = P((0f, 22f), (0.45f, 21f), (0.80f, 14f), (1f, 7f)),
                 hasExit = true, exitHalfWidth = 7f, exitHeight = 16f, exitRequiredSize = 3.1f,
-                population = 26, water = new Color(0.55f, 0.80f, 0.72f),
+                population = 39, water = new Color(0.55f, 0.80f, 0.72f),
                 // 어항 장식품 — 성 하나, 집 하나. 사발이 좁아지기 전 넓은 구간에 둔다.
                 obstacles = O((ObstacleShape.Box, 0.34f,  0.46f, 7.5f,  0f),
                               (ObstacleShape.Box, 0.52f, -0.50f, 6.0f, 12f)),
@@ -180,7 +180,7 @@ namespace FishGame.EditorTools
                 height = 110f,
                 profile = P((0f, 30f), (0.12f, 52f), (0.88f, 52f), (1f, 34f)),
                 hasExit = true, exitHalfWidth = 15f, exitHeight = 22f, exitRequiredSize = 8.1f,
-                population = 30, water = new Color(0.42f, 0.55f, 0.52f),
+                population = 45, water = new Color(0.42f, 0.55f, 0.52f),
                 // 쇠창살 원형 둘 — PPT 그림대로 가운데 높이에 좌우 대칭으로.
                 obstacles = O((ObstacleShape.Disc, 0.42f, -0.42f, 17f, 0f),
                               (ObstacleShape.Disc, 0.42f,  0.42f, 17f, 0f)),
@@ -191,7 +191,7 @@ namespace FishGame.EditorTools
                 height = 260f,
                 profile = P((0f, 22f), (0.35f, 120f), (0.70f, 142f), (1f, 34f)),
                 hasExit = true, exitHalfWidth = 32f, exitHeight = 40f, exitRequiredSize = 21f,
-                population = 34, water = new Color(0.35f, 0.66f, 0.78f),
+                population = 51, water = new Color(0.35f, 0.66f, 0.78f),
                 // 자갈 무더기 — 위쪽 중앙에 큰 것 하나, 아래쪽에 작은 것 둘.
                 obstacles = O((ObstacleShape.Triangle, 0.22f,  0.00f, 34f, 0f),
                               (ObstacleShape.Triangle, 0.55f, -0.55f, 26f, 0f),
@@ -203,7 +203,7 @@ namespace FishGame.EditorTools
                 height = 520f,
                 profile = P((0f, 60f), (0.18f, 250f), (0.45f, 310f), (1f, 300f)),
                 hasExit = false, exitHalfWidth = 30f, exitHeight = 0f, exitRequiredSize = 0f,
-                population = 38, water = new Color(0.16f, 0.34f, 0.55f),
+                population = 57, water = new Color(0.16f, 0.34f, 0.55f),
                 // 암초 — 보스 구조물(t=0.46 중앙)을 피해 사방에 흩어 둔다.
                 obstacles = O((ObstacleShape.Triangle, 0.26f, -0.58f, 62f, 0f),
                               (ObstacleShape.Triangle, 0.30f,  0.62f, 54f, 0f),
@@ -242,11 +242,11 @@ namespace FishGame.EditorTools
         {
             // ── 액티브 해금 (알약 모양 칸) ──────────────────────
             S("unlock_booster", "부스터", SkillEffectType.UnlockBooster, 1, 3f,
-              "우클릭을 눌러 빨리 달리고 경로의 적을 먹습니다.",
-              "앞으로 짧게 대쉬합니다. 대쉬 경로에 있는 물고기는 크기와 상관없이 먹힙니다."),
+              "우클릭으로 마우스 방향으로 대쉬하고 경로의 적을 먹습니다.",
+              "마우스가 있는 방향으로 짧게 대쉬합니다. 대쉬 경로에 있는 나보다 조금 큰 물고기까지 먹힙니다."),
             S("unlock_vacuum", "청소기", SkillEffectType.UnlockVacuum, 1, 5f,
-              "물고기를 빨아들입니다.",
-              "좌클릭을 누르고 있는 동안 범위 내 소형 물고기를 끌어당깁니다."),
+              "좌클릭으로 물고기를 빨아들입니다.",
+              "좌클릭하면 잠깐 동안 주변의 소형 물고기를 끌어당깁니다. 쓰고 나면 재사용 대기시간이 있습니다."),
             S("unlock_armor", "비늘 경화", SkillEffectType.UnlockScaleArmor, 1, 6f,
               "적의 공격을 1회 막습니다.",
               "먹힐 뻔한 순간을 1회 막고 짧게 무적이 됩니다."),
@@ -264,9 +264,9 @@ namespace FishGame.EditorTools
             S("booster_range", "부스터 거리 강화", SkillEffectType.BoosterRange, 0.50f, 1f,          // 〰 ×3
               "", "부스터 이동 거리 +50%."),
             S("booster_power", "부스터 위력 강화", SkillEffectType.BoosterPower, 1, 6f,               // ✶ ×1
-              "", "부스터를 사용할 때 자기보다 더 큰 물고기도 먹을 수 있습니다."),
-            S("vacuum_range", "청소기 범위 강화", SkillEffectType.VacuumRange, 0.60f, 1f,             // ◸ ×4
-              "", "청소기 효과 범위 +60%."),
+              "", "부스터로 먹을 수 있는 물고기 크기가 늘어납니다 (내 크기의 1.15배 → 1.6배)."),
+            S("vacuum_cooldown", "청소기 쿨타임 감소", SkillEffectType.VacuumCooldown, 0.25f, 1f,    // ◸ ×4 (R12: 범위 강화 대신)
+              "", "청소기 재사용 대기시간 감소. 4칸을 모두 찍으면 절반."),
             S("armor_stack", "비늘 경화 강화", SkillEffectType.ScaleArmorStack, 1, 3f,                // D ×2
               "", "방어 횟수 +1 (최대 3회)."),
             S("bait_range", "황금 미끼 범위 강화", SkillEffectType.BaitRange, 0.50f, 1f,              // ☁ ×4
@@ -283,8 +283,9 @@ namespace FishGame.EditorTools
               "", "물고기 생존 제한시간 1초 증가."),
             S("teeth", "치아 교정", SkillEffectType.MouthPower, 0.02f, 1f,                            // ◇ ×47
               "", "입 크기 및 흡입력 2% 증가."),
-            S("camera", "카메라 장착", SkillEffectType.Vision, 0.035f, 1f,                            // ▱ ×22
-              "", "시야 3.5% 증가."),
+            // R12: 카메라(시야) 22칸 → 꼬리지느러미(이동속도)
+            S("move_speed", "꼬리지느러미 강화", SkillEffectType.MoveSpeed, 0.02f, 1f,                // ▱ ×22 (옛 카메라 자리)
+              "", "기본 이동속도 2% 증가."),
             S("cell", "물고기 전지", SkillEffectType.TimeGain, 0.025f, 1f,                            // △ ×25
               "", "물고기를 먹을 때 얻는 제한시간 2.5% 증가."),
             S("acid", "위액 산성도 증가", SkillEffectType.CurrencyGain, 0.04f, 1.2f,                  // ⏢ ×47
@@ -394,6 +395,20 @@ namespace FishGame.EditorTools
             db.codexMilestone = 100;
             db.codexMaxTiers = 10;
 
+            // R12 (3시간 플레이 QA) — 능력이 과하다는 평
+            db.timeRewardScale = 0.1f;              // 먹을 때 얻는 시간 1/10
+            db.smallPreyFullTimeRatio = 0.5f;       // 내 절반보다 작은 먹이는 시간이 줄어든다
+            db.smallPreyMinTimeFactor = 0.2f;
+            db.minSpawnSizeRatio = 0.3f;            // 너무 작은 종은 스폰하지 않는다
+            db.boosterDistance = 2.25f;             // 4.5 → 절반
+            db.boosterEatSizeMultiplier = 1.15f;    // 1.6 → 1.15
+            db.boosterPowerEatSizeMultiplier = 1.6f; // 위력 강화: 크기 무시 → 1.6배
+            db.vacuumRadius = 2.5f;                 // 5 → 절반
+            db.vacuumDuration = 1.5f;
+            db.vacuumCooldown = 6f;
+            db.skillDepthRankScale = 5.5f;          // 스킬 가격 깊이 배율 (R12)
+            db.earlyActiveSurcharge = 5f;
+
             db.inRunGrowthEnabled = true;
             db.growthMassEfficiency = 0.5f;   // R10: 판 안에서 쑥쑥 크게
             db.growthMaxMultiplier = 2.5f;
@@ -402,6 +417,8 @@ namespace FishGame.EditorTools
 
             EditorUtility.SetDirty(db);
             AssetDatabase.SaveAssets();
+            // 밸런스 시트에서 고친 값이 생성기 기본값에 덮이지 않게, 마지막으로 받은 시트 값을 다시 적용한다
+            BalanceSheetSync.ReapplyCache(db);
             AssetDatabase.Refresh();
 
             int fishCount = MapFish.Length * 5 + Rares.Length + 1;   // 잡어 + 희귀 대형어 + 보스 1
@@ -580,7 +597,7 @@ namespace FishGame.EditorTools
             // ── 스폰 ──
             float maxHalf = 1f;
             foreach (var (_, hw) in def.profile) maxHalf = Mathf.Max(maxHalf, hw);
-            asset.targetPopulation = def.population;
+            asset.targetPopulation = def.population;   // R12: 구역 개체 수 1.5배 (26/30/34/38 → 39/45/51/57)
             asset.spawnInterval = 0.28f;
             asset.spawnMarginFromPlayer = Mathf.Max(9f, maxHalf * 0.32f);
 

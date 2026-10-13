@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0e52eb336fc30448ba19f53a13a35b9, type: 3}
-  m_Name: Skill_camera
+  m_Name: Skill_vacuum_cooldown
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.SkillNode
-  id: camera
-  displayName: "\uCE74\uBA54\uB77C \uC7A5\uCC29"
+  id: vacuum_cooldown
+  displayName: "\uCCAD\uC18C\uAE30 \uCFE8\uD0C0\uC784 \uAC10\uC18C"
   tooltip: 
-  description: "\uC2DC\uC57C 3.5% \uC99D\uAC00."
+  description: "\uCCAD\uC18C\uAE30 \uC7AC\uC0AC\uC6A9 \uB300\uAE30\uC2DC\uAC04 \uAC10\uC18C.
+    4\uCE78\uC744 \uBAA8\uB450 \uCC0D\uC73C\uBA74 \uC808\uBC18."
   icon: {fileID: 0}
-  effectType: 103
-  valuePerLevel: 0.035
-  maxLevel: 22
+  effectType: 208
+  valuePerLevel: 0.25
+  maxLevel: 4
   costMultiplier: 1

@@ -58,16 +58,22 @@ namespace FishGame.Data
         // ══════════════════════════════════════════════════════════
         [Header("부스터 (우클릭)")]
         [Tooltip("기본 이동 거리 (플레이어 크기 배수)")]
-        [Min(0.1f)] public float boosterDistance = 4.5f;
+        [Min(0.1f)] public float boosterDistance = 2.25f;   // R12: 4.5 → 2.25 (너무 멀리 나간다는 QA)
         [Min(0.02f)] public float boosterDuration = 0.18f;
         [Min(0.1f)] public float boosterCooldown = 3.5f;
         [Tooltip("부스터 중 경로 판정 반경 (플레이어 size 배수)")]
         [Min(0.1f)] public float boosterHitRadiusRatio = 0.7f;
         [Tooltip("부스터 위력 강화 전까지, 부스터로 먹을 수 있는 최대 크기 배수")]
-        [Min(1f)] public float boosterEatSizeMultiplier = 1.6f;
+        [Min(1f)] public float boosterEatSizeMultiplier = 1.15f;   // R12: 1.6 → 1.15
+        [Tooltip("부스터 위력 강화 후, 부스터로 먹을 수 있는 최대 크기 배수 (예전엔 크기 무시)")]
+        [Min(1f)] public float boosterPowerEatSizeMultiplier = 1.6f;
 
-        [Header("청소기 (좌클릭, 홀드)")]
-        [Min(0.1f)] public float vacuumRadius = 5f;
+        [Header("청소기 (좌클릭 → 잠깐 흡입 → 재사용 대기)")]
+        [Min(0.1f)] public float vacuumRadius = 2.5f;   // R12: 5 → 2.5
+        [Tooltip("한 번 누르면 빨아들이는 시간(초)")]
+        [Min(0.1f)] public float vacuumDuration = 1.5f;
+        [Tooltip("재사용 대기시간(초). 청소기 쿨타임 감소 강화로 줄어든다")]
+        [Min(0.1f)] public float vacuumCooldown = 6f;
         [Tooltip("빨아들이는 힘")]
         [Min(0.1f)] public float vacuumPullForce = 16f;
         [Tooltip("플레이어 size × 이 값 이하만 끌려온다")]
@@ -114,6 +120,34 @@ namespace FishGame.Data
         // ══════════════════════════════════════════════════════════
         //  규칙
         // ══════════════════════════════════════════════════════════
+        [Header("제한시간 보상 (R12)")]
+        [Tooltip("물고기를 먹을 때 얻는 제한시간 = 종의 timeReward × 이 값")]
+        [Range(0.01f, 1f)] public float timeRewardScale = 0.1f;
+        [Tooltip("먹이가 내 크기의 이 비율 이상이면 시간을 온전히 받는다. 그보다 작으면 비율에 따라 줄어든다")]
+        [Range(0.05f, 1f)] public float smallPreyFullTimeRatio = 0.5f;
+        [Tooltip("아주 작은 먹이도 이만큼은 받는다 (온전한 보상 대비)")]
+        [Range(0f, 1f)] public float smallPreyMinTimeFactor = 0.2f;
+
+        [Header("스킬 가격")]
+        [Tooltip("시작 칸에서 한 칸 멀어질 때마다 가격 곡선에서 건너뛰는 칸 수. 클수록 깊은 칸이 비싸진다 (balance_sim.py DEPTH_RANK_SCALE)")]
+        [Min(0.1f)] public float skillDepthRankScale = 5.5f;
+        [Tooltip("부스터 · 청소기 · 황금 미끼 첫 해금 가격 배수")]
+        [Min(1f)] public float earlyActiveSurcharge = 5f;
+
+        [Header("스폰 (R12)")]
+        [Tooltip("내 크기 × 이 값보다 작은 종은 스폰하지 않는다 (다른 종이 남아 있을 때만)")]
+        [Range(0f, 1f)] public float minSpawnSizeRatio = 0.3f;
+
+        [Header("스폰 — 플레이어 기준")]
+        [Tooltip("화면 반경(화면 중심→모서리)의 이 배수 바깥에서 스폰한다. 1.1 = 화면 바로 밖")]
+        [Min(0.5f)] public float spawnRingInner = 1.1f;
+        [Tooltip("화면 반경의 이 배수 안쪽까지만 스폰한다")]
+        [Min(0.6f)] public float spawnRingOuter = 1.85f;
+        [Tooltip("플레이어에게서 화면 반경의 이 배수보다 멀어진 물고기는 디스폰한다. 개체 수 한도도 이 범위 안만 센다")]
+        [Min(1f)] public float despawnRadiusRatio = 2.2f;
+        [Tooltip("주변 물고기가 한도의 절반 아래로 줄면 한 번에 이만큼까지 몰아서 스폰한다 (대쉬로 빠르게 이동할 때 빈 화면 방지)")]
+        [Min(1)] public int spawnBurstMax = 4;
+
         [Header("규칙")]
         [Tooltip("포식 판정 여유. 플레이어 size * 이 값 >= 상대 size 면 먹을 수 있다.")]
         [Range(0.5f, 1.5f)] public float eatSizeTolerance = 1.0f;

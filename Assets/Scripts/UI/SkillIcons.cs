@@ -25,6 +25,8 @@ namespace FishGame.UI
             { SkillEffectType.UnlockGoldenBait, "Icons/Item_GoldenBait" },
             { SkillEffectType.UnlockVolt,       "Icons/Item_Volt" },
             { SkillEffectType.UnlockMissile,    "Icons/Item_Missile" },
+            // 전용 그림이 오기 전까지 청소기 쿨타임 감소는 청소기 강화 그림을 같이 쓴다
+            { SkillEffectType.VacuumCooldown,   "SkillIcons/VacuumRange" },
         };
 
         static readonly Dictionary<SkillEffectType, Sprite> _cache = new Dictionary<SkillEffectType, Sprite>();

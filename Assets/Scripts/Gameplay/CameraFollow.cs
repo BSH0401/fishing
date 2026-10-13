@@ -3,7 +3,9 @@ using UnityEngine;
 namespace FishGame.Gameplay
 {
     /// <summary>
-    /// 플레이어를 부드럽게 따라가고 맵 경계를 넘지 않는 2D 카메라.
+    /// 플레이어를 화면 한가운데에 두는 2D 카메라.
+    /// R12: 예전엔 벽 바깥을 안 비추려고 맵 경계에서 멈췄는데, 벽 근처에서 플레이어가 화면 한쪽으로 쏠렸다 풀렸다 하며
+    /// 카메라 워크가 일관성이 없다는 QA가 있어 "항상 플레이어 중심"으로 바꿨다.
     /// 몸이 커질수록 넓게 보이고, '카메라 장착' 스킬로 추가로 넓어진다.
     /// 화면 흔들림은 Juice에서 읽어온다.
     /// </summary>
@@ -11,7 +13,8 @@ namespace FishGame.Gameplay
     public class CameraFollow : MonoBehaviour
     {
         [SerializeField] Transform target;
-        [SerializeField] float smoothTime = 0.18f;
+        [Tooltip("플레이어를 따라가는 부드러움. 작을수록 딱 붙는다 (0 = 즉시)")]
+        [SerializeField] float smoothTime = 0.06f;
         [SerializeField] Vector2 offset = Vector2.zero;
 
         [Header("줌")]
@@ -29,6 +32,10 @@ namespace FishGame.Gameplay
 
         Camera _cam;
         Vector3 _velocity;
+        // 흔들림을 뺀 카메라 위치. 흔들림이 섞인 transform.position에서 다음 프레임 스무딩을 시작하면
+        // 흔들림이 매 프레임 누적돼 프레임이 높을수록 크게 흔들렸다 (QA: 고프레임에서 흔들림 과함)
+        Vector3 _basePos;
+        bool _hasBase;
         float _zoomVelocity;
         FishBody _targetBody;
 
@@ -62,6 +69,8 @@ namespace FishGame.Gameplay
             if (target == null) return;
             _cam.orthographicSize = DesiredOrthoSize();
             transform.position = DesiredPosition(_cam.orthographicSize);
+            _basePos = transform.position;
+            _hasBase = true;
             _velocity = Vector3.zero;
             _zoomVelocity = 0f;
         }
@@ -80,12 +89,16 @@ namespace FishGame.Gameplay
 
             Vector3 desired = DesiredPosition(_cam.orthographicSize);
 
-            // 히트스톱 중에도 카메라는 살아 있어야 흔들림이 보인다 → unscaled
-            Vector3 smoothed = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothTime,
+            if (!_hasBase) { _basePos = transform.position; _hasBase = true; }
+
+            // 히트스톱 중에도 카메라는 살아 있어야 흔들림이 보인다 → unscaled.
+            // 스무딩은 흔들림을 뺀 위치(_basePos)에서만 한다 — 흔들림은 매 프레임 위에 얹기만 한다.
+            Vector3 smoothed = Vector3.SmoothDamp(_basePos, desired, ref _velocity, smoothTime,
                                                   Mathf.Infinity, Time.unscaledDeltaTime);
 
             // 부스터처럼 순간적으로 빠를 때 스무딩이 따라가지 못해 플레이어가 화면 밖으로 나가지 않게
-            smoothed = KeepTargetInView(smoothed, _cam.orthographicSize, 0.8f);
+            smoothed = KeepTargetInView(smoothed, _cam.orthographicSize, 0.15f);
+            _basePos = smoothed;
 
             // ── 흔들림 ──
             var run = RunManager.Instance;
@@ -120,36 +133,12 @@ namespace FishGame.Gameplay
             return desiredSize;
         }
 
+        /// <summary>항상 플레이어 중심. 맵 끝에서도 멈추지 않는다 (벽 바깥은 어두운 바깥 색으로 보인다).</summary>
         Vector3 DesiredPosition(float halfH)
         {
-            var run = RunManager.Instance;
             Vector3 desired = target.position + (Vector3)offset;
             desired.z = transform.position.z;
-
-            if (run != null && run.Layout != null)
-            {
-                float halfW = halfH * _cam.aspect;
-
-                // 세로: 통합 맵 전체가 범위
-                float top = run.WorldTopY, bottom = run.WorldBottomY;
-                desired.y = (top - bottom) <= halfH * 2f
-                    ? (top + bottom) * 0.5f
-                    : Mathf.Clamp(desired.y, bottom + halfH, top - halfH);
-
-                // 가로: 벽이 기울어져 있으므로 "지금 높이의 폭"으로 잡는다.
-                // 화면 위아래 끝의 폭도 함께 보고 좁은 쪽을 따라야 벽 바깥이 안 비친다.
-                float hw = Mathf.Min(
-                    run.WorldHalfWidthAt(desired.y),
-                    Mathf.Min(run.WorldHalfWidthAt(desired.y + halfH),
-                              run.WorldHalfWidthAt(desired.y - halfH)));
-                float cx = run.WorldCenterXAt(desired.y);
-
-                desired.x = hw <= halfW ? cx : Mathf.Clamp(desired.x, cx - hw + halfW, cx + hw - halfW);
-            }
-
-            // 벽 바깥을 안 비추는 것보다 플레이어가 화면에 있는 것이 우선이다.
-            // (통로 입구처럼 폭이 급히 좁아지는 곳에서 위 계산이 플레이어를 화면 밖으로 밀어냈다)
-            return KeepTargetInView(desired, halfH, 0.75f);
+            return desired;
         }
 
         /// <summary>대상이 화면 가장자리 비율(margin01) 안쪽에 오도록 카메라 위치를 보정한다.</summary>
