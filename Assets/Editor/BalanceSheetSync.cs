@@ -2,55 +2,47 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using FishGame.Core;
 using FishGame.Data;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace FishGame.EditorTools
 {
     /// <summary>
-    /// 구글 밸런스 시트 → 게임 데이터(에셋) 동기화.
+    /// 밸런스 엑셀 → 게임 데이터(에셋) 동기화. (R13: 구글 시트 → 프로젝트 안 엑셀로 원본을 옮김)
     ///
-    ///   시트 탭 4개를 CSV로 받아(gviz) GameDatabase · SkillNode · FishSpecies · ZoneData에 써 넣는다.
+    ///   원본    프로젝트 폴더/Balance/물고기게임_밸런스.xlsx  (탭: 플레이어 · 스킬 · 물고기 · 구역)
+    ///   보기용  저장할 때마다 구글 드라이브 FishGame/시트 폴더로 같은 파일을 복사한다 (드라이브 쪽을 고쳐도 반영 안 됨)
+    ///
     ///   열 제목의 [필드이름]이 곧 C# 필드 이름이다. [ ]가 없는 열은 참고용이라 무시한다.
+    ///     플레이어   [key] 열의 필드에 [value] 열의 값을 GameDatabase에 넣는다 (행 단위 키-값)
+    ///     스킬       [id] = SkillNode.id
+    ///     물고기     [id] = FishSpecies 에셋 이름
+    ///     구역       [id] = ZoneData 에셋 이름
     ///
-    ///   플레이어   [key] 열의 필드에 [value] 열의 값을 GameDatabase에 넣는다 (행 단위 키-값)
-    ///   스킬       [id] = SkillNode.id
-    ///   물고기     [id] = FishSpecies 에셋 이름
-    ///   구역       [id] = ZoneData 에셋 이름
-    ///
-    /// 자동 동기화가 켜져 있으면 몇 초마다 시트를 확인해, 바뀐 값만 에셋에 쓰고 저장한다.
-    /// 플레이 중에도 반영된다 (ScriptableObject라 다음 판부터, 스킬트리 화면은 즉시).
-    ///
-    /// 시트는 "링크가 있는 모든 사용자 — 뷰어"로 공유돼 있어야 한다 (로그인 없이 CSV를 받기 때문).
-    /// 받은 CSV는 Library/BalanceSheetCache에 보관 — 콘텐츠 에셋 생성(1번 메뉴)이 끝나면 다시 덮어쓴다.
+    /// 엑셀에서 저장하면(파일 수정 시각이 바뀌면) 1초 안에 읽어 바뀐 값만 에셋에 쓰고 저장한다.
+    /// 엑셀이 파일을 열고 있어도 읽기 공유로 읽는다. xlsx는 zip + XML이라 외부 라이브러리 없이 직접 푼다.
     /// </summary>
     [InitializeOnLoad]
     public static class BalanceSheetSync
     {
-        const string DefaultSheetId = "1sri-A8ohQzfXva2lW2mgFyNMDWKW29oDTpHbQJP1nw4";
-        const string PrefSheetId = "FishGame.BalanceSheet.Id";
-        const string PrefAuto = "FishGame.BalanceSheet.Auto";
-        const double PollSeconds = 5d;
-        const int TimeoutSeconds = 15;
+        public const string ExcelRelativePath = "Balance/물고기게임_밸런스.xlsx";
+        const string DefaultDriveFolder = "E:/내 드라이브/FishGame/시트";
+        const string PrefAuto = "FishGame.BalanceExcel.Auto";
+        const string PrefDrive = "FishGame.BalanceExcel.DriveFolder";
+        static string PrefApplied => "FishGame.BalanceExcel.Applied." + Application.dataPath;
+        const double PollSeconds = 1d;
 
         static readonly string[] Tabs = { "플레이어", "스킬", "물고기", "구역" };
-        static readonly string CacheDir = Path.Combine("Library", "BalanceSheetCache");
+        const string Menu = "FishGame/7. 밸런스 엑셀/";
+        const string AutoMenu = Menu + "자동 반영 (엑셀 저장하면 바로)";
 
-        const string Menu = "FishGame/7. 밸런스 시트/";
-
-        public static string SheetId
-        {
-            get
-            {
-                var id = EditorPrefs.GetString(PrefSheetId, DefaultSheetId);
-                return string.IsNullOrWhiteSpace(id) ? DefaultSheetId : id.Trim();
-            }
-            set => EditorPrefs.SetString(PrefSheetId, ExtractId(value));
-        }
+        public static string ExcelPath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", ExcelRelativePath));
 
         public static bool AutoSync
         {
@@ -58,108 +50,183 @@ namespace FishGame.EditorTools
             set => EditorPrefs.SetBool(PrefAuto, value);
         }
 
+        /// <summary>보기용 복사본을 둘 구글 드라이브 폴더. 비우면 복사하지 않는다.</summary>
+        public static string DriveFolder
+        {
+            get => EditorPrefs.GetString(PrefDrive, DefaultDriveFolder);
+            set => EditorPrefs.SetString(PrefDrive, value ?? "");
+        }
+
         static double _nextPoll;
-        static Fetch _pending;
-        static bool _manual;
+        static DateTime _lastWrite;
         static string _lastError;
 
         static BalanceSheetSync()
         {
             EditorApplication.update += Tick;
-            _nextPoll = EditorApplication.timeSinceStartup + 3d;
+            EditorApplication.focusChanged += focused => { if (focused) _nextPoll = 0; };
+            // 마지막으로 반영한 파일 시각 — Unity가 꺼져 있는 동안 엑셀을 고쳤으면 켜자마자 반영된다
+            long ticks;
+            _lastWrite = long.TryParse(EditorPrefs.GetString(PrefApplied, ""), out ticks) ? new DateTime(ticks, DateTimeKind.Utc) : DateTime.MinValue;
+            _nextPoll = EditorApplication.timeSinceStartup + 2d;
         }
 
         // ── 메뉴 ──────────────────────────────────────────────────
-        [MenuItem(Menu + "지금 불러오기", false, 7)]
-        static void PullNow()
+        [MenuItem(Menu + "엑셀 열기", false, 7)]
+        static void OpenExcel()
         {
-            _manual = true;
-            StartFetch();
+            if (!File.Exists(ExcelPath)) { Debug.LogWarning($"[밸런스 엑셀] 파일이 없습니다: {ExcelPath}"); return; }
+            EditorUtility.OpenWithDefaultApp(ExcelPath);
         }
 
-        [MenuItem(Menu + "자동 동기화 (저장하면 몇 초 안에 반영)", false, 8)]
+        [MenuItem(Menu + "지금 불러오기", false, 8)]
+        static void PullNow() { if (Load(manual: true)) MarkApplied(SafeWriteTime()); }
+
+        [MenuItem(AutoMenu, false, 9)]
         static void ToggleAuto()
         {
             AutoSync = !AutoSync;
-            Debug.Log($"[밸런스 시트] 자동 동기화 {(AutoSync ? "켬" : "끔")}");
+            Debug.Log($"[밸런스 엑셀] 자동 반영 {(AutoSync ? "켬" : "끔")}");
         }
 
-        [MenuItem(Menu + "자동 동기화 (저장하면 몇 초 안에 반영)", true)]
+        [MenuItem(AutoMenu, true)]
         static bool ToggleAutoValidate()
         {
-            UnityEditor.Menu.SetChecked(Menu + "자동 동기화 (저장하면 몇 초 안에 반영)", AutoSync);
+            UnityEditor.Menu.SetChecked(AutoMenu, AutoSync);
             return true;
         }
 
-        [MenuItem(Menu + "시트 열기", false, 20)]
-        static void OpenSheet() => Application.OpenURL($"https://docs.google.com/spreadsheets/d/{SheetId}/edit");
+        [MenuItem(Menu + "폴더 열기", false, 20)]
+        static void RevealExcel() => EditorUtility.RevealInFinder(File.Exists(ExcelPath) ? ExcelPath : Path.GetDirectoryName(ExcelPath));
 
-        [MenuItem(Menu + "시트 주소 설정…", false, 21)]
-        static void SetAddress() => SheetAddressWindow.Open();
+        [MenuItem(Menu + "구글 드라이브 복사 위치…", false, 21)]
+        static void SetDriveFolder()
+        {
+            string start = Directory.Exists(DriveFolder) ? DriveFolder : "";
+            string picked = EditorUtility.OpenFolderPanel("보기용 복사본을 둘 구글 드라이브 폴더 (취소하면 복사 안 함)", start, "");
+            DriveFolder = picked;
+            Debug.Log(string.IsNullOrEmpty(picked) ? "[밸런스 엑셀] 드라이브 복사를 껐습니다." : $"[밸런스 엑셀] 드라이브 복사 위치: {picked}");
+            if (!string.IsNullOrEmpty(picked) && File.Exists(ExcelPath)) CopyToDrive(File.ReadAllBytes(ExcelPath), true);
+        }
 
-        // ── 폴링 ──────────────────────────────────────────────────
+        // ── 감시 ──────────────────────────────────────────────────
+        static DateTime SafeWriteTime()
+        {
+            try { return File.Exists(ExcelPath) ? File.GetLastWriteTimeUtc(ExcelPath) : DateTime.MinValue; }
+            catch { return DateTime.MinValue; }
+        }
+
         static void Tick()
         {
-            if (_pending != null)
-            {
-                if (!_pending.IsDone) return;
-                var f = _pending;
-                _pending = null;
-                Finish(f);
-                return;
-            }
             if (!AutoSync || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             if (EditorApplication.timeSinceStartup < _nextPoll) return;
-            StartFetch();
-        }
-
-        static void StartFetch()
-        {
-            if (_pending != null) return;
             _nextPoll = EditorApplication.timeSinceStartup + PollSeconds;
-            _pending = new Fetch(SheetId);
+
+            var t = SafeWriteTime();
+            if (t == DateTime.MinValue || t == _lastWrite) return;
+            if (Load(manual: false)) MarkApplied(t);   // 저장 중이라 못 읽었으면 다음 틱에 다시
         }
 
-        static void Finish(Fetch f)
+        static void MarkApplied(DateTime t)
         {
-            bool manual = _manual;
-            _manual = false;
+            _lastWrite = t;
+            EditorPrefs.SetString(PrefApplied, t.Ticks.ToString());
+        }
 
-            if (f.Error != null)
+        /// <summary>엑셀을 읽어 반영한다. 파일을 읽지 못했으면 false (다음에 다시 시도).</summary>
+        static bool Load(bool manual)
+        {
+            if (!File.Exists(ExcelPath))
             {
-                // 같은 오류는 한 번만 알린다 (5초마다 콘솔을 채우지 않게)
-                if (manual || f.Error != _lastError)
-                    Debug.LogWarning("[밸런스 시트] 불러오지 못했습니다: " + f.Error);
-                _lastError = f.Error;
-                _nextPoll = EditorApplication.timeSinceStartup + PollSeconds * 6;   // 오류면 30초 뒤에 다시
-                return;
+                if (manual) Debug.LogWarning($"[밸런스 엑셀] 파일이 없습니다: {ExcelPath}");
+                return true;
             }
-            if (_lastError != null) Debug.Log("[밸런스 시트] 다시 연결됐습니다.");
+
+            byte[] bytes;
+            Dictionary<string, List<string[]>> tabs;
+            try
+            {
+                bytes = ReadShared(ExcelPath);
+                tabs = XlsxReader.Read(bytes, Tabs);
+            }
+            catch (Exception e) when (e is IOException || e is InvalidDataException || e is UnauthorizedAccessException)
+            {
+                // 엑셀이 저장하는 도중이면 잠깐 잠기거나 반쯤 쓰인 파일이 보인다
+                if (manual) Debug.LogWarning("[밸런스 엑셀] 파일을 읽지 못했습니다 (저장 중?): " + e.Message);
+                return false;
+            }
+            catch (Exception e)
+            {
+                string msg = "[밸런스 엑셀] 엑셀을 해석하지 못했습니다: " + e.Message;
+                if (manual || msg != _lastError) Debug.LogWarning(msg);
+                _lastError = msg;
+                return true;
+            }
             _lastError = null;
 
-            Directory.CreateDirectory(CacheDir);
-            foreach (var kv in f.Csv) File.WriteAllText(CachePath(kv.Key), kv.Value, Encoding.UTF8);
+            foreach (var tab in Tabs)
+                if (!tabs.ContainsKey(tab)) Debug.LogWarning($"[밸런스 엑셀] '{tab}' 탭이 없습니다. 탭 이름을 바꾸지 말아 주세요.");
 
             var db = FindDatabase();
-            if (db == null) { Debug.LogWarning("[밸런스 시트] GameDatabase 에셋을 찾지 못했습니다."); return; }
-            int n = Apply(db, f.Csv, out string report);
-            if (n > 0) Debug.Log($"[밸런스 시트] 값 {n}개 반영\n{report}");
-            else if (manual) Debug.Log("[밸런스 시트] 바뀐 값이 없습니다." + (report.Length > 0 ? "\n" + report : ""));
+            if (db == null) { Debug.LogWarning("[밸런스 엑셀] GameDatabase 에셋을 찾지 못했습니다."); return true; }
+
+            int n = Apply(db, tabs, out string report);
+            if (n > 0) Debug.Log($"[밸런스 엑셀] 값 {n}개 반영\n{report}");
+            else if (manual) Debug.Log("[밸런스 엑셀] 바뀐 값이 없습니다." + (report.Length > 0 ? "\n" + report : ""));
+
+            CopyToDrive(bytes, manual);
+            return true;
         }
 
-        /// <summary>마지막으로 받은 시트 값을 다시 덮어쓴다. 콘텐츠 에셋 생성 직후에 부른다.</summary>
+        static byte[] ReadShared(string path)
+        {
+            // 엑셀이 열고 있는 파일도 읽을 수 있게 쓰기 공유까지 허용한다
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            using (var ms = new MemoryStream())
+            {
+                fs.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>보기용 복사본을 구글 드라이브 폴더에 둔다 (드라이브 데스크톱 앱이 올려 준다).</summary>
+        static void CopyToDrive(byte[] bytes, bool verbose)
+        {
+            string folder = DriveFolder;
+            if (string.IsNullOrWhiteSpace(folder)) return;
+            if (!Directory.Exists(folder))
+            {
+                if (verbose) Debug.LogWarning($"[밸런스 엑셀] 드라이브 폴더가 없어 복사하지 않았습니다: {folder}");
+                return;
+            }
+            string dest = Path.Combine(folder, Path.GetFileName(ExcelRelativePath));
+            try
+            {
+                if (File.Exists(dest) && File.ReadAllBytes(dest).SequenceEqual(bytes)) return;
+                File.WriteAllBytes(dest, bytes);
+                if (verbose) Debug.Log($"[밸런스 엑셀] 드라이브에 복사: {dest}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[밸런스 엑셀] 드라이브 복사 실패 ({dest}): {e.Message}");
+            }
+        }
+
+        /// <summary>엑셀 값을 다시 덮어쓴다. 콘텐츠 에셋 생성 직후에 부른다.</summary>
         public static void ReapplyCache(GameDatabase db)
         {
-            if (db == null) return;
-            var csv = new Dictionary<string, string>();
-            foreach (var tab in Tabs)
-                if (File.Exists(CachePath(tab))) csv[tab] = File.ReadAllText(CachePath(tab), Encoding.UTF8);
-            if (csv.Count == 0) return;
-            int n = Apply(db, csv, out string report);
-            Debug.Log($"[밸런스 시트] 콘텐츠 생성 후 시트 값 {n}개를 다시 적용했습니다." + (n > 0 ? "\n" + report : ""));
+            if (db == null || !File.Exists(ExcelPath)) return;
+            try
+            {
+                var tabs = XlsxReader.Read(ReadShared(ExcelPath), Tabs);
+                int n = Apply(db, tabs, out string report);
+                Debug.Log($"[밸런스 엑셀] 콘텐츠 생성 후 엑셀 값 {n}개를 다시 적용했습니다." + (n > 0 ? "\n" + report : ""));
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[밸런스 엑셀] 콘텐츠 생성 후 엑셀을 읽지 못했습니다: " + e.Message);
+            }
         }
-
-        static string CachePath(string tab) => Path.Combine(CacheDir, tab + ".csv");
 
         static GameDatabase FindDatabase()
         {
@@ -174,32 +241,32 @@ namespace FishGame.EditorTools
         }
 
         // ── 적용 ──────────────────────────────────────────────────
-        static int Apply(GameDatabase db, Dictionary<string, string> csv, out string report)
+        static int Apply(GameDatabase db, Dictionary<string, List<string[]>> tabs, out string report)
         {
             var log = new StringBuilder();
             int changed = 0;
             var dirty = new HashSet<UnityEngine.Object>();
 
-            if (csv.TryGetValue("플레이어", out var player))
-                changed += ApplyKeyValue(db, ParseCsv(player), log, dirty);
+            if (tabs.TryGetValue("플레이어", out var player))
+                changed += ApplyKeyValue(db, player, log, dirty);
 
-            if (csv.TryGetValue("스킬", out var skills))
+            if (tabs.TryGetValue("스킬", out var skills))
             {
                 var map = new Dictionary<string, UnityEngine.Object>();
                 foreach (var s in db.skills) if (s != null && !string.IsNullOrEmpty(s.id)) map[s.id] = s;
-                changed += ApplyTable("스킬", ParseCsv(skills), map, log, dirty);
+                changed += ApplyTable("스킬", skills, map, log, dirty);
             }
-            if (csv.TryGetValue("물고기", out var fish))
+            if (tabs.TryGetValue("물고기", out var fish))
             {
                 var map = new Dictionary<string, UnityEngine.Object>();
                 foreach (var s in db.allFish) if (s != null) map[s.name] = s;
-                changed += ApplyTable("물고기", ParseCsv(fish), map, log, dirty);
+                changed += ApplyTable("물고기", fish, map, log, dirty);
             }
-            if (csv.TryGetValue("구역", out var zones))
+            if (tabs.TryGetValue("구역", out var zones))
             {
                 var map = new Dictionary<string, UnityEngine.Object>();
                 foreach (var z in db.zones) if (z != null) map[z.name] = z;
-                changed += ApplyTable("구역", ParseCsv(zones), map, log, dirty);
+                changed += ApplyTable("구역", zones, map, log, dirty);
             }
 
             if (dirty.Count > 0)
@@ -347,7 +414,7 @@ namespace FishGame.EditorTools
 
         static string Fmt(float v) => v.ToString("0.#####", CultureInfo.InvariantCulture);
         static string Short(string s) => s == null ? "" : s.Length <= 24 ? $"\"{s}\"" : $"\"{s.Substring(0, 24)}…\"";
-        static string Cell(string[] row, int c) => c >= 0 && c < row.Length ? row[c] : "";
+        static string Cell(string[] row, int c) => c >= 0 && c < row.Length ? row[c] ?? "" : "";
 
         /// <summary>열 제목에서 맨 마지막 [ ] 안의 필드 이름. 없으면 null (참고용 열).</summary>
         static string[] HeaderFields(string[] header)
@@ -363,148 +430,118 @@ namespace FishGame.EditorTools
             return result;
         }
 
-        /// <summary>RFC 4180 CSV — 따옴표 안의 쉼표 · 줄바꿈 · "" 처리.</summary>
-        static List<string[]> ParseCsv(string text)
+        // ── xlsx 읽기 (zip + XML) ─────────────────────────────────
+        static class XlsxReader
         {
-            var rows = new List<string[]>();
-            var row = new List<string>();
-            var cell = new StringBuilder();
-            bool quoted = false;
-            for (int i = 0; i < text.Length; i++)
+            /// <summary>원하는 탭들을 행 목록으로. 셀 값은 엑셀에 저장된 원래 값(숫자는 '.' 소수점 그대로).</summary>
+            public static Dictionary<string, List<string[]>> Read(byte[] bytes, string[] wanted)
             {
-                char ch = text[i];
-                if (quoted)
+                var result = new Dictionary<string, List<string[]>>();
+                using (var zip = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read))
                 {
-                    if (ch == '"')
+                    var shared = ReadSharedStrings(zip);
+                    var wb = Load(zip, "xl/workbook.xml");
+                    var rels = Load(zip, "xl/_rels/workbook.xml.rels");
+                    if (wb == null || rels == null) throw new InvalidDataException("workbook.xml이 없습니다");
+
+                    var targets = new Dictionary<string, string>();
+                    foreach (var r in rels.Descendants().Where(e => e.Name.LocalName == "Relationship"))
+                        targets[(string)r.Attribute("Id")] = (string)r.Attribute("Target");
+
+                    foreach (var sheet in wb.Descendants().Where(e => e.Name.LocalName == "sheet"))
                     {
-                        if (i + 1 < text.Length && text[i + 1] == '"') { cell.Append('"'); i++; }
-                        else quoted = false;
-                    }
-                    else cell.Append(ch);
-                }
-                else if (ch == '"') quoted = true;
-                else if (ch == ',') { row.Add(cell.ToString()); cell.Clear(); }
-                else if (ch == '\n' || ch == '\r')
-                {
-                    if (ch == '\r' && i + 1 < text.Length && text[i + 1] == '\n') i++;
-                    row.Add(cell.ToString()); cell.Clear();
-                    rows.Add(row.ToArray()); row.Clear();
-                }
-                else cell.Append(ch);
-            }
-            if (cell.Length > 0 || row.Count > 0) { row.Add(cell.ToString()); rows.Add(row.ToArray()); }
-            return rows;
-        }
-
-        static string ExtractId(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input)) return "";
-            input = input.Trim();
-            const string marker = "/spreadsheets/d/";
-            int i = input.IndexOf(marker, StringComparison.Ordinal);
-            if (i < 0) return input;
-            string rest = input.Substring(i + marker.Length);
-            int end = rest.IndexOfAny(new[] { '/', '?', '#' });
-            return end < 0 ? rest : rest.Substring(0, end);
-        }
-
-        // ── 내려받기 ──────────────────────────────────────────────
-        sealed class Fetch
-        {
-            readonly Dictionary<string, UnityWebRequest> _requests = new Dictionary<string, UnityWebRequest>();
-            public readonly Dictionary<string, string> Csv = new Dictionary<string, string>();
-            public string Error;
-            bool _collected;
-
-            public Fetch(string sheetId)
-            {
-                long bust = DateTime.UtcNow.Ticks;
-                foreach (var tab in Tabs)
-                {
-                    string url = $"https://docs.google.com/spreadsheets/d/{sheetId}/gviz/tq?tqx=out:csv&headers=1" +
-                                 $"&sheet={Uri.EscapeDataString(tab)}&_={bust}";
-                    var req = UnityWebRequest.Get(url);
-                    req.timeout = TimeoutSeconds;
-                    req.SetRequestHeader("Cache-Control", "no-cache");
-                    req.SendWebRequest();
-                    _requests[tab] = req;
-                }
-            }
-
-            public bool IsDone
-            {
-                get
-                {
-                    foreach (var r in _requests.Values) if (!r.isDone) return false;
-                    if (!_collected) Collect();
-                    return true;
-                }
-            }
-
-            void Collect()
-            {
-                _collected = true;
-                foreach (var kv in _requests)
-                {
-                    var req = kv.Value;
-                    try
-                    {
-                        if (req.result != UnityWebRequest.Result.Success)
-                        {
-                            Error = req.responseCode == 401 || req.responseCode == 403 || req.responseCode == 404
-                                ? $"시트에 접근할 수 없습니다 (HTTP {req.responseCode}). 공유를 '링크가 있는 모든 사용자 — 뷰어'로 바꿔 주세요."
-                                : $"'{kv.Key}' 탭: {req.error}";
-                            continue;
-                        }
-                        string text = req.downloadHandler.text ?? "";
-                        string type = req.GetResponseHeader("Content-Type") ?? "";
-                        if (type.Contains("html") || text.TrimStart().StartsWith("<"))
-                        {
-                            Error = "로그인 화면이 돌아왔습니다. 시트 공유를 '링크가 있는 모든 사용자 — 뷰어'로 바꿔 주세요.";
-                            continue;
-                        }
-                        // 탭 이름이 틀리면 gviz는 오류 대신 첫 탭을 돌려준다 — 머리글로 확인
-                        string first = text.Length > 300 ? text.Substring(0, 300) : text;
-                        bool looksRight = kv.Key == "플레이어" ? first.Contains("[key]") : first.Contains("[id]");
-                        if (!looksRight) { Error = $"'{kv.Key}' 탭을 찾지 못했습니다. 탭 이름을 바꾸지 말아 주세요."; continue; }
-                        Csv[kv.Key] = text;
-                    }
-                    finally { req.Dispose(); }
-                }
-            }
-        }
-
-        // ── 주소 입력 창 ──────────────────────────────────────────
-        sealed class SheetAddressWindow : EditorWindow
-        {
-            string _value;
-
-            public static void Open()
-            {
-                var w = CreateInstance<SheetAddressWindow>();
-                w.titleContent = new GUIContent("밸런스 시트 주소");
-                w._value = $"https://docs.google.com/spreadsheets/d/{SheetId}/edit";
-                w.position = new Rect(200, 200, 560, 110);
-                w.ShowUtility();
-            }
-
-            void OnGUI()
-            {
-                EditorGUILayout.LabelField("구글 시트 주소(또는 ID)를 붙여 넣으세요.");
-                _value = EditorGUILayout.TextField(_value);
-                EditorGUILayout.Space();
-                using (new EditorGUILayout.HorizontalScope())
-                {
-                    if (GUILayout.Button("기본값으로"))
-                        _value = $"https://docs.google.com/spreadsheets/d/{DefaultSheetId}/edit";
-                    if (GUILayout.Button("저장하고 불러오기"))
-                    {
-                        SheetId = _value;
-                        Debug.Log($"[밸런스 시트] 주소 저장: {SheetId}");
-                        Close();
-                        PullNow();
+                        string name = ((string)sheet.Attribute("name") ?? "").Trim();
+                        if (Array.IndexOf(wanted, name) < 0) continue;
+                        var rid = sheet.Attributes().FirstOrDefault(a => a.Name.LocalName == "id");
+                        if (rid == null || !targets.TryGetValue(rid.Value, out var target)) continue;
+                        string path = target.StartsWith("/") ? target.TrimStart('/') : "xl/" + target;
+                        var doc = Load(zip, path);
+                        if (doc != null) result[name] = ReadSheet(doc, shared);
                     }
                 }
+                return result;
+            }
+
+            static XDocument Load(ZipArchive zip, string path)
+            {
+                var entry = zip.GetEntry(path) ?? zip.Entries.FirstOrDefault(e => e.FullName.Equals(path, StringComparison.OrdinalIgnoreCase));
+                if (entry == null) return null;
+                using (var s = entry.Open()) return XDocument.Load(s);
+            }
+
+            static List<string> ReadSharedStrings(ZipArchive zip)
+            {
+                var list = new List<string>();
+                var doc = Load(zip, "xl/sharedStrings.xml");
+                if (doc == null) return list;
+                foreach (var si in doc.Root.Elements().Where(e => e.Name.LocalName == "si"))
+                    list.Add(TextOf(si));
+                return list;
+            }
+
+            /// <summary>&lt;t&gt;들을 이어 붙인다. 서식이 섞인 글(rich text)과 윗첨자 발음(rPh)을 구분한다.</summary>
+            static string TextOf(XElement e)
+            {
+                var sb = new StringBuilder();
+                foreach (var t in e.Descendants().Where(x => x.Name.LocalName == "t"))
+                    if (t.Parent == null || t.Parent.Name.LocalName != "rPh") sb.Append(t.Value);
+                return sb.ToString();
+            }
+
+            static List<string[]> ReadSheet(XDocument doc, List<string> shared)
+            {
+                var rows = new List<string[]>();
+                foreach (var row in doc.Descendants().Where(e => e.Name.LocalName == "row"))
+                {
+                    int rowIndex = (int?)row.Attribute("r") ?? rows.Count + 1;
+                    var cells = new SortedDictionary<int, string>();
+                    int next = 0;
+                    foreach (var c in row.Elements().Where(e => e.Name.LocalName == "c"))
+                    {
+                        string r = (string)c.Attribute("r");
+                        int col = r != null ? ColumnIndex(r) : next;
+                        next = col + 1;
+                        cells[col] = CellValue(c, shared);
+                    }
+                    while (rows.Count < rowIndex - 1) rows.Add(new string[0]);   // 빈 행 자리
+                    int width = cells.Count > 0 ? cells.Keys.Max() + 1 : 0;
+                    var arr = new string[width];
+                    foreach (var kv in cells) arr[kv.Key] = kv.Value;
+                    rows.Add(arr);
+                }
+                return rows;
+            }
+
+            static string CellValue(XElement c, List<string> shared)
+            {
+                string type = (string)c.Attribute("t");
+                var v = c.Elements().FirstOrDefault(e => e.Name.LocalName == "v");
+                switch (type)
+                {
+                    case "s":
+                        return v != null && int.TryParse(v.Value, out int i) && i >= 0 && i < shared.Count ? shared[i] : "";
+                    case "inlineStr":
+                        var isEl = c.Elements().FirstOrDefault(e => e.Name.LocalName == "is");
+                        return isEl != null ? TextOf(isEl) : "";
+                    case "b":
+                        return v != null && v.Value == "1" ? "1" : "0";
+                    case "e":
+                        return "";
+                    default:   // 숫자 · 수식 결과(str)
+                        return v?.Value ?? "";
+                }
+            }
+
+            static int ColumnIndex(string cellRef)
+            {
+                int col = 0;
+                foreach (char ch in cellRef)
+                {
+                    if (ch >= 'A' && ch <= 'Z') col = col * 26 + (ch - 'A' + 1);
+                    else if (ch >= 'a' && ch <= 'z') col = col * 26 + (ch - 'a' + 1);
+                    else break;
+                }
+                return col - 1;
             }
         }
     }
