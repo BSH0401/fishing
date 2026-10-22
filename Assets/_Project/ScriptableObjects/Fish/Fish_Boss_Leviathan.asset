@@ -15,8 +15,8 @@ MonoBehaviour:
   speciesId: Fish_Boss_Leviathan
   displayName: "\uC2EC\uD574 \uB9AC\uBC14\uC774\uC5B4\uB358"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 90f86de3406279c409f0bae4eadeb7d0, type: 3}
-  spriteFacesLeft: 0
+  sprite: {fileID: 21300000, guid: 47331db13ee2e9a4fb69b36ef0f389a9, type: 3}
+  spriteFacesLeft: 1
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 43
   visualScaleMultiplier: 1

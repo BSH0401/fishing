@@ -138,11 +138,9 @@ namespace FishGame.Gameplay
 
             Bait.DespawnAll();
 
-            var bank = AudioManager.Instance.Bank;
-            AudioManager.PlayMusic(bank != null ? bank.gameplayMusic : null);
-
             StartZoneIndex = Mathf.Clamp(StartZoneIndex, 0, Database.ZoneCount - 1);
             CurrentZoneIndex = StartZoneIndex;
+            PlayZoneMusic(CurrentZoneIndex);
             DeepestZoneThisRun = StartZoneIndex;
 
             BuildWorld();
@@ -317,7 +315,17 @@ namespace FishGame.Gameplay
             if (zone > DeepestZoneThisRun) DeepestZoneThisRun = zone;
 
             ApplyZoneVisuals(zone);
+            PlayZoneMusic(zone);
             OnZoneChanged?.Invoke(zone);
+        }
+
+        /// <summary>구역 배경음 — 구역에 곡이 없으면 SoundBank의 기본 게임 곡.</summary>
+        void PlayZoneMusic(int zoneIndex)
+        {
+            var zone = Database != null ? Database.GetZone(zoneIndex) : null;
+            if (zone != null && zone.music != null) { AudioManager.PlayMusic(zone.music, zone.musicVolume); return; }
+            var bank = AudioManager.Instance.Bank;
+            AudioManager.PlayMusic(bank != null ? bank.gameplayMusic : null, bank != null ? bank.gameplayMusicVolume : 0.6f);
         }
 
         void ApplyZoneVisuals(int zoneIndex)

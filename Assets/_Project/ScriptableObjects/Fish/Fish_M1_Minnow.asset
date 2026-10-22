@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_M1_Minnow
   displayName: "\uC1A1\uC0AC\uB9AC"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 5151e48a17eadd5459d34680e67c1b85, type: 3}
+  sprite: {fileID: 21300000, guid: 30b156efebd963041ac25aa556a95c2e, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 0.55

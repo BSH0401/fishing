@@ -15,8 +15,8 @@ MonoBehaviour:
   speciesId: Fish_M1_Guppy
   displayName: "\uC2E4\uD5D8\uCCB4 \uAD6C\uD53C"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 7ab84dbf80421bf42873455c42fa0ff0, type: 3}
-  spriteFacesLeft: 0
+  sprite: {fileID: 21300000, guid: 6db8c754b59c45b4d9ab4b5091eee4a9, type: 3}
+  spriteFacesLeft: 1
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 0.95
   visualScaleMultiplier: 1

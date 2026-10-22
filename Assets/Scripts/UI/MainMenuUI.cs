@@ -58,7 +58,7 @@ namespace FishGame.UI
             ApplyLabStyle();
 
             var bank = AudioManager.Instance.Bank;
-            AudioManager.PlayMusic(bank != null ? bank.menuMusic : null);
+            AudioManager.PlayMusic(bank != null ? bank.menuMusic : null, bank != null ? bank.menuMusicVolume : 0.6f);
 
             if (resetConfirmPanel != null) resetConfirmPanel.SetActive(false);
             if (resetSaveButton != null)

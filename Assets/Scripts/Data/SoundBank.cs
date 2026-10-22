@@ -42,7 +42,10 @@ namespace FishGame.Data
 
         [Header("배경음 (비워 두면 조용히 넘어간다)")]
         public AudioClip menuMusic;
+        [Range(0f, 1f)] public float menuMusicVolume = 0.6f;
+        [Tooltip("구역에 곡이 없을 때 트는 기본 곡 (구역별 곡은 ZoneData.music)")]
         public AudioClip gameplayMusic;
+        [Range(0f, 1f)] public float gameplayMusicVolume = 0.6f;
 
         [Header("믹싱")]
         [Range(0f, 1f)] public float masterVolume = 0.8f;

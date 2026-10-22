@@ -15,7 +15,7 @@ MonoBehaviour:
   speciesId: Fish_Rare1
   displayName: "\uAD00\uB9AC \uB85C\uBD07 \xB7 \uAC8C\uC774\uD2B8\uD0A4\uD37C"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 0e726c2d4f4b7a041b7d26df46fbfe70, type: 3}
+  sprite: {fileID: 21300000, guid: 9063d5a8cca6c394f96cb36c2e31ebf0, type: 3}
   spriteFacesLeft: 0
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 2.95

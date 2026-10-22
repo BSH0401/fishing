@@ -78,20 +78,20 @@ namespace FishGame.EditorTools
             // ── 1구역: 어항 (가중평균 size 0.83 / 재화 0.29) ──
             new[]
             {
-                F("Fish_M1_Fry",     "치어",        0.30f, 0.12f, 0.7f, AIPatternType.Straight, 2.0f, 0f,   C1, 1f, 380f, 11f, 3.4f),
-                F("Fish_M1_Minnow",  "송사리",      0.55f, 0.21f, 0.9f, AIPatternType.SineWave, 2.4f, 1.1f, C1, 0.7f, 340f, 10f, 3.0f),
-                F("Fish_M1_Guppy",   "실험체 구피", 0.95f, 0.34f, 1.1f, AIPatternType.Wander,   2.2f, 4f,   C2, 1f, 300f, 9f, 2.6f),
+                F("Fish_M1_Fry",     "새우",        0.30f, 0.12f, 0.7f, AIPatternType.Straight, 2.0f, 0f,   C1, 1f, 380f, 11f, 3.4f),
+                F("Fish_M1_Minnow",  "이끼",        0.55f, 0.21f, 0.9f, AIPatternType.SineWave, 2.4f, 1.1f, C1, 0.7f, 340f, 10f, 3.0f),
+                F("Fish_M1_Guppy",   "구피",        0.95f, 0.34f, 1.1f, AIPatternType.Wander,   2.2f, 4f,   C2, 1f, 300f, 9f, 2.6f),
                 F("Fish_M1_Angel",   "수조 엔젤",   1.60f, 0.55f, 1.4f, AIPatternType.Flee,     2.8f, 5f,   C3, 1f, 260f, 8f, 2.2f),
                 F("Fish_M1_Keeper",  "수조 포식자", 2.60f, 0.85f, 1.8f, AIPatternType.Chase,    3.0f, 6f,   C4, 1f, 220f, 7f, 2.0f),
             },
             // ── 2구역: 하수구 (2.75 / 1.21) ──
             new[]
             {
-                F("Fish_M2_Larva",   "하수 유생",   1.00f, 0.45f, 0.9f, AIPatternType.SineWave, 2.8f, 1.3f, C1, 0.8f, 360f, 11f, 3.2f),
+                F("Fish_M2_Larva",   "미꾸라지",    1.00f, 0.45f, 0.9f, AIPatternType.SineWave, 2.8f, 1.3f, C1, 0.8f, 360f, 11f, 3.2f),
                 F("Fish_M2_Sludge",  "슬러지피시",  1.90f, 0.85f, 1.1f, AIPatternType.Wander,   3.0f, 5f,   C3, 1f, 300f, 9f, 2.6f),
-                F("Fish_M2_Pipe",    "관벌레고기",  3.20f, 1.40f, 1.3f, AIPatternType.Flee,     3.6f, 6f,   C2, 1f, 270f, 8f, 2.3f),
-                F("Fish_M2_Rat",     "하수 쥐치",   5.20f, 2.30f, 1.6f, AIPatternType.Chase,    3.8f, 8f,   C4, 1f, 230f, 7f, 2.0f),
-                F("Fish_M2_Grate",   "철망 포식자", 8.50f, 3.60f, 2.0f, AIPatternType.Ambush,   3.2f, 9f,   C5, 3.0f, 190f, 6f, 1.7f),
+                F("Fish_M2_Pipe",    "전기뱀장어",  3.20f, 1.40f, 1.3f, AIPatternType.Flee,     3.6f, 6f,   C2, 1f, 270f, 8f, 2.3f),
+                F("Fish_M2_Rat",     "피라냐",      5.20f, 2.30f, 1.6f, AIPatternType.Chase,    3.8f, 8f,   C4, 1f, 230f, 7f, 2.0f),
+                F("Fish_M2_Grate",   "하수구 메기", 8.50f, 3.60f, 2.0f, AIPatternType.Ambush,   3.2f, 9f,   C5, 3.0f, 190f, 6f, 1.7f),
             },
             // ── 3구역: 강 (7.37 / 4.94) ──
             new[]
@@ -119,7 +119,7 @@ namespace FishGame.EditorTools
         // 잡으면 값이 크고, 못 잡으면 피해 다녀야 하는 긴장을 준다.
         static readonly FishDef[] Rares =
         {
-            F("Fish_Rare1", "관리 로봇 · 게이트키퍼",  2.95f,  4.0f, 2.2f, AIPatternType.Wander, 2.4f, 6f,  CB, 1f, 200f, 5f, 1.6f),
+            F("Fish_Rare1", "보스 금붕어",  2.95f,  4.0f, 2.2f, AIPatternType.Wander, 2.4f, 6f,  CB, 1f, 200f, 5f, 1.6f),
             F("Fish_Rare2", "배수관 지킴이",           7.70f, 16.0f, 2.6f, AIPatternType.Chase,  3.2f, 12f, CB, 1f, 180f, 5f, 1.5f),
             F("Fish_Rare3", "강의 주인 · 늙은 가물치",20.00f, 70.0f, 3.0f, AIPatternType.Ambush, 3.8f, 14f, CB, 3.4f, 160f, 4f, 1.4f),
         };
@@ -128,7 +128,7 @@ namespace FishGame.EditorTools
         // 이제 단 하나. 바다 한가운데 고리 구조물에 갇혀 있고,
         // 부스터로 들이받아야 풀려난다. 잡으면 게임 클리어.
         static readonly FishDef Boss =
-            F("Fish_Boss_Leviathan", "심해 리바이어던", 43.00f, 260.0f, 0f,
+            F("Fish_Boss_Leviathan", "심해 아귀", 43.00f, 260.0f, 0f,
               AIPatternType.Chase, 4.6f, 20f, CB, 1f, 150f, 4f, 1.3f);
 
         // ═════════════════════════════════════════════════════════

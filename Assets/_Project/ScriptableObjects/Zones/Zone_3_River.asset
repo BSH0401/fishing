@@ -32,6 +32,8 @@ MonoBehaviour:
   exitHeight: 40
   exitOffsetX: 0
   exitRequiredSize: 21
+  music: {fileID: 8300000, guid: c21344f600947934eb53ae8de5bf61be, type: 3}
+  musicVolume: 0.3
   waterColor: {r: 0.35, g: 0.66, b: 0.78, a: 1}
   background: {fileID: 0}
   wallColor: {r: 0.1, g: 0.11, b: 0.14, a: 1}

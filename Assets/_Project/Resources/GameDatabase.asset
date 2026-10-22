@@ -1270,6 +1270,10 @@ MonoBehaviour:
   skillDepthRankScale: 5.5
   earlyActiveSurcharge: 5
   minSpawnSizeRatio: 0.3
+  spawnRingInner: 1.1
+  spawnRingOuter: 1.85
+  despawnRadiusRatio: 2.2
+  spawnBurstMax: 4
   eatSizeTolerance: 1
   deathCurrencyPenalty: 0.3
   inRunGrowthEnabled: 1

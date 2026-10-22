@@ -71,7 +71,7 @@ namespace FishGame.UI
             StartCoroutine(FadeTo(0f, 0.8f));
 
             var bank = AudioManager.Instance.Bank;
-            AudioManager.PlayMusic(bank != null ? bank.menuMusic : null);
+            AudioManager.PlayMusic(bank != null ? bank.menuMusic : null, bank != null ? bank.menuMusicVolume : 0.6f);
         }
 
         // ── 배경 ────────────────────────────────────────────────

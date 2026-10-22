@@ -15,8 +15,8 @@ MonoBehaviour:
   speciesId: Fish_M1_Fry
   displayName: "\uCE58\uC5B4"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 3bb65054a1fb1e949be14b8c2f533778, type: 3}
-  spriteFacesLeft: 0
+  sprite: {fileID: 21300000, guid: 58edbb8f0febdae43bca3e0c6d8a14b8, type: 3}
+  spriteFacesLeft: 1
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 0.3
   visualScaleMultiplier: 1

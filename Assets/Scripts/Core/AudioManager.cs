@@ -37,9 +37,15 @@ namespace FishGame.Core
         AudioClip _loopClip;
         float _loopBaseVolume = 1f;
 
-        AudioSource _musicSource;
+        // 배경음은 두 트랙을 번갈아 쓰며 교차 페이드한다 (구역이 바뀌면 곡이 부드럽게 넘어간다)
+        const float MusicFadeSeconds = 1.5f;
+        AudioSource[] _music = new AudioSource[2];
+        float[] _musicFade = new float[2];      // 0~1 현재 페이드 값
+        float[] _musicBase = new float[2];      // 곡마다 정한 볼륨
+        int _musicActive;
         AudioClip _musicClip;
-        float _musicBaseVolume = 0.6f;
+        // 곡을 바꿨다가 돌아오면 끊긴 자리부터 이어 튼다 (통로 근처를 오갈 때 처음부터 다시 나오지 않게)
+        readonly Dictionary<AudioClip, float> _musicResume = new Dictionary<AudioClip, float>();
 
         public SoundBank Bank => _bank;
 
@@ -65,11 +71,16 @@ namespace FishGame.Core
             _loopSource.loop = true;
             _loopSource.spatialBlend = 0f;
 
-            _musicSource = gameObject.AddComponent<AudioSource>();
-            _musicSource.playOnAwake = false;
-            _musicSource.loop = true;
-            _musicSource.spatialBlend = 0f;
-            _musicSource.ignoreListenerPause = true;
+            for (int i = 0; i < 2; i++)
+            {
+                var m = gameObject.AddComponent<AudioSource>();
+                m.playOnAwake = false;
+                m.loop = true;
+                m.spatialBlend = 0f;
+                m.ignoreListenerPause = true;
+                m.volume = 0f;
+                _music[i] = m;
+            }
 
             GameSettings.Changed += OnSettingsChanged;
         }
@@ -83,27 +94,60 @@ namespace FishGame.Core
         {
             float master = _bank != null ? _bank.masterVolume : 0.8f;
             if (_loopSource != null) _loopSource.volume = Mathf.Clamp01(_loopBaseVolume * master * Sfx);
-            if (_musicSource != null) _musicSource.volume = Mathf.Clamp01(_musicBaseVolume * Music);
+            ApplyMusicVolumes();
         }
 
         // ── 배경음 ──────────────────────────────────────────────
-        /// <summary>배경음을 바꾼다. 같은 곡이면 이어서 튼다. null이면 멈춘다.</summary>
+        /// <summary>
+        /// 배경음을 바꾼다. 같은 곡이면 이어서 튼다(볼륨만 갱신). null이면 페이드 아웃.
+        /// 다른 곡이면 1.5초 동안 교차 페이드한다.
+        /// </summary>
         public static void PlayMusic(AudioClip clip, float volume = 0.6f) => Instance.PlayMusicInternal(clip, volume);
 
         void PlayMusicInternal(AudioClip clip, float volume)
         {
-            _musicBaseVolume = volume;
-            _musicSource.volume = Mathf.Clamp01(volume * Music);
-            if (clip == null)
+            var cur = _music[_musicActive];
+            if (clip != null && _musicClip == clip && cur.isPlaying)
             {
-                if (_musicSource.isPlaying) _musicSource.Stop();
-                _musicClip = null;
+                _musicBase[_musicActive] = volume;
+                ApplyMusicVolumes();
                 return;
             }
-            if (_musicClip == clip && _musicSource.isPlaying) return;
+
+            // 지금 곡은 이어 틀 자리를 기억해 두고 페이드 아웃
+            if (_musicClip != null && cur.isPlaying) _musicResume[_musicClip] = cur.time;
+
             _musicClip = clip;
-            _musicSource.clip = clip;
-            _musicSource.Play();
+            if (clip == null) { _musicActive = 1 - _musicActive; _music[_musicActive].Stop(); _musicFade[_musicActive] = 0f; return; }
+
+            _musicActive = 1 - _musicActive;
+            var next = _music[_musicActive];
+            next.Stop();
+            next.clip = clip;
+            _musicBase[_musicActive] = volume;
+            _musicFade[_musicActive] = 0f;
+            if (_musicResume.TryGetValue(clip, out float t) && clip.length > 0f) next.time = Mathf.Repeat(t, clip.length);
+            next.volume = 0f;
+            next.Play();
+        }
+
+        void Update()
+        {
+            if (_music[0] == null) return;
+            float step = Time.unscaledDeltaTime / MusicFadeSeconds;
+            for (int i = 0; i < 2; i++)
+            {
+                float target = i == _musicActive && _musicClip != null ? 1f : 0f;
+                _musicFade[i] = Mathf.MoveTowards(_musicFade[i], target, step);
+                if (target == 0f && _musicFade[i] <= 0f && _music[i].isPlaying) _music[i].Stop();
+            }
+            ApplyMusicVolumes();
+        }
+
+        void ApplyMusicVolumes()
+        {
+            for (int i = 0; i < 2; i++)
+                if (_music[i] != null) _music[i].volume = Mathf.Clamp01(_musicBase[i] * _musicFade[i] * Music);
         }
 
         // ══════════════════════════════════════════════════════════

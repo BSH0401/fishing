@@ -28,6 +28,10 @@ MonoBehaviour:
   purchase: {fileID: 0}
   purchaseFail: {fileID: 0}
   buttonClick: {fileID: 0}
+  menuMusic: {fileID: 8300000, guid: 526737ed9a5b5d345a2854e52716c6c2, type: 3}
+  menuMusicVolume: 0.47
+  gameplayMusic: {fileID: 0}
+  gameplayMusicVolume: 0.6
   masterVolume: 0.8
   pitchVariance: 0.12
   minInterval: 0.04

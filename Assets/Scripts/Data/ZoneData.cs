@@ -119,6 +119,12 @@ namespace FishGame.Data
         // ══════════════════════════════════════════════════════════
         //  연출
         // ══════════════════════════════════════════════════════════
+        [Header("배경음")]
+        [Tooltip("이 구역에 들어오면 트는 곡. 비우면 SoundBank의 gameplayMusic")]
+        public AudioClip music;
+        [Tooltip("곡마다 녹음 크기가 달라서 맞추는 볼륨 (설정의 배경음 볼륨이 여기에 곱해진다)")]
+        [Range(0f, 1f)] public float musicVolume = 0.6f;
+
         [Header("연출")]
         public Color waterColor = new Color(0.55f, 0.80f, 0.72f, 1f);
         public Sprite background;
