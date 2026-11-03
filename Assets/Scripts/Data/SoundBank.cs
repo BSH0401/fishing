@@ -43,6 +43,8 @@ namespace FishGame.Data
         [Header("배경음 (비워 두면 조용히 넘어간다)")]
         public AudioClip menuMusic;
         [Range(0f, 1f)] public float menuMusicVolume = 0.6f;
+        [Tooltip("켜면 타이틀부터 스킬트리 · 게임까지 메뉴 곡 하나로 계속 이어 튼다 (구역별 곡을 쓰지 않음)")]
+        public bool oneTrackForWholeGame = true;
         [Tooltip("구역에 곡이 없을 때 트는 기본 곡 (구역별 곡은 ZoneData.music)")]
         public AudioClip gameplayMusic;
         [Range(0f, 1f)] public float gameplayMusicVolume = 0.6f;

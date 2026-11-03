@@ -153,10 +153,10 @@ namespace FishGame.UI
             tag.characterSpacing = 8f;
             UIKit.Place(tag.rectTransform, new Vector2(0f, 1f), new Vector2(4f, 0f), new Vector2(900f, 34f), new Vector2(0f, 1f));
 
-            var title = UIKit.Text(col, "Title", gameTitle, 150f, Color.white, TextAlignmentOptions.Left, FontStyles.Bold);
+            var title = UIKit.Text(col, "Title", Loc.T(gameTitle), 150f, Color.white, TextAlignmentOptions.Left, FontStyles.Bold);
             _titleRt = UIKit.Place(title.rectTransform, new Vector2(0f, 1f), new Vector2(0f, -40f), new Vector2(900f, 180f), new Vector2(0f, 1f));
 
-            var sub = UIKit.Text(col, "SubTitle", subTitle, 30f, UIKit.InkDim, TextAlignmentOptions.Left);
+            var sub = UIKit.Text(col, "SubTitle", Loc.T(subTitle), 30f, UIKit.InkDim, TextAlignmentOptions.Left);
             UIKit.Place(sub.rectTransform, new Vector2(0f, 1f), new Vector2(6f, -226f), new Vector2(900f, 44f), new Vector2(0f, 1f));
 
             // 버튼
@@ -168,7 +168,7 @@ namespace FishGame.UI
 
             if (hasSave)
             {
-                var cont = MenuButton(col, "Continue", "이어하기", y, primary: true);
+                var cont = MenuButton(col, "Continue", Loc.T("이어하기"), y, primary: true);
                 cont.onClick.AddListener(Continue);
                 buttons.Add(cont);
                 var info = UIKit.Text(col, "SaveInfo", SaveSummary(p), 20f, UIKit.InkDim);
@@ -177,17 +177,17 @@ namespace FishGame.UI
                 y -= gap;
             }
 
-            var start = MenuButton(col, "NewGame", hasSave ? "새 게임" : "게임 시작", y, primary: !hasSave);
+            var start = MenuButton(col, "NewGame", hasSave ? Loc.T("새 게임") : Loc.T("게임 시작"), y, primary: !hasSave);
             start.onClick.AddListener(() => { if (hasSave) AskNewGame(); else StartFirstRun(); });
             buttons.Add(start);
             y -= gap;
 
-            var settings = MenuButton(col, "Settings", "설정", y);
+            var settings = MenuButton(col, "Settings", Loc.T("설정"), y);
             settings.onClick.AddListener(() => SettingsPanel.Open(() => Select(_firstButton)));
             buttons.Add(settings);
             y -= gap;
 
-            var quit = MenuButton(col, "Quit", "종료", y);
+            var quit = MenuButton(col, "Quit", Loc.T("종료"), y);
             quit.onClick.AddListener(Quit);
             buttons.Add(quit);
 
@@ -214,17 +214,17 @@ namespace FishGame.UI
         string SaveSummary(PlayerProgress p)
         {
             var db = _game.Database;
-            string zone = db != null && db.GetZone(p.DeepestZoneReached) != null ? db.GetZone(p.DeepestZoneReached).displayName : "어항";
+            string zone = db != null && db.GetZone(p.DeepestZoneReached) != null ? Loc.T(db.GetZone(p.DeepestZoneReached).displayName) : Loc.T("어항");
             int slots = db != null ? db.PurchasableSlotCount : 0;
-            string cleared = p.clearedMaps != null && p.clearedMaps.Count > 0 ? "  ·  <color=#FFD666>보스 처치</color>" : "";
-            return $"찍은 칸 {p.totalNodesPurchased}{(slots > 0 ? $"/{slots}" : "")}  ·  {zone}까지  ·  {p.totalRuns}판{cleared}";
+            string cleared = p.clearedMaps != null && p.clearedMaps.Count > 0 ? Loc.T("  ·  <color=#FFD666>보스 처치</color>") : "";
+            return Loc.F("찍은 칸 {0}{1}  ·  {2}까지  ·  {3}판{4}", p.totalNodesPurchased, (slots > 0 ? $"/{slots}" : ""), zone, p.totalRuns, cleared);
         }
 
         void BuildFooter()
         {
             var ver = UIKit.Text(_root, "Version", $"v{Application.version}", 18f, new Color(0.5f, 0.66f, 0.68f), TextAlignmentOptions.Right);
             UIKit.Place(ver.rectTransform, new Vector2(1f, 0f), new Vector2(-40f, 30f), new Vector2(300f, 28f), new Vector2(1f, 0f));
-            var hint = UIKit.Text(_root, "Hint", "↑ ↓ 로 고르고 Enter  ·  마우스로 클릭", 18f, new Color(0.5f, 0.66f, 0.68f), TextAlignmentOptions.Left);
+            var hint = UIKit.Text(_root, "Hint", Loc.T("↑ ↓ 로 고르고 Enter  ·  마우스로 클릭"), 18f, new Color(0.5f, 0.66f, 0.68f), TextAlignmentOptions.Left);
             UIKit.Place(hint.rectTransform, new Vector2(0f, 0f), new Vector2(150f, 30f), new Vector2(700f, 28f), new Vector2(0f, 0f));
         }
 
@@ -240,18 +240,18 @@ namespace FishGame.UI
             LabStyle.Panel(box, corners: true, fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
             var b = UIKit.Place(box.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(700f, 320f));
 
-            var t = UIKit.Text(b, "Title", "새 게임을 시작할까요?", 34f, UIKit.Ink, TextAlignmentOptions.Center, FontStyles.Bold);
+            var t = UIKit.Text(b, "Title", Loc.T("새 게임을 시작할까요?"), 34f, UIKit.Ink, TextAlignmentOptions.Center, FontStyles.Bold);
             UIKit.Place(t.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -40f), new Vector2(640f, 48f));
-            var body = UIKit.Text(b, "Body", "지금까지의 진행도(재화 · 스킬트리 · 도감 · 구역)가 모두 사라집니다.\n설정은 그대로 남습니다.",
+            var body = UIKit.Text(b, "Body", Loc.T("지금까지의 진행도(재화 · 스킬트리 · 도감 · 구역)가 모두 사라집니다.\n설정은 그대로 남습니다."),
                                   21f, UIKit.InkDim, TextAlignmentOptions.Center);
             body.textWrappingMode = TextWrappingModes.Normal;
             UIKit.Place(body.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -104f), new Vector2(640f, 80f));
 
-            var cancel = UIKit.Button(b, "Cancel", "취소", new Vector2(240f, 58f));
+            var cancel = UIKit.Button(b, "Cancel", Loc.T("취소"), new Vector2(240f, 58f));
             UIKit.Place((RectTransform)cancel.transform, new Vector2(0.5f, 0f), new Vector2(-135f, 36f), new Vector2(240f, 58f));
             cancel.onClick.AddListener(CloseConfirm);
 
-            var ok = UIKit.Button(b, "Confirm", "새로 시작", new Vector2(240f, 58f), primary: true);
+            var ok = UIKit.Button(b, "Confirm", Loc.T("새로 시작"), new Vector2(240f, 58f), primary: true);
             UIKit.Place((RectTransform)ok.transform, new Vector2(0.5f, 0f), new Vector2(135f, 36f), new Vector2(240f, 58f));
             ok.onClick.AddListener(() =>
             {

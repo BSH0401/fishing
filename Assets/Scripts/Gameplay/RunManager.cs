@@ -322,6 +322,14 @@ namespace FishGame.Gameplay
         /// <summary>구역 배경음 — 구역에 곡이 없으면 SoundBank의 기본 게임 곡.</summary>
         void PlayZoneMusic(int zoneIndex)
         {
+            // 브금 하나로 통일 — 메뉴에서 틀던 곡이 그대로 이어진다 (같은 곡이면 AudioManager가 끊지 않는다)
+            var one = AudioManager.Instance.Bank;
+            if (one != null && one.oneTrackForWholeGame && one.menuMusic != null)
+            {
+                AudioManager.PlayMusic(one.menuMusic, one.menuMusicVolume);
+                return;
+            }
+
             var zone = Database != null ? Database.GetZone(zoneIndex) : null;
             if (zone != null && zone.music != null) { AudioManager.PlayMusic(zone.music, zone.musicVolume); return; }
             var bank = AudioManager.Instance.Bank;

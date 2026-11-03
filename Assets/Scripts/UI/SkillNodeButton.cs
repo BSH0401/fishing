@@ -148,7 +148,7 @@ namespace FishGame.UI
             if (nameText != null)
             {
                 nameText.gameObject.SetActive(_isPill);
-                nameText.text = slot.IsRoot ? "시작" : slot.skill.displayName;
+                nameText.text = slot.IsRoot ? Loc.T("시작") : Loc.T(slot.skill.displayName);
                 // 알약 칸에 아이콘이 있으면 아이콘은 왼쪽, 이름은 오른쪽으로 비켜 준다
                 bool iconOnPill = _isPill && iconSprite != null;
                 nameText.rectTransform.sizeDelta = iconOnPill ? new Vector2(Size.x - PillIconSlot, Size.y) : Size;
@@ -503,17 +503,17 @@ namespace FishGame.UI
 
         public static string CategoryName(SkillEffectType t)
         {
-            if (t.IsUnlock()) return "액티브 해금";
-            if (t.IsActiveUpgrade()) return "액티브 강화";
+            if (t.IsUnlock()) return Loc.T("액티브 해금");
+            if (t.IsActiveUpgrade()) return Loc.T("액티브 강화");
 
             switch (t)
             {
-                case SkillEffectType.BodyScale:     return "크기";
+                case SkillEffectType.BodyScale:     return Loc.T("크기");
                 case SkillEffectType.SurvivalTime:
-                case SkillEffectType.TimeGain:      return "시간";
-                case SkillEffectType.CurrencyGain:  return "재화";
-                case SkillEffectType.MoveSpeed:     return "속도";
-                default:                            return "유틸";
+                case SkillEffectType.TimeGain:      return Loc.T("시간");
+                case SkillEffectType.CurrencyGain:  return Loc.T("재화");
+                case SkillEffectType.MoveSpeed:     return Loc.T("속도");
+                default:                            return Loc.T("유틸");
             }
         }
     }

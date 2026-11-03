@@ -50,7 +50,7 @@ namespace FishGame.UI
             if (background != null) background.color = found ? discoveredColor : unknownColor;
 
             if (nameText != null)
-                nameText.text = found ? Species.displayName : "???";
+                nameText.text = found ? Loc.T(Species.displayName) : "???";
 
             if (icon != null)
                 icon.color = found ? Color.white : new Color(0.25f, 0.25f, 0.28f, 0.8f);
@@ -58,7 +58,7 @@ namespace FishGame.UI
             if (countText != null)
             {
                 if (!found) { countText.text = "-"; }
-                else if (tier >= maxTier) { countText.text = $"{NumberFormatter.Format(eaten)}  (완성)"; }
+                else if (tier >= maxTier) { countText.text = Loc.F("{0}  (완성)", NumberFormatter.Format(eaten)); }
                 else
                 {
                     int inTier = eaten % milestone;
@@ -87,14 +87,14 @@ namespace FishGame.UI
                     {
                         float next = Species.codexBonusPerTier;
                         bonusText.text = Species.codexBonusType.IsFlat()
-                            ? $"<alpha=#77>{milestone}마리 → {label} +{next:0.#}초"
-                            : $"<alpha=#77>{milestone}마리 → {label} +{next * 100f:0.#}%";
+                            ? Loc.F("<alpha=#77>{0}마리 → {1} +{2:0.#}초", milestone, label, next)
+                            : Loc.F("<alpha=#77>{0}마리 → {1} +{2:0.#}%", milestone, label, next * 100f);
                     }
                     else
                     {
                         bonusText.text = Species.codexBonusType.IsFlat()
-                            ? $"{label} +{amount:0.#}초  <size=80%>({tier}단계)</size>"
-                            : $"{label} +{amount * 100f:0.#}%  <size=80%>({tier}단계)</size>";
+                            ? Loc.F("{0} +{1:0.#}초  <size=80%>({2}단계)</size>", label, amount, tier)
+                            : Loc.F("{0} +{1:0.#}%  <size=80%>({2}단계)</size>", label, amount * 100f, tier);
                     }
                 }
             }

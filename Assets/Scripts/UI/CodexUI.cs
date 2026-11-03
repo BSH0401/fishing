@@ -33,9 +33,14 @@ namespace FishGame.UI
         void Awake()
         {
             // 메인 화면의 다른 창과 같은 수중 실험실 스타일
-            if (root != null) LabStyle.Panel(root.GetComponent<Image>(), fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
-            LabStyle.Button(openButton);
-            LabStyle.Button(closeButton, primary: true);
+            if (root != null)
+            {
+                var img = root.GetComponent<Image>();
+                if (!LabStyle.PixelPanel(img, "FishIndex", 3f))
+                    LabStyle.Panel(img, fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
+            }
+            LabStyle.FishButton(openButton);
+            LabStyle.FishButton(closeButton, primary: true);
             if (root != null) root.SetActive(false);
             if (openButton != null) openButton.onClick.AddListener(Open);
             if (closeButton != null) closeButton.onClick.AddListener(Close);
@@ -126,8 +131,8 @@ namespace FishGame.UI
                     tiers += PlayerStats.CodexTier(row.Species, db, progress);
 
                 summaryText.text =
-                    $"발견 {discovered}/{total}종   ·   획득한 도감 효과 {tiers}단계\n" +
-                    $"<size=80%>한 종을 {db.codexMilestone}마리 먹을 때마다 그 종의 효과가 한 단계씩 붙습니다</size>";
+                    Loc.F("발견 {0}/{1}종   ·   획득한 도감 효과 {2}단계\n", discovered, total, tiers) +
+                    Loc.F("<size=80%>한 종을 {0}마리 먹을 때마다 그 종의 효과가 한 단계씩 붙습니다</size>", db.codexMilestone);
             }
         }
     }

@@ -28,6 +28,10 @@ namespace FishGame.Core
         // ── 조작 ──
         /// <summary>0 키보드(WASD·방향키) · 1 마우스 따라가기</summary>
         public int controlScheme = 0;
+
+        // ── 언어 ──
+        /// <summary>-1 = 자동(운영체제 언어) · 0 한국어 · 1 English · 2 简体中文 · 3 Русский · 4 Español · 5 Português (Brasil)</summary>
+        public int language = -1;
     }
 
     /// <summary>
@@ -103,7 +107,8 @@ namespace FishGame.Core
         public static void ResetToDefaults()
         {
             var keepRes = new Vector2Int(Data.width, Data.height);
-            _data = new GameSettingsData { width = keepRes.x, height = keepRes.y };
+            // 해상도와 언어는 기본값으로 돌려도 유지한다 (언어가 갑자기 바뀌면 메뉴를 못 읽는다)
+            _data = new GameSettingsData { width = keepRes.x, height = keepRes.y, language = Data.language };
             ApplyAudio();
             ApplyDisplay(changeResolution: false);
             Changed?.Invoke();

@@ -73,10 +73,10 @@ namespace FishGame.UI
             {
                 titleText.text = reason switch
                 {
-                    RunEndReason.BossDefeated => "보스 격파!",
-                    RunEndReason.Eaten        => "잡아먹혔다",
-                    RunEndReason.TimeOut      => "탈진",
-                    _                         => "플레이 종료",
+                    RunEndReason.BossDefeated => Loc.T("보스 격파!"),
+                    RunEndReason.Eaten        => Loc.T("잡아먹혔다"),
+                    RunEndReason.TimeOut      => Loc.T("탈진"),
+                    _                         => Loc.T("플레이 종료"),
                 };
             }
 
@@ -84,9 +84,9 @@ namespace FishGame.UI
             {
                 reasonText.text = reason switch
                 {
-                    RunEndReason.BossDefeated => "심해를 지키던 것을 삼켰다. 탈출이다.",
-                    RunEndReason.Eaten        => "더 큰 물고기에게 먹혔다. 재화 일부를 잃었다.",
-                    RunEndReason.TimeOut      => "버틸 시간이 다했다. 실험실로 돌아간다.",
+                    RunEndReason.BossDefeated => Loc.T("심해를 지키던 것을 삼켰다. 탈출이다."),
+                    RunEndReason.Eaten        => Loc.T("더 큰 물고기에게 먹혔다. 재화 일부를 잃었다."),
+                    RunEndReason.TimeOut      => Loc.T("버틸 시간이 다했다. 실험실로 돌아간다."),
                     _                         => "",
                 };
             }
@@ -99,7 +99,7 @@ namespace FishGame.UI
                 double lost = result.CurrencyRaw - result.CurrencyEarned;
                 bool hasLoss = lost > 0.5d;
                 penaltyText.gameObject.SetActive(hasLoss);
-                if (hasLoss) penaltyText.text = $"사망 손실 -{NumberFormatter.Format(lost)}";
+                if (hasLoss) penaltyText.text = Loc.F("사망 손실 -{0}", NumberFormatter.Format(lost));
             }
 
             if (statsText != null)
@@ -110,16 +110,16 @@ namespace FishGame.UI
 
                 string route = startZone != null && deepZone != null
                     ? (result.StartZone == result.DeepestZone
-                        ? deepZone.displayName
-                        : $"{startZone.displayName} → {deepZone.displayName}")
+                        ? Loc.T(deepZone.displayName)
+                        : $"{Loc.T(startZone.displayName)} → {Loc.T(deepZone.displayName)}")
                     : "-";
 
                 statsText.text =
-                    $"도달 구역  {route}\n" +
-                    $"잡아먹은 물고기  {result.FishEaten}마리\n" +
-                    $"플레이 시간  {NumberFormatter.FormatTime(result.SurvivedSeconds)}" +
+                    Loc.F("도달 구역  {0}\n", route) +
+                    Loc.F("잡아먹은 물고기  {0}마리\n", result.FishEaten) +
+                    Loc.F("플레이 시간  {0}", NumberFormatter.FormatTime(result.SurvivedSeconds)) +
                     (result.HiddenItemsFound > 0
-                        ? $"\n히든 아이템  +{result.HiddenItemsFound}개  <size=80%>(재화 +{result.HiddenItemsFound * (gm?.Database != null ? gm.Database.hiddenItemCurrencyBonus : 0.05f) * 100f:0.#}% 영구)</size>"
+                        ? Loc.F("\n히든 아이템  +{0}개  <size=80%>(재화 +{1:0.#}% 영구)</size>", result.HiddenItemsFound, result.HiddenItemsFound * (gm?.Database != null ? gm.Database.hiddenItemCurrencyBonus : 0.05f) * 100f)
                         : "");
             }
 
@@ -132,11 +132,11 @@ namespace FishGame.UI
                     var reached = gm?.Database?.GetZone(result.DeepestZone);
                     bool autoSelected = gm != null && gm.SelectedStartZone == result.DeepestZone;
                     string hint = autoSelected
-                        ? "다음 판은 여기서 시작합니다 (메뉴에서 바꿀 수 있음)"
-                        : "조금 더 커지면 메뉴에서 이 구역을 시작 구역으로 고를 수 있습니다";
+                        ? Loc.T("다음 판은 여기서 시작합니다 (메뉴에서 바꿀 수 있음)")
+                        : Loc.T("조금 더 커지면 메뉴에서 이 구역을 시작 구역으로 고를 수 있습니다");
                     unlockText.text = reached != null
-                        ? $"새 구역 도달: {reached.displayName}\n<size=75%>{hint}</size>"
-                        : "새 구역 도달!";
+                        ? Loc.F("새 구역 도달: {0}\n<size=75%>{1}</size>", Loc.T(reached.displayName), hint)
+                        : Loc.T("새 구역 도달!");
                 }
             }
         }

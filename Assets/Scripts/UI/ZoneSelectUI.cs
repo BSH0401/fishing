@@ -95,7 +95,7 @@ namespace FishGame.UI
                 if (!unlocked) label.color = LockedText;
 
                 var zone = _game.Database.GetZone(index);
-                string name = zone != null ? zone.displayName : "?";
+                string name = zone != null ? Loc.T(zone.displayName) : "?";
 
                 if (!unlocked)
                 {
@@ -103,7 +103,7 @@ namespace FishGame.UI
                     if (reached && !_game.ZoneFitsCurrentSize(index))
                     {
                         // 가 본 구역인데 몸이 출구보다 커져서 못 들어가는 경우
-                        label.text = $"{index + 1}. {name}\n<size=70%>몸이 너무 커서 출구를 못 지남</size>";
+                        label.text = Loc.F("{0}. {1}\n<size=70%>몸이 너무 커서 출구를 못 지남</size>", index + 1, name);
                         continue;
                     }
 
@@ -111,22 +111,22 @@ namespace FishGame.UI
                     bool isNext = index == _game.Progress.DeepestZoneReached + 1;
                     var prev = _game.Database.GetZone(index - 1);
                     label.text = isNext && prev != null
-                        ? $"{index + 1}. ???\n<size=70%>크기 {prev.exitRequiredSize:0.#}로 통로 개방</size>"
+                        ? Loc.F("{0}. ???\n<size=70%>크기 {1:0.#}로 통로 개방</size>", index + 1, prev.exitRequiredSize)
                         : $"{index + 1}. ???";
                 }
                 else
                 {
                     // 스킬 초기화 등으로 몸이 작아졌는데 깊은 구역을 고르면 시작하자마자 잡아먹힌다 — 미리 알린다
-                    string warn = _game.IsZoneDangerous(index) ? "  <color=#FF8A7A>위험 — 몸이 작음</color>" : "";
-                    label.text = $"{index + 1}. {name}\n<size=70%>깊이 {DepthLabel(index)}{warn}</size>";
+                    string warn = _game.IsZoneDangerous(index) ? Loc.T("  <color=#FF8A7A>위험 — 몸이 작음</color>") : "";
+                    label.text = Loc.F("{0}. {1}\n<size=70%>깊이 {2}{3}</size>", index + 1, name, DepthLabel(index), warn);
                 }
             }
 
             var sel = _game.SelectedZone;
             if (selectedZoneText != null)
-                selectedZoneText.text = sel != null ? sel.displayName : "-";
+                selectedZoneText.text = sel != null ? Loc.T(sel.displayName) : "-";
             if (descriptionText != null)
-                descriptionText.text = sel != null ? sel.description : "";
+                descriptionText.text = sel != null ? Loc.T(sel.description) : "";
         }
 
         /// <summary>그 구역의 천장이 수면에서 얼마나 깊은지 (월드 유닛).</summary>

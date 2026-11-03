@@ -200,11 +200,11 @@ namespace FishGame.Core
 
         public static string DescribeResult(PurchaseResult r) => r switch
         {
-            PurchaseResult.Success            => "구매 완료",
-            PurchaseResult.MaxLevel           => "이미 찍음",
-            PurchaseResult.NotEnoughCurrency  => "재화 부족",
-            PurchaseResult.PrerequisiteLocked => "이어진 칸을 먼저 찍어야 함",
-            _                                 => "구매 불가",
+            PurchaseResult.Success            => Loc.T("구매 완료"),
+            PurchaseResult.MaxLevel           => Loc.T("이미 찍음"),
+            PurchaseResult.NotEnoughCurrency  => Loc.T("재화 부족"),
+            PurchaseResult.PrerequisiteLocked => Loc.T("이어진 칸을 먼저 찍어야 함"),
+            _                                 => Loc.T("구매 불가"),
         };
     }
 }

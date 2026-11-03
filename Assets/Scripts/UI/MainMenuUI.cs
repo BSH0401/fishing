@@ -45,13 +45,13 @@ namespace FishGame.UI
             if (quitButton != null) quitButton.onClick.AddListener(QuitGame);
             if (settingsButton != null)
             {
-                LabStyle.Button(settingsButton);
+                LabStyle.FishButton(settingsButton);
                 // 설정 창 안에 "타이틀로" 버튼이 있으니 메뉴를 거치지 않고 바로 연다
                 settingsButton.onClick.AddListener(() => { CloseSettingsMenu(); SettingsPanel.Open(); });
             }
             if (titleButton != null)
             {
-                LabStyle.Button(titleButton);
+                LabStyle.FishButton(titleButton);
                 titleButton.onClick.AddListener(() => _game.GoToTitle());
             }
 
@@ -91,7 +91,7 @@ namespace FishGame.UI
         {
             if (playButton != null)
             {
-                LabStyle.Button(playButton, primary: true);
+                LabStyle.FishButton(playButton, primary: true);
                 var side = playButton.transform.parent != null ? playButton.transform.parent.GetComponent<Image>() : null;
                 if (side != null && side.transform != transform) LabStyle.Panel(side);
             }
@@ -109,8 +109,8 @@ namespace FishGame.UI
             if (resetConfirmPanel != null)
             {
                 LabStyle.Panel(resetConfirmPanel.GetComponent<Image>(), fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
-                LabStyle.Button(resetConfirmNo);
-                LabStyle.Button(resetConfirmYes);
+                LabStyle.FishButton(resetConfirmNo);
+                LabStyle.FishButton(resetConfirmYes);
                 var yesLabel = resetConfirmYes != null ? resetConfirmYes.GetComponentInChildren<TMP_Text>() : null;
                 if (yesLabel != null) yesLabel.color = new Color(1f, 0.62f, 0.58f);
             }
@@ -144,11 +144,11 @@ namespace FishGame.UI
                 anchorPos = new Vector2(btnRt.anchoredPosition.x, btnRt.anchoredPosition.y - btnRt.sizeDelta.y - 10f);
             UIKit.Place(pr, new Vector2(1f, 1f), anchorPos, new Vector2(220f, 140f), new Vector2(1f, 1f));
 
-            var open = UIKit.Button(pr, "Settings", "설정", new Vector2(188f, 52f), fontSize: 22f);
+            var open = UIKit.Button(pr, "Settings", Loc.T("설정"), new Vector2(188f, 52f), fontSize: 22f);
             UIKit.Place((RectTransform)open.transform, new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(188f, 52f), new Vector2(0.5f, 0.5f));
             open.onClick.AddListener(() => { CloseSettingsMenu(); SettingsPanel.Open(); });
 
-            var title = UIKit.Button(pr, "Title", "타이틀로", new Vector2(188f, 52f), fontSize: 22f);
+            var title = UIKit.Button(pr, "Title", Loc.T("타이틀로"), new Vector2(188f, 52f), fontSize: 22f);
             UIKit.Place((RectTransform)title.transform, new Vector2(0.5f, 1f), new Vector2(0f, -100f), new Vector2(188f, 52f), new Vector2(0.5f, 0.5f));
             title.onClick.AddListener(() => { CloseSettingsMenu(); _game.GoToTitle(); });
 
@@ -206,27 +206,27 @@ namespace FishGame.UI
             if (statsText != null)
             {
                 statsText.text =
-                    $"총 플레이  {p.totalRuns}회   찍은 칸  {p.totalNodesPurchased}개\n" +
-                    $"총 포식  {p.totalFishEaten}마리   도감  {p.codex.Count}종\n" +
-                    $"최고 생존  {NumberFormatter.FormatTime(p.bestSurvivalSeconds)}";
+                    Loc.F("총 플레이  {0}회   찍은 칸  {1}개\n", p.totalRuns, p.totalNodesPurchased) +
+                    Loc.F("총 포식  {0}마리   도감  {1}종\n", p.totalFishEaten, p.codex.Count) +
+                    Loc.F("최고 생존  {0}", NumberFormatter.FormatTime(p.bestSurvivalSeconds));
             }
 
             if (loadoutText != null && s != null)
             {
                 string actives = "";
-                if (s.HasBooster)    actives += "부스터 ";
-                if (s.HasVacuum)     actives += "청소기 ";
-                if (s.HasScaleArmor) actives += $"비늘×{s.ArmorStacks} ";
-                if (s.HasGoldenBait) actives += $"미끼×{s.BaitCount} ";
-                if (s.HasVolt)       actives += "볼트 ";
-                if (s.HasMissile)    actives += $"미사일×{s.MissileCount} ";
-                if (string.IsNullOrEmpty(actives)) actives = "없음";
+                if (s.HasBooster)    actives += Loc.T("부스터 ");
+                if (s.HasVacuum)     actives += Loc.T("청소기 ");
+                if (s.HasScaleArmor) actives += Loc.F("비늘×{0} ", s.ArmorStacks);
+                if (s.HasGoldenBait) actives += Loc.F("미끼×{0} ", s.BaitCount);
+                if (s.HasVolt)       actives += Loc.T("볼트 ");
+                if (s.HasMissile)    actives += Loc.F("미사일×{0} ", s.MissileCount);
+                if (string.IsNullOrEmpty(actives)) actives = Loc.T("없음");
 
                 loadoutText.text =
-                    $"크기  {s.Size:0.00}\n" +
-                    $"제한시간  {s.MaxSurvivalTime:0}초\n" +
-                    $"이동속도  {s.MoveSpeed:0.0}\n" +
-                    $"액티브  {actives}";
+                    Loc.F("크기  {0:0.00}\n", s.Size) +
+                    Loc.F("제한시간  {0:0}초\n", s.MaxSurvivalTime) +
+                    Loc.F("이동속도  {0:0.0}\n", s.MoveSpeed) +
+                    Loc.F("액티브  {0}", actives);
             }
         }
 

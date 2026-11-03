@@ -62,10 +62,10 @@ namespace FishGame.Data
         {
             // 부스터 위력 강화는 강화 칸이지만 효과가 켜고 끄는 것뿐이다 (+0 → +1로 보이던 문제)
             if (effectType.IsUnlock() || effectType == SkillEffectType.BoosterPower)
-                return level > 0 ? "해금됨" : "미해금";
+                return level > 0 ? Loc.T("해금됨") : Loc.T("미해금");
 
             if (effectType == SkillEffectType.VacuumCooldown)
-                return $"쿨타임 ×{1d / (1d + valuePerLevel * level):0.##}";
+                return Loc.F("쿨타임 ×{0:0.##}", 1d / (1d + valuePerLevel * level));
 
             if (effectType.IsMultiplicative())
             {

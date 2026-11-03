@@ -1,0 +1,176 @@
+{
+ "Fish/Fish_Boss_Leviathan.asset": {
+  "displayName": "심해 리바이어던"
+ },
+ "Fish/Fish_M1_Angel.asset": {
+  "displayName": "수조 엔젤"
+ },
+ "Fish/Fish_M1_Fry.asset": {
+  "displayName": "치어"
+ },
+ "Fish/Fish_M1_Guppy.asset": {
+  "displayName": "실험체 구피"
+ },
+ "Fish/Fish_M1_Keeper.asset": {
+  "displayName": "수조 포식자"
+ },
+ "Fish/Fish_M1_Minnow.asset": {
+  "displayName": "송사리"
+ },
+ "Fish/Fish_M2_Grate.asset": {
+  "displayName": "철망 포식자"
+ },
+ "Fish/Fish_M2_Larva.asset": {
+  "displayName": "하수 유생"
+ },
+ "Fish/Fish_M2_Pipe.asset": {
+  "displayName": "관벌레고기"
+ },
+ "Fish/Fish_M2_Rat.asset": {
+  "displayName": "하수 쥐치"
+ },
+ "Fish/Fish_M2_Sludge.asset": {
+  "displayName": "슬러지피시"
+ },
+ "Fish/Fish_M3_Carp.asset": {
+  "displayName": "잉어"
+ },
+ "Fish/Fish_M3_Cat.asset": {
+  "displayName": "메기"
+ },
+ "Fish/Fish_M3_Crucian.asset": {
+  "displayName": "붕어"
+ },
+ "Fish/Fish_M3_Snake.asset": {
+  "displayName": "가물치"
+ },
+ "Fish/Fish_M3_Sweet.asset": {
+  "displayName": "은어떼"
+ },
+ "Fish/Fish_M4_Mackerel.asset": {
+  "displayName": "고등어"
+ },
+ "Fish/Fish_M4_Orca.asset": {
+  "displayName": "범고래"
+ },
+ "Fish/Fish_M4_Sardine.asset": {
+  "displayName": "정어리 군집"
+ },
+ "Fish/Fish_M4_Shark.asset": {
+  "displayName": "청상아리"
+ },
+ "Fish/Fish_M4_Tuna.asset": {
+  "displayName": "참다랑어"
+ },
+ "Fish/Fish_Rare1.asset": {
+  "displayName": "관리 로봇 · 게이트키퍼"
+ },
+ "Fish/Fish_Rare2.asset": {
+  "displayName": "배수관 지킴이"
+ },
+ "Fish/Fish_Rare3.asset": {
+  "displayName": "강의 주인 · 늙은 가물치"
+ },
+ "Skills/Skill_acid.asset": {
+  "displayName": "위액 산성도 증가",
+  "description": "물고기를 먹을 때 얻는 재화량 4% 증가."
+ },
+ "Skills/Skill_armor.asset": {
+  "displayName": "덧붙인 장갑",
+  "description": "몸 크기 및 이동속도 10% 증가."
+ },
+ "Skills/Skill_armor_stack.asset": {
+  "displayName": "비늘 경화 강화",
+  "description": "방어 횟수 +1 (최대 3회)."
+ },
+ "Skills/Skill_bait_count.asset": {
+  "displayName": "황금 미끼 추가",
+  "description": "미끼 개수 +1."
+ },
+ "Skills/Skill_bait_range.asset": {
+  "displayName": "황금 미끼 범위 강화",
+  "description": "미끼 효과 범위 +50%."
+ },
+ "Skills/Skill_battery.asset": {
+  "displayName": "커다란 배터리",
+  "description": "물고기 생존 제한시간 1초 증가."
+ },
+ "Skills/Skill_booster_power.asset": {
+  "displayName": "부스터 위력 강화",
+  "description": "부스터로 먹을 수 있는 물고기 크기가 늘어납니다 (내 크기의 1.15배 → 1.6배)."
+ },
+ "Skills/Skill_booster_range.asset": {
+  "displayName": "부스터 거리 강화",
+  "description": "부스터 이동 거리 +50%."
+ },
+ "Skills/Skill_cell.asset": {
+  "displayName": "물고기 전지",
+  "description": "물고기를 먹을 때 얻는 제한시간 2.5% 증가."
+ },
+ "Skills/Skill_missile_power.asset": {
+  "displayName": "미사일 강화",
+  "description": "미사일 범위 +60%, 개수 +1."
+ },
+ "Skills/Skill_move_speed.asset": {
+  "displayName": "꼬리지느러미 강화",
+  "description": "기본 이동속도 2% 증가."
+ },
+ "Skills/Skill_teeth.asset": {
+  "displayName": "치아 교정",
+  "description": "입 크기 및 흡입력 2% 증가."
+ },
+ "Skills/Skill_unlock_armor.asset": {
+  "displayName": "비늘 경화",
+  "tooltip": "적의 공격을 1회 막습니다.",
+  "description": "먹힐 뻔한 순간을 1회 막고 짧게 무적이 됩니다."
+ },
+ "Skills/Skill_unlock_bait.asset": {
+  "displayName": "황금 미끼",
+  "tooltip": "황금 미끼를 뿌립니다.",
+  "description": "일정 시간마다 자동으로 미끼를 뿌립니다. 주변 물고기가 미끼로 달려듭니다."
+ },
+ "Skills/Skill_unlock_booster.asset": {
+  "displayName": "부스터",
+  "tooltip": "우클릭으로 마우스 방향으로 대쉬하고 경로의 적을 먹습니다.",
+  "description": "마우스가 있는 방향으로 짧게 대쉬합니다. 대쉬 경로에 있는 나보다 조금 큰 물고기까지 먹힙니다."
+ },
+ "Skills/Skill_unlock_missile.asset": {
+  "displayName": "미사일",
+  "tooltip": "미사일을 발사합니다.",
+  "description": "일정 시간마다 바라보는 방향으로 발사합니다. 맞은 적은 즉시 먹힌 것으로 처리됩니다."
+ },
+ "Skills/Skill_unlock_vacuum.asset": {
+  "displayName": "청소기",
+  "tooltip": "좌클릭으로 물고기를 빨아들입니다.",
+  "description": "좌클릭하면 잠깐 동안 주변의 소형 물고기를 끌어당깁니다. 쓰고 나면 재사용 대기시간이 있습니다."
+ },
+ "Skills/Skill_unlock_volt.asset": {
+  "displayName": "10만 볼트",
+  "tooltip": "전기 쇼크를 일으킵니다.",
+  "description": "일정 시간마다 자동으로 주변에 전기 충격을 일으켜 마비시킵니다. (일반 2초 / 보스 0.1초)"
+ },
+ "Skills/Skill_vacuum_cooldown.asset": {
+  "displayName": "청소기 쿨타임 감소",
+  "description": "청소기 재사용 대기시간 감소. 4칸을 모두 찍으면 절반."
+ },
+ "Skills/Skill_volt_power.asset": {
+  "displayName": "10만 볼트 강화",
+  "description": "전기 충격 범위와 마비 시간 +60%."
+ },
+ "Zones/Zone_1_Tank.asset": {
+  "displayName": "어항",
+  "description": "탈출은 여기서 시작된다. 바닥의 배수구가 유일한 출구다."
+ },
+ "Zones/Zone_2_Sewer.asset": {
+  "displayName": "하수구",
+  "description": "탁한 물살과 쇠창살. 여기서 살아남으면 강 냄새가 난다."
+ },
+ "Zones/Zone_3_River.asset": {
+  "displayName": "강",
+  "description": "물살이 세다. 여기서부터는 이빨을 가진 것들이 많다."
+ },
+ "Zones/Zone_4_Ocean.asset": {
+  "displayName": "바다",
+  "description": "실험실에서 가장 먼 곳. 여기서는 무엇이든 나를 삼킬 수 있다."
+ }
+}

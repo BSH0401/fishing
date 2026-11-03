@@ -1,0 +1,262 @@
+ko	en	zh	ru	es	pt
+스킬트리가 새 도면으로 바뀌었습니다.\n예전에 찍은 스킬을 초기화하고 재화 {0}을 돌려드렸어요.	The skill tree has a new layout.\nYour old skills were reset and {0} currency was refunded.	技能树已更新布局。\n旧技能已重置，并返还了 {0} 货币。	Древо навыков обновлено.\nСтарые навыки сброшены, возвращено {0} валюты.	El árbol de habilidades tiene un nuevo diseño.\nTus habilidades se reiniciaron y se devolvieron {0} de moneda.	A árvore de habilidades mudou de layout.\nSuas habilidades foram redefinidas e {0} de moeda foi devolvido.
+구매 불가	Can't buy	无法购买	Нельзя купить	No se puede comprar	Não é possível comprar
+이어진 칸을 먼저 찍어야 함	Unlock a connected node first	需先解锁相连的格子	Сначала откройте соседнюю ячейку	Desbloquea primero un nodo conectado	Desbloqueie primeiro um nó conectado
+재화 부족	Not enough currency	货币不足	Не хватает валюты	Moneda insuficiente	Moeda insuficiente
+이미 찍음	Already owned	已拥有	Уже куплено	Ya adquirido	Já adquirido
+구매 완료	Purchased	购买成功	Куплено	Comprado	Comprado
+제한시간	Time limit	时间上限	Лимит времени	Tiempo límite	Tempo limite
+시야	Vision	视野	Обзор	Visión	Visão
+이동 속도	Move speed	移动速度	Скорость	Velocidad	Velocidade
+입·흡입력	Mouth · Suction	嘴部·吸力	Пасть · Всасывание	Boca · Succión	Boca · Sucção
+시간 회복	Time gain	时间回复	Восстановление времени	Ganancia de tiempo	Ganho de tempo
+재화	Currency	货币	Валюта	Moneda	Moeda
+쿨타임 ×{0:0.##}	Cooldown ×{0:0.##}	冷却 ×{0:0.##}	Перезарядка ×{0:0.##}	Enfriamiento ×{0:0.##}	Recarga ×{0:0.##}
+미해금	Locked	未解锁	Не открыто	Bloqueado	Bloqueado
+해금됨	Unlocked	已解锁	Открыто	Desbloqueado	Desbloqueado
+크기 {0:0.#} / {1:0.#}	Size {0:0.#} / {1:0.#}	体型 {0:0.#} / {1:0.#}	Размер {0:0.#} / {1:0.#}	Tamaño {0:0.#} / {1:0.#}	Tamanho {0:0.#} / {1:0.#}
+크기 {0:0.#} 필요	Size {0:0.#} required	需要体型 {0:0.#}	Нужен размер {0:0.#}	Requiere tamaño {0:0.#}	Requer tamanho {0:0.#}
+{0} +{1:0.#}%  <size=80%>({2}단계)</size>	{0} +{1:0.#}%  <size=80%>(tier {2})</size>	{0} +{1:0.#}%  <size=80%>（{2}级）</size>	{0} +{1:0.#}%  <size=80%>(ур. {2})</size>	{0} +{1:0.#}%  <size=80%>(nivel {2})</size>	{0} +{1:0.#}%  <size=80%>(nível {2})</size>
+{0} +{1:0.#}초  <size=80%>({2}단계)</size>	{0} +{1:0.#}s  <size=80%>(tier {2})</size>	{0} +{1:0.#}秒  <size=80%>（{2}级）</size>	{0} +{1:0.#} с  <size=80%>(ур. {2})</size>	{0} +{1:0.#} s  <size=80%>(nivel {2})</size>	{0} +{1:0.#} s  <size=80%>(nível {2})</size>
+<alpha=#77>{0}마리 → {1} +{2:0.#}%	<alpha=#77>{0} eaten → {1} +{2:0.#}%	<alpha=#77>{0}条 → {1} +{2:0.#}%	<alpha=#77>{0} шт. → {1} +{2:0.#}%	<alpha=#77>{0} comidos → {1} +{2:0.#}%	<alpha=#77>{0} comidos → {1} +{2:0.#}%
+<alpha=#77>{0}마리 → {1} +{2:0.#}초	<alpha=#77>{0} eaten → {1} +{2:0.#}s	<alpha=#77>{0}条 → {1} +{2:0.#}秒	<alpha=#77>{0} шт. → {1} +{2:0.#} с	<alpha=#77>{0} comidos → {1} +{2:0.#} s	<alpha=#77>{0} comidos → {1} +{2:0.#} s
+{0}  (완성)	{0}  (complete)	{0}  （已完成）	{0}  (завершено)	{0}  (completo)	{0}  (completo)
+<size=80%>한 종을 {0}마리 먹을 때마다 그 종의 효과가 한 단계씩 붙습니다</size>	<size=80%>Every {0} of a species you eat adds one tier of its bonus</size>	<size=80%>每吃掉同一种鱼 {0} 条，该鱼的效果提升一级</size>	<size=80%>Каждые {0} съеденных рыб одного вида дают +1 уровень бонуса</size>	<size=80%>Cada {0} peces de una especie que comas suman un nivel de su bonificación</size>	<size=80%>A cada {0} peixes de uma espécie que você come, o bônus sobe um nível</size>
+발견 {0}/{1}종   ·   획득한 도감 효과 {2}단계\n	Discovered {0}/{1}   ·   Codex bonus tiers {2}\n	已发现 {0}/{1} 种   ·   图鉴效果 {2} 级\n	Открыто {0}/{1}   ·   Уровни бонусов {2}\n	Descubiertos {0}/{1}   ·   Niveles de bonificación {2}\n	Descobertos {0}/{1}   ·   Níveis de bônus {2}\n
+히든 아이템 발견 — 재화 획득 +{0} (영구)	Hidden item found — currency gain +{0} (permanent)	发现隐藏道具 — 货币获取 +{0}（永久）	Найден тайный предмет — валюта +{0} (навсегда)	Objeto oculto encontrado — moneda +{0} (permanente)	Item oculto encontrado — moeda +{0} (permanente)
+히든 아이템!  재화 +{0} 영구	Hidden item!  Currency +{0} permanent	隐藏道具！ 货币 +{0} 永久	Тайный предмет!  Валюта +{0} навсегда	¡Objeto oculto!  Moneda +{0} permanente	Item oculto!  Moeda +{0} permanente
+통로 개방 — {0}	Passage open — {0}	通道开启 — {0}	Проход открыт — {0}	Paso abierto — {0}	Passagem aberta — {0}
+보스가 풀려났다	The boss is free	首领被释放了	Босс на свободе	El jefe se liberó	O chefe foi libertado
+아래 통로: 크기 {0:0.0} / {1:0.0}	Passage below: size {0:0.0} / {1:0.0}	下方通道：体型 {0:0.0} / {1:0.0}	Проход вниз: размер {0:0.0} / {1:0.0}	Paso inferior: tamaño {0:0.0} / {1:0.0}	Passagem abaixo: tamanho {0:0.0} / {1:0.0}
+통로 개방 — 아래로 내려가면 {0}	Passage open — go down to reach {0}	通道开启 — 向下前往 {0}	Проход открыт — вниз: {0}	Paso abierto — baja para llegar a {0}	Passagem aberta — desça para chegar a {0}
+다음 구역	the next zone	下一区域	следующая зона	la siguiente zona	a próxima zona
+고리 구조물에 부스터로 돌진 → 보스 등장	Ram the ring with the booster → the boss appears	用冲刺撞击环形结构 → 首领出现	Протараньте кольцо рывком → появится босс	Embiste el anillo con el impulso → aparece el jefe	Acerte o anel com o impulso → o chefe aparece
+보스가 풀려났다!	The boss is free!	首领被释放了！	Босс на свободе!	¡El jefe se liberó!	O chefe foi libertado!
+깊이 {0:0}m  ×{1:0.0}	Depth {0:0}m  ×{1:0.0}	深度 {0:0}米  ×{1:0.0}	Глубина {0:0} м  ×{1:0.0}	Profundidad {0:0} m  ×{1:0.0}	Profundidade {0:0} m  ×{1:0.0}
+비늘 {0}/{1}	Scales {0}/{1}	鳞甲 {0}/{1}	Чешуя {0}/{1}	Escamas {0}/{1}	Escamas {0}/{1}
+소모 x{0:0.0}	Drain x{0:0.0}	消耗 x{0:0.0}	Расход x{0:0.0}	Consumo x{0:0.0}	Consumo x{0:0.0}
+크기 {0:0.00}	Size {0:0.00}	体型 {0:0.00}	Размер {0:0.00}	Tamaño {0:0.00}	Tamanho {0:0.00}
+크기 {0:0.00} <size=70%>/ {1:0.0}</size>	Size {0:0.00} <size=70%>/ {1:0.0}</size>	体型 {0:0.00} <size=70%>/ {1:0.0}</size>	Размер {0:0.00} <size=70%>/ {1:0.0}</size>	Tamaño {0:0.00} <size=70%>/ {1:0.0}</size>	Tamanho {0:0.00} <size=70%>/ {1:0.0}</size>
+재화 {0}	Currency {0}	货币 {0}	Валюта {0}	Moneda {0}	Moeda {0}
+제한시간 {0}	Time {0}	时间 {0}	Время {0}	Tiempo {0}	Tempo {0}
+액티브  {0}	Actives  {0}	主动技能  {0}	Активные  {0}	Activas  {0}	Ativas  {0}
+이동속도  {0:0.0}\n	Move speed  {0:0.0}\n	移动速度  {0:0.0}\n	Скорость  {0:0.0}\n	Velocidad  {0:0.0}\n	Velocidade  {0:0.0}\n
+제한시간  {0:0}초\n	Time limit  {0:0}s\n	时间上限  {0:0}秒\n	Лимит времени  {0:0} с\n	Tiempo límite  {0:0} s\n	Tempo limite  {0:0} s\n
+크기  {0:0.00}\n	Size  {0:0.00}\n	体型  {0:0.00}\n	Размер  {0:0.00}\n	Tamaño  {0:0.00}\n	Tamanho  {0:0.00}\n
+없음	None	无	Нет	Ninguna	Nenhuma
+미사일×{0} 	Missile×{0} 	导弹×{0} 	Ракета×{0} 	Misil×{0} 	Míssil×{0} 
+볼트 	Volt 	电击 	Разряд 	Voltio 	Volt 
+미끼×{0} 	Bait×{0} 	诱饵×{0} 	Приманка×{0} 	Cebo×{0} 	Isca×{0} 
+비늘×{0} 	Scales×{0} 	鳞甲×{0} 	Чешуя×{0} 	Escamas×{0} 	Escamas×{0} 
+청소기 	Vacuum 	吸尘器 	Пылесос 	Aspiradora 	Aspirador 
+부스터 	Booster 	冲刺 	Рывок 	Impulso 	Impulso 
+최고 생존  {0}	Best survival  {0}	最长存活  {0}	Лучшее выживание  {0}	Mejor supervivencia  {0}	Melhor sobrevivência  {0}
+총 포식  {0}마리   도감  {1}종\n	Fish eaten  {0}   Codex  {1}\n	总捕食  {0} 条   图鉴  {1} 种\n	Съедено рыб  {0}   Кодекс  {1}\n	Peces comidos  {0}   Códice  {1}\n	Peixes comidos  {0}   Códice  {1}\n
+총 플레이  {0}회   찍은 칸  {1}개\n	Runs  {0}   Nodes  {1}\n	总游玩  {0} 次   已点格子  {1} 个\n	Забегов  {0}   Ячеек  {1}\n	Partidas  {0}   Nodos  {1}\n	Partidas  {0}   Nós  {1}\n
+타이틀로	To title	返回标题	В главное меню	Al título	Para o título
+설정	Settings	设置	Настройки	Ajustes	Configurações
+새 구역 도달!	New zone reached!	到达新区域！	Новая зона!	¡Nueva zona alcanzada!	Nova zona alcançada!
+새 구역 도달: {0}\n<size=75%>{1}</size>	New zone reached: {0}\n<size=75%>{1}</size>	到达新区域：{0}\n<size=75%>{1}</size>	Новая зона: {0}\n<size=75%>{1}</size>	Nueva zona: {0}\n<size=75%>{1}</size>	Nova zona: {0}\n<size=75%>{1}</size>
+조금 더 커지면 메뉴에서 이 구역을 시작 구역으로 고를 수 있습니다	Grow a bit more and you can pick this zone as your start in the menu	再长大一些，就能在菜单中选择此区域作为起点	Подрастите ещё немного — и эту зону можно будет выбрать стартовой в меню	Crece un poco más y podrás elegir esta zona como inicio en el menú	Cresça um pouco mais e você poderá escolher esta zona como início no menu
+다음 판은 여기서 시작합니다 (메뉴에서 바꿀 수 있음)	Your next run starts here (you can change it in the menu)	下一局将从这里开始（可在菜单中更改）	Следующий забег начнётся здесь (можно изменить в меню)	Tu próxima partida empieza aquí (puedes cambiarlo en el menú)	Sua próxima partida começa aqui (dá para mudar no menu)
+\n히든 아이템  +{0}개  <size=80%>(재화 +{1:0.#}% 영구)</size>	\nHidden items  +{0}  <size=80%>(currency +{1:0.#}% permanent)</size>	\n隐藏道具  +{0} 个  <size=80%>（货币 +{1:0.#}% 永久）</size>	\nТайные предметы  +{0}  <size=80%>(валюта +{1:0.#}% навсегда)</size>	\nObjetos ocultos  +{0}  <size=80%>(moneda +{1:0.#}% permanente)</size>	\nItens ocultos  +{0}  <size=80%>(moeda +{1:0.#}% permanente)</size>
+플레이 시간  {0}	Play time  {0}	游玩时间  {0}	Время игры  {0}	Tiempo de juego  {0}	Tempo de jogo  {0}
+잡아먹은 물고기  {0}마리\n	Fish eaten  {0}\n	吃掉的鱼  {0} 条\n	Съедено рыб  {0}\n	Peces comidos  {0}\n	Peixes comidos  {0}\n
+도달 구역  {0}\n	Zones reached  {0}\n	到达区域  {0}\n	Пройденные зоны  {0}\n	Zonas alcanzadas  {0}\n	Zonas alcançadas  {0}\n
+사망 손실 -{0}	Death penalty -{0}	死亡损失 -{0}	Потеря при смерти -{0}	Penalización por muerte -{0}	Perda por morte -{0}
+버틸 시간이 다했다. 실험실로 돌아간다.	Time ran out. Back to the lab.	时间耗尽了。回到实验室。	Время вышло. Обратно в лабораторию.	Se acabó el tiempo. De vuelta al laboratorio.	O tempo acabou. De volta ao laboratório.
+더 큰 물고기에게 먹혔다. 재화 일부를 잃었다.	Eaten by a bigger fish. Some currency was lost.	被更大的鱼吃掉了。损失了部分货币。	Вас съела рыба покрупнее. Часть валюты потеряна.	Te comió un pez más grande. Perdiste algo de moneda.	Um peixe maior te comeu. Parte da moeda foi perdida.
+심해를 지키던 것을 삼켰다. 탈출이다.	You swallowed the guardian of the deep. You've escaped.	吞下了深海的守护者。成功逃脱。	Вы проглотили стража глубин. Побег удался.	Te tragaste al guardián de las profundidades. Has escapado.	Você engoliu o guardião das profundezas. Você escapou.
+플레이 종료	Run over	游戏结束	Забег окончен	Fin de la partida	Fim da partida
+탈진	Exhausted	精疲力尽	Истощение	Agotado	Exausto
+잡아먹혔다	Eaten	被吃掉了	Съеден	Devorado	Devorado
+보스 격파!	Boss defeated!	击败首领！	Босс повержен!	¡Jefe derrotado!	Chefe derrotado!
+{0} · {1}	{0} · {1}	{0} · {1}	{0} · {1}	{0} · {1}	{0} · {1}
+휠	Wheel	滚轮	Колесо	Rueda	Roda
+드래그	Drag	拖动	Перетаскивание	Arrastrar	Arrastar
+스킬트리 확대 · 이동	Zoom · pan skill tree	缩放·移动技能树	Масштаб · сдвиг древа	Zoom · mover árbol	Zoom · mover árvore
+일시정지	Pause	暂停	Пауза	Pausa	Pausa
+마우스 왼쪽	Left mouse	鼠标左键	ЛКМ	Clic izquierdo	Botão esquerdo
+청소기 (누르면 잠깐 흡입)	Vacuum (press to suck briefly)	吸尘器（按下短暂吸入）	Пылесос (нажмите — короткое всасывание)	Aspiradora (pulsa para aspirar un momento)	Aspirador (aperte para sugar um instante)
+마우스 오른쪽	Right mouse	鼠标右键	ПКМ	Clic derecho	Botão direito
+부스터 (마우스 쪽으로 대쉬)	Booster (dash toward mouse)	冲刺（向鼠标方向冲刺）	Рывок (к курсору)	Impulso (embestida hacia el ratón)	Impulso (avanço em direção ao mouse)
+왼쪽 스틱	Left stick	左摇杆	Левый стик	Stick izquierdo	Analógico esquerdo
+방향키	Arrow keys	方向键	Стрелки	Flechas	Setas
+{0} 쪽으로 헤엄	Swim toward {0}	朝 {0} 游动	Плыть к {0}	Nadar hacia {0}	Nadar em direção a {0}
+마우스 위치	the mouse	鼠标位置	курсору	el ratón	o mouse
+이동	Move	移动	Движение	Mover	Mover
+<color=#9EC2C6><size=17>동작<pos=26%>키보드 · 마우스<pos=74%>게임패드</size></color>\n	<color=#9EC2C6><size=17>Action<pos=26%>Keyboard · Mouse<pos=74%>Gamepad</size></color>\n	<color=#9EC2C6><size=17>操作<pos=26%>键盘·鼠标<pos=74%>手柄</size></color>\n	<color=#9EC2C6><size=17>Действие<pos=26%>Клавиатура · Мышь<pos=74%>Геймпад</size></color>\n	<color=#9EC2C6><size=17>Acción<pos=26%>Teclado · Ratón<pos=74%>Mando</size></color>\n	<color=#9EC2C6><size=17>Ação<pos=26%>Teclado · Mouse<pos=74%>Controle</size></color>\n
+판 중에도 바로 바뀐다	Applies instantly, even mid-run	游戏中也会立即生效	Применяется сразу, даже в забеге	Se aplica al instante, incluso en partida	Aplica na hora, mesmo durante a partida
+조작 방식	Control scheme	操作方式	Управление	Esquema de control	Esquema de controle
+수직 동기화 사용 중	V-Sync is on	已开启垂直同步	Включена верт. синхр.	Sincronización vertical activa	V-Sync ativado
+제한 없음	Unlimited	无限制	Без ограничения	Sin límite	Sem limite
+프레임 제한	Frame limit	帧率限制	Ограничение кадров	Límite de FPS	Limite de FPS
+화면 찢어짐을 막는다	Prevents screen tearing	防止画面撕裂	Убирает разрывы кадра	Evita el desgarro de imagen	Evita cortes na imagem
+수직 동기화	V-Sync	垂直同步	Вертикальная синхронизация	Sincronización vertical	Sincronização vertical
+해상도	Resolution	分辨率	Разрешение	Resolución	Resolução
+에디터에서는 바뀌지 않음 (빌드에서 적용)	No effect in the editor (applies in builds)	编辑器中不会改变（构建版本中生效）	В редакторе не меняется (работает в сборке)	Sin efecto en el editor (se aplica en la versión compilada)	Sem efeito no editor (aplica na build)
+화면 모드	Display mode	显示模式	Режим экрана	Modo de pantalla	Modo de tela
+모든 소리를 끈다	Turns off all sound	关闭所有声音	Отключить весь звук	Silencia todo el sonido	Desliga todo o som
+음소거	Mute	静音	Без звука	Silencio	Mudo
+효과음	Sound effects	音效	Эффекты	Efectos	Efeitos
+배경음	Music	背景音乐	Музыка	Música	Música
+전체 볼륨	Master volume	总音量	Общая громкость	Volumen general	Volume geral
+닫기	Close	关闭	Закрыть	Cerrar	Fechar
+기본값으로	Defaults	恢复默认	По умолчанию	Predeterminado	Padrão
+조작	Controls	操作	Управление	Controles	Controles
+화면	Display	画面	Экран	Pantalla	Tela
+사운드	Sound	声音	Звук	Sonido	Som
+유틸	Utility	辅助	Прочее	Utilidad	Utilidade
+속도	Speed	速度	Скорость	Velocidad	Velocidade
+시간	Time	时间	Время	Tiempo	Tempo
+크기	Size	体型	Размер	Tamaño	Tamanho
+액티브 강화	Active upgrade	主动强化	Улучшение активного	Mejora activa	Melhoria ativa
+액티브 해금	Active unlock	主动解锁	Новый активный навык	Desbloqueo activo	Desbloqueio ativo
+시작	Start	起点	Старт	Inicio	Início
+<color=#E08A72>잠김</color>	<color=#E08A72>Locked</color>	<color=#E08A72>未开放</color>	<color=#E08A72>Закрыто</color>	<color=#E08A72>Bloqueado</color>	<color=#E08A72>Bloqueado</color>
+<color=#6FF2C8>클릭해서 구매</color>	<color=#6FF2C8>Click to buy</color>	<color=#6FF2C8>点击购买</color>	<color=#6FF2C8>Нажмите, чтобы купить</color>	<color=#6FF2C8>Clic para comprar</color>	<color=#6FF2C8>Clique para comprar</color>
+<color=#E08A72>재화 부족</color>	<color=#E08A72>Not enough currency</color>	<color=#E08A72>货币不足</color>	<color=#E08A72>Не хватает валюты</color>	<color=#E08A72>Moneda insuficiente</color>	<color=#E08A72>Moeda insuficiente</color>
+<color=#FFD666>찍음</color>	<color=#FFD666>Owned</color>	<color=#FFD666>已拥有</color>	<color=#FFD666>Куплено</color>	<color=#FFD666>Adquirido</color>	<color=#FFD666>Adquirido</color>
+효과<pos=34%>{0}\n가격<pos=34%><color=#FFD666>{1}</color>	Effect<pos=34%>{0}\nCost<pos=34%><color=#FFD666>{1}</color>	效果<pos=34%>{0}\n价格<pos=34%><color=#FFD666>{1}</color>	Эффект<pos=34%>{0}\nЦена<pos=34%><color=#FFD666>{1}</color>	Efecto<pos=34%>{0}\nCoste<pos=34%><color=#FFD666>{1}</color>	Efeito<pos=34%>{0}\nCusto<pos=34%><color=#FFD666>{1}</color>
+해금	Unlock	解锁	Открыть	Desbloquear	Desbloquear
+{0}  ·  {1} / {2}칸	{0}  ·  {1} / {2}	{0}  ·  {1} / {2} 格	{0}  ·  {1} / {2}	{0}  ·  {1} / {2}	{0}  ·  {1} / {2}
+여기서부터 뻗어 나갑니다.\n이어진 칸을 찍으면 그 너머의 칸이 드러납니다.	Everything branches out from here.\nUnlock a connected node to reveal the ones beyond it.	一切从这里展开。\n点亮相连的格子，就能看到更远处的格子。	Отсюда всё начинается.\nОткрывайте соседние ячейки, чтобы увидеть следующие.	Todo se ramifica desde aquí.\nDesbloquea un nodo conectado para revelar los siguientes.	Tudo se ramifica a partir daqui.\nDesbloqueie um nó conectado para revelar os seguintes.
+찍은 칸 {0} / {1}	Nodes {0} / {1}	已点格子 {0} / {1}	Ячейки {0} / {1}	Nodos {0} / {1}	Nós {0} / {1}
+<color=#8FA7AB>재화를 더 모아야 합니다</color>  ·  {0}	<color=#8FA7AB>Collect more currency</color>  ·  {0}	<color=#8FA7AB>需要收集更多货币</color>  ·  {0}	<color=#8FA7AB>Нужно больше валюты</color>  ·  {0}	<color=#8FA7AB>Necesitas más moneda</color>  ·  {0}	<color=#8FA7AB>Junte mais moeda</color>  ·  {0}
+<color=#6FF2C8>지금 찍을 수 있는 칸 {0}개</color>  ·  {1}	<color=#6FF2C8>{0} nodes available now</color>  ·  {1}	<color=#6FF2C8>现在可点 {0} 格</color>  ·  {1}	<color=#6FF2C8>Можно открыть: {0}</color>  ·  {1}	<color=#6FF2C8>{0} nodos disponibles</color>  ·  {1}	<color=#6FF2C8>{0} nós disponíveis agora</color>  ·  {1}
+<size=55%><color=#8FB7B8>재화</color></size>  {0}	<size=55%><color=#8FB7B8>Currency</color></size>  {0}	<size=55%><color=#8FB7B8>货币</color></size>  {0}	<size=55%><color=#8FB7B8>Валюта</color></size>  {0}	<size=55%><color=#8FB7B8>Moneda</color></size>  {0}	<size=55%><color=#8FB7B8>Moeda</color></size>  {0}
+볼트	Volt	电击	Разряд	Voltio	Volt
+10만 볼트	100k Volt	十万伏特	Сто тысяч вольт	Cien mil voltios	Cem mil volts
+미끼 	Bait 	诱饵 	Приманка 	Cebo 	Isca 
+황금 미끼 	Golden bait 	黄金诱饵 	Золотая приманка 	Cebo dorado 	Isca dourada 
+ 강화	 upgrade	 强化	 — улучшение	 mejorado	 melhorado
+새로 시작	Start over	重新开始	Начать заново	Empezar de nuevo	Recomeçar
+취소	Cancel	取消	Отмена	Cancelar	Cancelar
+지금까지의 진행도(재화 · 스킬트리 · 도감 · 구역)가 모두 사라집니다.\n설정은 그대로 남습니다.	All progress so far (currency · skill tree · codex · zones) will be lost.\nSettings are kept.	迄今为止的进度（货币·技能树·图鉴·区域）将全部消失。\n设置会保留。	Весь прогресс (валюта · древо · кодекс · зоны) будет удалён.\nНастройки сохранятся.	Se perderá todo el progreso (moneda · árbol · códice · zonas).\nLos ajustes se conservan.	Todo o progresso (moeda · árvore · códice · zonas) será perdido.\nAs configurações são mantidas.
+새 게임을 시작할까요?	Start a new game?	要开始新游戏吗？	Начать новую игру?	¿Empezar una partida nueva?	Começar um novo jogo?
+↑ ↓ 로 고르고 Enter  ·  마우스로 클릭	↑ ↓ to choose, Enter  ·  or click	↑ ↓ 选择，Enter 确认  ·  也可用鼠标点击	↑ ↓ — выбор, Enter  ·  или щелчок мышью	↑ ↓ para elegir y Enter  ·  o haz clic	↑ ↓ para escolher e Enter  ·  ou clique
+찍은 칸 {0}{1}  ·  {2}까지  ·  {3}판{4}	Nodes {0}{1}  ·  reached {2}  ·  {3} runs{4}	已点格子 {0}{1}  ·  到达 {2}  ·  {3} 局{4}	Ячейки {0}{1}  ·  до зоны «{2}»  ·  забегов: {3}{4}	Nodos {0}{1}  ·  hasta {2}  ·  {3} partidas{4}	Nós {0}{1}  ·  até {2}  ·  {3} partidas{4}
+  ·  <color=#FFD666>보스 처치</color>	  ·  <color=#FFD666>Boss defeated</color>	  ·  <color=#FFD666>已击败首领</color>	  ·  <color=#FFD666>Босс повержен</color>	  ·  <color=#FFD666>Jefe derrotado</color>	  ·  <color=#FFD666>Chefe derrotado</color>
+어항	Fish tank	鱼缸	Аквариум	Pecera	Aquário
+종료	Quit	退出	Выход	Salir	Sair
+게임 시작	Start game	开始游戏	Начать игру	Empezar	Começar
+새 게임	New game	新游戏	Новая игра	Nueva partida	Novo jogo
+이어하기	Continue	继续游戏	Продолжить	Continuar	Continuar
+{0}. {1}\n<size=70%>깊이 {2}{3}</size>	{0}. {1}\n<size=70%>Depth {2}{3}</size>	{0}. {1}\n<size=70%>深度 {2}{3}</size>	{0}. {1}\n<size=70%>Глубина {2}{3}</size>	{0}. {1}\n<size=70%>Profundidad {2}{3}</size>	{0}. {1}\n<size=70%>Profundidade {2}{3}</size>
+  <color=#FF8A7A>위험 — 몸이 작음</color>	  <color=#FF8A7A>Danger — too small</color>	  <color=#FF8A7A>危险 — 体型太小</color>	  <color=#FF8A7A>Опасно — слишком мал</color>	  <color=#FF8A7A>Peligro — eres pequeño</color>	  <color=#FF8A7A>Perigo — pequeno demais</color>
+{0}. ???\n<size=70%>크기 {1:0.#}로 통로 개방</size>	{0}. ???\n<size=70%>Passage opens at size {1:0.#}</size>	{0}. ???\n<size=70%>体型达到 {1:0.#} 开启通道</size>	{0}. ???\n<size=70%>Проход откроется при размере {1:0.#}</size>	{0}. ???\n<size=70%>El paso se abre con tamaño {1:0.#}</size>	{0}. ???\n<size=70%>A passagem abre com tamanho {1:0.#}</size>
+{0}. {1}\n<size=70%>몸이 너무 커서 출구를 못 지남</size>	{0}. {1}\n<size=70%>Too big to fit through the exit</size>	{0}. {1}\n<size=70%>体型太大，无法通过出口</size>	{0}. {1}\n<size=70%>Слишком велик для выхода</size>	{0}. {1}\n<size=70%>Demasiado grande para la salida</size>	{0}. {1}\n<size=70%>Grande demais para a saída</size>
+1. 얕은 실험 수조	1. Shallow test tank	1. 浅层实验水槽	1. Мелкий тестовый бак	1. Tanque de pruebas poco profundo	1. Tanque de testes raso
+계속하기	Continue	继续	Продолжить	Continuar	Continuar
+다시 하기	Try again	再来一次	Ещё раз	Reintentar	Tentar de novo
+메인으로	Main menu	主菜单	Главное меню	Menú principal	Menu principal
+물고기	Fish	鱼类	Рыбы	Peces	Peixes
+물고기 도감	Fish codex	鱼类图鉴	Кодекс рыб	Códice de peces	Códice de peixes
+미끼\n자동	Bait\nauto	诱饵\n自动	Приманка\nавто	Cebo\nauto	Isca\nauto
+미사일\n자동	Missile\nauto	导弹\n自动	Ракета\nавто	Misil\nauto	Míssil\nauto
+보스 등장!	Boss appears!	首领出现！	Появился босс!	¡Aparece el jefe!	O chefe apareceu!
+볼트\n자동	Volt\nauto	电击\n自动	Разряд\nавто	Voltio\nauto	Volt\nauto
+부스터	Booster	冲刺	Рывок	Impulso	Impulso
+부스터\n우클릭	Booster\nright-click	冲刺\n右键	Рывок\nПКМ	Impulso\nclic der.	Impulso\nbotão dir.
+새 맵 해금!	New map unlocked!	新地图解锁！	Открыта новая карта!	¡Nuevo mapa desbloqueado!	Novo mapa desbloqueado!
+청소기\n좌클릭	Vacuum\nleft-click	吸尘器\n左键	Пылесос\nЛКМ	Aspiradora\nclic izq.	Aspirador\nbotão esq.
+탈출 시작	Start escape	开始逃脱	Начать побег	Iniciar escape	Iniciar fuga
+포기하고 나가기	Give up and leave	放弃并离开	Сдаться и выйти	Rendirse y salir	Desistir e sair
+전체 화면	Borderless fullscreen	全屏（无边框）	Полный экран (без рамки)	Pantalla completa (sin bordes)	Tela cheia (sem bordas)
+창 모드	Windowed	窗口模式	Оконный	Ventana	Janela
+독점 전체 화면	Exclusive fullscreen	独占全屏	Эксклюзивный полный экран	Pantalla completa exclusiva	Tela cheia exclusiva
+키보드 (WASD · 방향키)	Keyboard (WASD · arrows)	键盘（WASD·方向键）	Клавиатура (WASD · стрелки)	Teclado (WASD · flechas)	Teclado (WASD · setas)
+마우스 따라가기	Follow mouse	跟随鼠标	Следовать за мышью	Seguir el ratón	Seguir o mouse
+실험체 #7	Subject #7	实验体 #7	Объект №7	Sujeto #7	Cobaia #7
+어항에서 바다까지 — 먹고, 자라고, 탈출하라	From fish tank to ocean — eat, grow, escape	从鱼缸到大海 — 吞食、成长、逃脱	Из аквариума в океан — ешь, расти, беги	De la pecera al océano — come, crece, escapa	Do aquário ao oceano — coma, cresça, fuja
+언어	Language	语言	Язык	Idioma	Idioma
+심해 리바이어던	Leviathan of the deep	深海利维坦	Левиафан глубин	Leviatán de las profundidades	Leviatã das profundezas
+수조 엔젤	Tank angelfish	水族神仙鱼	Аквариумная скалярия	Pez ángel de pecera	Acará de aquário
+치어	Fry	鱼苗	Малёк	Alevín	Alevino
+실험체 구피	Test-subject guppy	实验体孔雀鱼	Подопытный гуппи	Guppy de laboratorio	Guppy cobaia
+수조 포식자	Tank predator	鱼缸掠食者	Хищник аквариума	Depredador de pecera	Predador do aquário
+송사리	Medaka	青鳉	Медака	Medaka	Medaka
+철망 포식자	Grate predator	铁网掠食者	Хищник решётки	Depredador de la rejilla	Predador da grade
+하수 유생	Sewer larva	下水道幼体	Канализационная личинка	Larva de alcantarilla	Larva de esgoto
+관벌레고기	Tubeworm fish	管虫鱼	Рыба-трубочник	Pez gusano tubícola	Peixe-verme-tubo
+하수 쥐치	Sewer filefish	下水道剥皮鱼	Канализационный спинорог	Pez lija de alcantarilla	Peixe-porco de esgoto
+슬러지피시	Sludgefish	污泥鱼	Иловая рыба	Pez lodo	Peixe-lodo
+잉어	Carp	鲤鱼	Карп	Carpa	Carpa
+메기	Catfish	鲶鱼	Сом	Bagre	Bagre
+붕어	Crucian carp	鲫鱼	Карась	Carpín	Carássio
+가물치	Snakehead	乌鳢	Змееголов	Pez cabeza de serpiente	Peixe-cabeça-de-cobra
+은어떼	Sweetfish school	香鱼群	Стая аю	Banco de ayus	Cardume de ayu
+고등어	Mackerel	鲭鱼	Скумбрия	Caballa	Cavala
+범고래	Orca	虎鲸	Косатка	Orca	Orca
+정어리 군집	Sardine school	沙丁鱼群	Косяк сардин	Banco de sardinas	Cardume de sardinhas
+청상아리	Shortfin mako	尖吻鲭鲨	Мако	Marrajo	Tubarão-mako
+참다랑어	Bluefin tuna	蓝鳍金枪鱼	Голубой тунец	Atún rojo	Atum-azul
+관리 로봇 · 게이트키퍼	Keeper robot · Gatekeeper	管理机器人·守门者	Робот-смотритель · Привратник	Robot cuidador · Guardián	Robô zelador · Guardião
+배수관 지킴이	Drainpipe guardian	排水管守卫	Страж водостока	Guardián del desagüe	Guardião do cano
+강의 주인 · 늙은 가물치	Lord of the river · Old snakehead	河之主·老乌鳢	Хозяин реки · Старый змееголов	Señor del río · Viejo cabeza de serpiente	Senhor do rio · Velho cabeça-de-cobra
+위액 산성도 증가	Stronger stomach acid	胃酸强化	Едкий желудочный сок	Ácido estomacal potente	Ácido estomacal forte
+물고기를 먹을 때 얻는 재화량 4% 증가.	+4% currency from eating fish.	吃鱼获得的货币增加 4%。	+4% валюты за съеденную рыбу.	+4% de moneda al comer peces.	+4% de moeda ao comer peixes.
+덧붙인 장갑	Bolted-on armor	加装装甲	Навесная броня	Armadura añadida	Armadura acoplada
+몸 크기 및 이동속도 10% 증가.	+10% body size and move speed.	体型和移动速度增加 10%。	+10% к размеру и скорости.	+10% de tamaño y velocidad.	+10% de tamanho e velocidade.
+비늘 경화 강화	Hardened scales+	鳞甲硬化强化	Твёрдая чешуя+	Escamas endurecidas+	Escamas endurecidas+
+방어 횟수 +1 (최대 3회).	+1 block (max 3).	防御次数 +1（最多 3 次）。	+1 защита (макс. 3).	+1 bloqueo (máx. 3).	+1 bloqueio (máx. 3).
+황금 미끼 추가	Extra golden bait	黄金诱饵追加	Доп. золотая приманка	Cebo dorado extra	Isca dourada extra
+미끼 개수 +1.	+1 bait.	诱饵数量 +1。	+1 приманка.	+1 cebo.	+1 isca.
+황금 미끼 범위 강화	Golden bait range+	黄金诱饵范围强化	Радиус золотой приманки+	Alcance del cebo dorado+	Alcance da isca dourada+
+미끼 효과 범위 +50%.	+50% bait radius.	诱饵效果范围 +50%。	+50% к радиусу приманки.	+50% de radio del cebo.	+50% de raio da isca.
+커다란 배터리	Big battery	大号电池	Большая батарея	Batería grande	Bateria grande
+물고기 생존 제한시간 1초 증가.	+1 second time limit.	生存时间上限增加 1 秒。	+1 с к лимиту времени.	+1 segundo de tiempo límite.	+1 segundo de tempo limite.
+부스터 위력 강화	Booster power+	冲刺威力强化	Сила рывка+	Potencia del impulso+	Força do impulso+
+부스터로 먹을 수 있는 물고기 크기가 늘어납니다 (내 크기의 1.15배 → 1.6배).	Booster can eat bigger fish (1.15× → 1.6× your size).	冲刺可吃掉的鱼更大（自身体型的 1.15 倍 → 1.6 倍）。	Рывком можно съесть рыбу крупнее (×1,15 → ×1,6 от вашего размера).	El impulso puede comer peces más grandes (1,15× → 1,6× tu tamaño).	O impulso come peixes maiores (1,15× → 1,6× o seu tamanho).
+부스터 거리 강화	Booster distance+	冲刺距离强化	Дальность рывка+	Distancia del impulso+	Distância do impulso+
+부스터 이동 거리 +50%.	+50% booster distance.	冲刺距离 +50%。	+50% к дальности рывка.	+50% de distancia de impulso.	+50% de distância do impulso.
+물고기 전지	Fish cell	鱼电池	Рыбный элемент	Pila de pez	Pilha de peixe
+물고기를 먹을 때 얻는 제한시간 2.5% 증가.	+2.5% time gained from eating fish.	吃鱼获得的时间增加 2.5%。	+2,5% времени за съеденную рыбу.	+2,5% de tiempo al comer peces.	+2,5% de tempo ao comer peixes.
+미사일 강화	Missile+	导弹强化	Ракета+	Misil+	Míssil+
+미사일 범위 +60%, 개수 +1.	+60% missile range, +1 missile.	导弹范围 +60%，数量 +1。	+60% к радиусу ракет, +1 ракета.	+60% de alcance de misil, +1 misil.	+60% de alcance do míssil, +1 míssil.
+꼬리지느러미 강화	Tail fin+	尾鳍强化	Хвостовой плавник+	Aleta caudal+	Barbatana caudal+
+기본 이동속도 2% 증가.	+2% base move speed.	基础移动速度增加 2%。	+2% к базовой скорости.	+2% de velocidad base.	+2% de velocidade base.
+치아 교정	Braces	牙齿矫正	Брекеты	Ortodoncia	Aparelho dental
+입 크기 및 흡입력 2% 증가.	+2% mouth size and suction.	嘴部大小和吸力增加 2%。	+2% к размеру пасти и всасыванию.	+2% de tamaño de boca y succión.	+2% de tamanho da boca e sucção.
+비늘 경화	Hardened scales	鳞甲硬化	Твёрдая чешуя	Escamas endurecidas	Escamas endurecidas
+적의 공격을 1회 막습니다.	Blocks one enemy attack.	抵挡 1 次敌人攻击。	Блокирует одну атаку.	Bloquea un ataque enemigo.	Bloqueia um ataque inimigo.
+먹힐 뻔한 순간을 1회 막고 짧게 무적이 됩니다.	Blocks one would-be bite and grants brief invincibility.	抵挡 1 次被吃的瞬间，并获得短暂无敌。	Спасает от одного укуса и даёт краткую неуязвимость.	Bloquea un mordisco y da invencibilidad breve.	Bloqueia uma mordida e dá invencibilidade breve.
+황금 미끼	Golden bait	黄金诱饵	Золотая приманка	Cebo dorado	Isca dourada
+황금 미끼를 뿌립니다.	Scatters golden bait.	撒出黄金诱饵。	Разбрасывает золотую приманку.	Esparce cebo dorado.	Espalha isca dourada.
+일정 시간마다 자동으로 미끼를 뿌립니다. 주변 물고기가 미끼로 달려듭니다.	Automatically scatters bait at intervals. Nearby fish rush to it.	每隔一段时间自动撒出诱饵，周围的鱼会冲向诱饵。	Периодически разбрасывает приманку. Рыбы рядом бросаются к ней.	Esparce cebo cada cierto tiempo. Los peces cercanos se lanzan a por él.	Espalha isca de tempos em tempos. Peixes próximos correm até ela.
+우클릭으로 마우스 방향으로 대쉬하고 경로의 적을 먹습니다.	Right-click to dash toward the mouse and eat enemies in your path.	右键向鼠标方向冲刺，吃掉路径上的敌人。	ПКМ — рывок к курсору, поедая врагов на пути.	Clic derecho para embestir hacia el ratón y comer enemigos a tu paso.	Botão direito para avançar até o mouse e comer inimigos no caminho.
+마우스가 있는 방향으로 짧게 대쉬합니다. 대쉬 경로에 있는 나보다 조금 큰 물고기까지 먹힙니다.	Dash briefly toward the mouse. You can eat fish slightly bigger than you along the way.	向鼠标方向短距离冲刺。冲刺路径上比自己稍大的鱼也能吃掉。	Короткий рывок к курсору. На пути можно съесть даже рыбу чуть крупнее вас.	Embiste brevemente hacia el ratón. Puedes comer peces algo más grandes que tú en el camino.	Avança rapidamente até o mouse. Dá para comer peixes um pouco maiores que você no caminho.
+미사일	Missile	导弹	Ракета	Misil	Míssil
+미사일을 발사합니다.	Fires missiles.	发射导弹。	Запускает ракеты.	Dispara misiles.	Dispara mísseis.
+일정 시간마다 바라보는 방향으로 발사합니다. 맞은 적은 즉시 먹힌 것으로 처리됩니다.	Automatically fires where you're facing. Hit enemies count as eaten instantly.	每隔一段时间自动向前方发射。被击中的敌人立即视为被吃掉。	Периодически стреляет вперёд. Поражённые враги сразу считаются съеденными.	Dispara cada cierto tiempo hacia delante. Los enemigos alcanzados cuentan como comidos al instante.	Dispara de tempos em tempos para a frente. Inimigos atingidos contam como comidos na hora.
+청소기	Vacuum	吸尘器	Пылесос	Aspiradora	Aspirador
+좌클릭으로 물고기를 빨아들입니다.	Left-click to suck in fish.	左键吸入鱼。	ЛКМ — всасывать рыбу.	Clic izquierdo para aspirar peces.	Botão esquerdo para sugar peixes.
+좌클릭하면 잠깐 동안 주변의 소형 물고기를 끌어당깁니다. 쓰고 나면 재사용 대기시간이 있습니다.	Left-click to briefly pull in nearby small fish. Has a cooldown after use.	左键可短暂吸引周围的小型鱼。使用后需要冷却。	ЛКМ — ненадолго притянуть мелкую рыбу рядом. После использования — перезарядка.	Clic izquierdo para atraer un momento a los peces pequeños cercanos. Tiene enfriamiento.	Botão esquerdo para puxar por um instante os peixes pequenos próximos. Tem recarga.
+전기 쇼크를 일으킵니다.	Releases an electric shock.	释放电击。	Создаёт электрический разряд.	Lanza una descarga eléctrica.	Solta um choque elétrico.
+일정 시간마다 자동으로 주변에 전기 충격을 일으켜 마비시킵니다. (일반 2초 / 보스 0.1초)	Automatically shocks and paralyzes nearby fish at intervals. (Normal 2s / Boss 0.1s)	每隔一段时间自动对周围释放电击使其麻痹。（普通 2 秒 / 首领 0.1 秒）	Периодически бьёт током и парализует рыб рядом. (Обычные 2 с / босс 0,1 с)	Electrocuta y paraliza a los peces cercanos cada cierto tiempo. (Normal 2 s / Jefe 0,1 s)	Eletrocuta e paralisa peixes próximos de tempos em tempos. (Normal 2 s / Chefe 0,1 s)
+청소기 쿨타임 감소	Vacuum cooldown−	吸尘器冷却缩短	Перезарядка пылесоса−	Enfriamiento de aspiradora−	Recarga do aspirador−
+청소기 재사용 대기시간 감소. 4칸을 모두 찍으면 절반.	Reduces vacuum cooldown. All 4 nodes halve it.	缩短吸尘器冷却时间。点满 4 格减半。	Сокращает перезарядку пылесоса. Все 4 ячейки — вдвое.	Reduce el enfriamiento de la aspiradora. Los 4 nodos lo reducen a la mitad.	Reduz a recarga do aspirador. Os 4 nós cortam pela metade.
+10만 볼트 강화	100k Volt+	十万伏特强化	Сто тысяч вольт+	Cien mil voltios+	Cem mil volts+
+전기 충격 범위와 마비 시간 +60%.	+60% shock radius and paralysis time.	电击范围和麻痹时间 +60%。	+60% к радиусу разряда и времени паралича.	+60% de radio de descarga y parálisis.	+60% de raio do choque e paralisia.
+탈출은 여기서 시작된다. 바닥의 배수구가 유일한 출구다.	The escape starts here. The drain at the bottom is the only way out.	逃脱从这里开始。底部的排水口是唯一的出口。	Побег начинается здесь. Единственный выход — сток на дне.	La fuga empieza aquí. El desagüe del fondo es la única salida.	A fuga começa aqui. O ralo no fundo é a única saída.
+하수구	Sewer	下水道	Канализация	Alcantarilla	Esgoto
+탁한 물살과 쇠창살. 여기서 살아남으면 강 냄새가 난다.	Murky currents and iron bars. Survive here and you'll smell the river.	浑浊的水流与铁栅栏。在这里活下来，就能闻到河的气息。	Мутные течения и решётки. Выживи — и почуешь запах реки.	Corrientes turbias y barrotes. Sobrevive y olerás el río.	Correntezas turvas e grades. Sobreviva e sentirá o cheiro do rio.
+강	River	河流	Река	Río	Rio
+물살이 세다. 여기서부터는 이빨을 가진 것들이 많다.	Strong currents. From here on, plenty of things have teeth.	水流湍急。从这里开始，长着利齿的家伙越来越多。	Сильное течение. Дальше полно зубастых.	Corrientes fuertes. Desde aquí, muchos tienen dientes.	Correnteza forte. Daqui em diante, muitos têm dentes.
+바다	Ocean	大海	Океан	Océano	Oceano
+실험실에서 가장 먼 곳. 여기서는 무엇이든 나를 삼킬 수 있다.	The farthest place from the lab. Here, anything can swallow you.	离实验室最远的地方。在这里，任何东西都可能吞掉你。	Дальше всего от лаборатории. Здесь тебя может проглотить кто угодно.	El lugar más lejano del laboratorio. Aquí cualquier cosa puede tragarte.	O lugar mais distante do laboratório. Aqui, qualquer coisa pode te engolir.
+새우	Shrimp	虾	Креветка	Camarón	Camarão
+이끼	Moss	苔藓	Мох	Musgo	Musgo
+구피	Guppy	孔雀鱼	Гуппи	Guppy	Guppy
+미꾸라지	Loach	泥鳅	Вьюн	Locha	Dojô
+전기뱀장어	Electric eel	电鳗	Электрический угорь	Anguila eléctrica	Poraquê
+피라냐	Piranha	食人鱼	Пиранья	Piraña	Piranha
+하수구 메기	Sewer catfish	下水道鲶鱼	Канализационный сом	Bagre de alcantarilla	Bagre de esgoto
+보스 금붕어	Boss goldfish	首领金鱼	Босс-золотая рыбка	Pez dorado jefe	Peixe-dourado chefe
+심해 상어	Deep-sea shark	深海鲨鱼	Глубоководная акула	Tiburón abisal	Tubarão abissal
+가시고기	Stickleback	刺鱼	Колюшка	Espinoso	Esgana-gata
+강 피라냐	River piranha	河流食人鱼	Речная пиранья	Piraña de río	Piranha de rio
+흰동가리	Clownfish	小丑鱼	Рыба-клоун	Pez payaso	Peixe-palhaço
+청새치	Marlin	旗鱼	Марлин	Marlín	Marlim
+아귀	Anglerfish	鮟鱇鱼	Удильщик	Rape	Peixe-pescador
+심해 아귀	Deep-sea anglerfish	深海鮟鱇	Глубоководный удильщик	Rape abisal	Peixe-pescador abissal

@@ -103,17 +103,17 @@ namespace FishGame.UI
             if (_run == null) return;
 
             if (timeText != null)
-                timeText.text = $"제한시간 {NumberFormatter.FormatCountdown(_run.TimeRemaining)}";
+                timeText.text = Loc.F("제한시간 {0}", NumberFormatter.FormatCountdown(_run.TimeRemaining));
 
             if (currencyText != null)
-                currencyText.text = $"재화 {NumberFormatter.Format(_run.CurrencyEarned)}";
+                currencyText.text = Loc.F("재화 {0}", NumberFormatter.Format(_run.CurrencyEarned));
 
             if (_player != null)
             {
                 if (sizeText != null)
                     sizeText.text = _player.MaxRunSize > _player.RunStartSize + 0.01f
-                        ? $"크기 {_player.Size:0.00} <size=70%>/ {_player.MaxRunSize:0.0}</size>"
-                        : $"크기 {_player.Size:0.00}";
+                        ? Loc.F("크기 {0:0.00} <size=70%>/ {1:0.0}</size>", _player.Size, _player.MaxRunSize)
+                        : Loc.F("크기 {0:0.00}", _player.Size);
 
                 if (growthBar != null) growthBar.fillAmount = _player.GrowthProgress01;
             }
@@ -122,7 +122,7 @@ namespace FishGame.UI
             {
                 float m = _run.CurrentDrainMultiplier;
                 drainText.gameObject.SetActive(m > 1.05f);
-                drainText.text = $"소모 x{m:0.0}";
+                drainText.text = Loc.F("소모 x{0:0.0}", m);
             }
 
             if (timeBar != null && _run.MaxTime > 0f)
@@ -145,7 +145,7 @@ namespace FishGame.UI
                 SetFill(missileFill, _player.MissileCooldownNormalized);
 
                 if (armorText != null && _player.ArmorMax > 0)
-                    armorText.text = $"비늘 {_player.ArmorRemaining}/{_player.ArmorMax}";
+                    armorText.text = Loc.F("비늘 {0}/{1}", _player.ArmorRemaining, _player.ArmorMax);
             }
 
             if (depthText != null && _run.Layout != null && _player != null)
@@ -155,7 +155,7 @@ namespace FishGame.UI
                 float y = _player.transform.position.y;
                 float depth = _run.WorldTopY - y;
                 float mult = _run.Layout.DepthValueDisplay(y);
-                depthText.text = $"깊이 {depth:0}m  ×{mult:0.0}";
+                depthText.text = Loc.F("깊이 {0:0}m  ×{1:0.0}", depth, mult);
             }
             if (depthBar != null) depthBar.fillAmount = _run.Depth01;
 
@@ -216,8 +216,8 @@ namespace FishGame.UI
                 bossHintText.gameObject.SetActive(hasBoss);
                 if (hasBoss)
                     bossHintText.text = _run.BossReleased
-                        ? "보스가 풀려났다!"
-                        : "고리 구조물에 부스터로 돌진 → 보스 등장";
+                        ? Loc.T("보스가 풀려났다!")
+                        : Loc.T("고리 구조물에 부스터로 돌진 → 보스 등장");
                 return;
             }
 
@@ -229,11 +229,11 @@ namespace FishGame.UI
             if (_run.NextGateIsOpen)
             {
                 var next = _run.Layout.GetZone(_run.CurrentZoneIndex + 1);
-                bossHintText.text = $"통로 개방 — 아래로 내려가면 {(next != null ? next.displayName : "다음 구역")}";
+                bossHintText.text = Loc.F("통로 개방 — 아래로 내려가면 {0}", (next != null ? Loc.T(next.displayName) : Loc.T("다음 구역")));
             }
             else
             {
-                bossHintText.text = $"아래 통로: 크기 {now:0.0} / {need:0.0}";
+                bossHintText.text = Loc.F("아래 통로: 크기 {0:0.0} / {1:0.0}", now, need);
             }
         }
 
@@ -251,14 +251,14 @@ namespace FishGame.UI
             FishGame.Gameplay.Juice.Shake(0.5f);
             var bank = FishGame.Core.AudioManager.Instance.Bank;
             if (bank?.bossAppear != null) FishGame.Core.AudioManager.Play(bank.bossAppear);
-            ShowBanner("보스가 풀려났다");
+            ShowBanner(Loc.T("보스가 풀려났다"));
             UpdateGateHint();
         }
 
         void HandleZoneChanged(int zoneIndex)
         {
             var zone = _run != null ? _run.Layout?.GetZone(zoneIndex) : null;
-            if (mapNameText != null && zone != null) mapNameText.text = zone.displayName;
+            if (mapNameText != null && zone != null) mapNameText.text = Loc.T(zone.displayName);
             UpdateGateHint();
         }
 
@@ -266,7 +266,7 @@ namespace FishGame.UI
         {
             if (gate == null) return;
             if (gate.ZoneIndex != _run.CurrentZoneIndex) return;
-            ShowBanner($"통로 개방 — {gate.ToZoneName}");
+            ShowBanner(Loc.F("통로 개방 — {0}", Loc.T(gate.ToZoneName)));
             UpdateGateHint();
         }
 
@@ -276,8 +276,8 @@ namespace FishGame.UI
             float bonus = _run != null && _run.Database != null ? _run.Database.hiddenItemCurrencyBonus : 0.05f;
             string pct = $"{bonus * 100f:0.#}%";
             if (floatingText != null && _player != null)
-                floatingText.Spawn(_player.transform.position, $"히든 아이템!  재화 +{pct} 영구");
-            ShowBanner($"히든 아이템 발견 — 재화 획득 +{pct} (영구)");
+                floatingText.Spawn(_player.transform.position, Loc.F("히든 아이템!  재화 +{0} 영구", pct));
+            ShowBanner(Loc.F("히든 아이템 발견 — 재화 획득 +{0} (영구)", pct));
         }
 
         /// <summary>남은 시간 색: 넉넉하면 초록, 절반 아래 노랑, 20% 아래 빨강.</summary>

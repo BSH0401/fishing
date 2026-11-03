@@ -16,6 +16,64 @@ namespace FishGame.UI
         public static readonly Color Accent = new Color(0.45f, 0.95f, 0.90f, 1f);
         public static readonly Color TextDim = new Color(0.62f, 0.78f, 0.80f, 1f);
 
+        // ── 직접 그린 도트 UI (Resources/UI, 구글 드라이브 FishGame/이미지) ──────────
+        //   FishButton  메인 화면 버튼          FishIndex  물고기 도감 창
+        //   SquareUI    스킬트리 구역 테두리    BlueLine / OrangeLine  스킬트리 연결선
+        // 그림이 없으면 예전 계기판 스타일로 돌아간다.
+        static readonly System.Collections.Generic.Dictionary<string, Sprite> _ui =
+            new System.Collections.Generic.Dictionary<string, Sprite>();
+
+        public static Sprite UiSprite(string name)
+        {
+            if (_ui.TryGetValue(name, out var s)) return s;
+            s = Resources.Load<Sprite>("UI/" + name);
+            _ui[name] = s;
+            return s;
+        }
+
+        /// <summary>
+        /// Image에 도트 판을 9-slice로 입힌다. pixelScale = 도트 1칸이 화면에서 몇 단위인지 (테두리 굵기).
+        /// 예전 스타일의 테두리 · 모서리 장식은 끈다. 그림이 없으면 false.
+        /// </summary>
+        public static bool PixelPanel(Image img, string sprite, float pixelScale = 3f, Color? tint = null)
+        {
+            if (img == null) return false;
+            var s = UiSprite(sprite);
+            if (s == null) return false;
+            img.sprite = s;
+            img.type = Image.Type.Sliced;
+            img.fillCenter = true;
+            img.pixelsPerUnitMultiplier = 1f / Mathf.Max(0.1f, pixelScale);
+            img.color = tint ?? Color.white;
+            foreach (Transform c in img.transform)
+                if (c.name == "LabBorder" || c.name == "LabCorner") c.gameObject.SetActive(false);
+            return true;
+        }
+
+        /// <summary>메인 화면 버튼 — 도트 버튼 판 + 흰 글씨. 그림이 없으면 Button()과 같다.</summary>
+        public static void FishButton(Button button, bool primary = false)
+        {
+            if (button == null) return;
+            var img = button.targetGraphic as Image;
+            if (img == null) img = button.GetComponent<Image>();
+            if (!PixelPanel(img, "FishButton", 3f, primary ? Color.white : new Color(0.82f, 0.9f, 0.92f, 1f)))
+            {
+                Button(button, primary);
+                return;
+            }
+            var colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f, 1f);
+            colors.pressedColor = new Color(0.7f, 0.8f, 0.82f, 1f);
+            colors.selectedColor = Color.white;
+            colors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.7f);
+            colors.fadeDuration = 0.08f;
+            button.colors = colors;
+
+            var label = button.GetComponentInChildren<TMP_Text>();
+            if (label != null) label.color = Color.white;
+        }
+
         /// <summary>Image를 계기판 패널로. 이미 적용했으면 색만 다시 맞춘다.</summary>
         public static void Panel(Image img, bool corners = true, Color? fill = null, Color? border = null,
                                  Color? corner = null)

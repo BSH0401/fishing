@@ -96,20 +96,20 @@ namespace FishGame.EditorTools
             // ── 3구역: 강 (7.37 / 4.94) ──
             new[]
             {
-                F("Fish_M3_Sweet",   "은어떼",      2.70f,  1.8f, 1.2f, AIPatternType.SineWave, 3.6f, 1.8f, C1, 0.9f, 340f, 10f, 3.0f),
+                F("Fish_M3_Sweet",   "가시고기",      2.70f,  1.8f, 1.2f, AIPatternType.SineWave, 3.6f, 1.8f, C1, 0.9f, 340f, 10f, 3.0f),
                 F("Fish_M3_Crucian", "붕어",        5.00f,  3.4f, 1.4f, AIPatternType.Wander,   3.4f, 6f,   C3, 1f, 290f, 9f, 2.5f),
-                F("Fish_M3_Carp",    "잉어",        8.60f,  5.8f, 1.6f, AIPatternType.Flee,     4.0f, 8f,   C2, 1f, 250f, 8f, 2.2f),
+                F("Fish_M3_Carp",    "강 피라냐",        8.60f,  5.8f, 1.6f, AIPatternType.Flee,     4.0f, 8f,   C2, 1f, 250f, 8f, 2.2f),
                 F("Fish_M3_Cat",     "메기",       14.00f,  9.5f, 1.9f, AIPatternType.Chase,    4.4f, 11f,  C4, 1f, 210f, 7f, 1.9f),
                 F("Fish_M3_Snake",   "가물치",     23.00f, 15.0f, 2.3f, AIPatternType.Ambush,   3.4f, 10f,  C5, 3.2f, 180f, 6f, 1.6f),
             },
             // ── 4구역: 바다 (17.8 / 19.6) ──
             new[]
             {
-                F("Fish_M4_Sardine", "정어리 군집",  6.50f,  7.0f, 1.4f, AIPatternType.SineWave, 4.2f, 2.2f, C1, 1.0f, 330f, 10f, 2.9f),
+                F("Fish_M4_Sardine", "흰동가리",  6.50f,  7.0f, 1.4f, AIPatternType.SineWave, 4.2f, 2.2f, C1, 1.0f, 330f, 10f, 2.9f),
                 F("Fish_M4_Mackerel","고등어",      12.00f, 13.0f, 1.6f, AIPatternType.Wander,   4.4f, 8f,   C3, 1f, 280f, 9f, 2.4f),
-                F("Fish_M4_Tuna",    "참다랑어",    21.00f, 23.0f, 1.9f, AIPatternType.Flee,     4.8f, 10f,  C2, 1f, 240f, 8f, 2.1f),
+                F("Fish_M4_Tuna",    "청새치",    21.00f, 23.0f, 1.9f, AIPatternType.Flee,     4.8f, 10f,  C2, 1f, 240f, 8f, 2.1f),
                 F("Fish_M4_Shark",   "청상아리",    34.00f, 38.0f, 2.2f, AIPatternType.Chase,    5.4f, 14f,  C4, 1f, 200f, 7f, 1.8f),
-                F("Fish_M4_Orca",    "범고래",      55.00f, 62.0f, 2.6f, AIPatternType.Ambush,   4.4f, 13f,  C5, 3.4f, 170f, 6f, 1.5f),
+                F("Fish_M4_Orca",    "아귀",      55.00f, 62.0f, 2.6f, AIPatternType.Ambush,   4.4f, 13f,  C5, 3.4f, 170f, 6f, 1.5f),
             },
         };
 
@@ -128,7 +128,7 @@ namespace FishGame.EditorTools
         // 이제 단 하나. 바다 한가운데 고리 구조물에 갇혀 있고,
         // 부스터로 들이받아야 풀려난다. 잡으면 게임 클리어.
         static readonly FishDef Boss =
-            F("Fish_Boss_Leviathan", "심해 아귀", 43.00f, 260.0f, 0f,
+            F("Fish_Boss_Leviathan", "심해 상어", 43.00f, 260.0f, 0f,
               AIPatternType.Chase, 4.6f, 20f, CB, 1f, 150f, 4f, 1.3f);
 
         // ═════════════════════════════════════════════════════════

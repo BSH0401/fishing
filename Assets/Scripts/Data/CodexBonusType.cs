@@ -26,12 +26,12 @@ namespace FishGame.Data
     {
         public static string ToKorean(this CodexBonusType t) => t switch
         {
-            CodexBonusType.Currency     => "재화",
-            CodexBonusType.TimeGain     => "시간 회복",
-            CodexBonusType.MouthPower   => "입·흡입력",
-            CodexBonusType.MoveSpeed    => "이동 속도",
-            CodexBonusType.Vision       => "시야",
-            CodexBonusType.SurvivalTime => "제한시간",
+            CodexBonusType.Currency     => Loc.T("재화"),
+            CodexBonusType.TimeGain     => Loc.T("시간 회복"),
+            CodexBonusType.MouthPower   => Loc.T("입·흡입력"),
+            CodexBonusType.MoveSpeed    => Loc.T("이동 속도"),
+            CodexBonusType.Vision       => Loc.T("시야"),
+            CodexBonusType.SurvivalTime => Loc.T("제한시간"),
             _                           => "-",
         };
 

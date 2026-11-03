@@ -137,7 +137,7 @@ namespace FishGame.Gameplay
             _glow.transform.localScale = Vector3.one * (_halfWidth * 3f);
         }
 
-        string LockedText() => $"크기 {RequiredSize:0.#} 필요";
+        string LockedText() => Loc.F("크기 {0:0.#} 필요", RequiredSize);
 
         // ══════════════════════════════════════════════════════════
         //  판정
@@ -167,7 +167,7 @@ namespace FishGame.Gameplay
             {
                 float pulse = 0.85f + Mathf.PingPong(Time.time * 1.6f, 0.3f);
                 _label.transform.localScale = Vector3.one * pulse;
-                _label.text = $"크기 {size:0.#} / {RequiredSize:0.#}";
+                _label.text = Loc.F("크기 {0:0.#} / {1:0.#}", size, RequiredSize);
             }
         }
 
@@ -177,7 +177,7 @@ namespace FishGame.Gameplay
             IsOpen = true;
 
             if (_blocker != null) _blocker.enabled = false;
-            if (_label != null) _label.text = $"{ToZoneName} →";
+            if (_label != null) _label.text = $"{Loc.T(ToZoneName)} →";
 
             // 지금 있는 구역의 통로일 때만 화면을 흔든다 (개발자 모드 "통로 모두 열기" 등에서 여러 번 흔들리지 않게)
             var run = RunManager.Instance;

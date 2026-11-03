@@ -126,6 +126,7 @@ namespace FishGame.UI
             public TMP_Text Label;
             public List<int> Slots = new List<int>();
             public string Code;
+            public bool PixelFrame;   // 도트 구역 테두리(SquareUI)를 쓰는가
         }
 
         void Start()
@@ -417,7 +418,8 @@ namespace FishGame.UI
                 hi += new Vector2(padX, padTop);
 
                 var fill = NewImage(_plateLayer, $"Plate{n}", LabArt.Panel);
-                LabStyle.Panel(fill, corners: true,
+                var square = LabStyle.UiSprite("SquareUI");
+                LabStyle.Panel(fill, corners: square == null,
                                fill: new Color(0.03f, 0.13f, 0.16f, 0.62f),
                                border: new Color(0.35f, 0.85f, 0.85f, 0.22f),
                                corner: new Color(0.45f, 0.95f, 0.9f, 0.55f));
@@ -428,7 +430,19 @@ namespace FishGame.UI
                 var view = new PlateView { Fill = fill, Code = $"LAB-{n + 1:00}" };
                 view.Slots.AddRange(c);
                 var border = fill.transform.Find("LabBorder");
-                if (border != null) view.Border = border.GetComponent<Image>();
+                if (border != null)
+                {
+                    view.Border = border.GetComponent<Image>();
+                    // 도트 구역 테두리 — 어두운 판 위에 SquareUI 액자를 씌운다 (안쪽은 투명)
+                    if (square != null && view.Border != null)
+                    {
+                        view.Border.sprite = square;
+                        view.Border.type = Image.Type.Sliced;
+                        view.Border.fillCenter = false;
+                        view.Border.pixelsPerUnitMultiplier = 0.5f;   // 도트 1칸 = 2단위
+                        view.PixelFrame = true;
+                    }
+                }
 
                 if (lineLabelPrefab != null)
                 {
@@ -441,7 +455,8 @@ namespace FishGame.UI
                     var lr = label.rectTransform;
                     lr.anchorMin = lr.anchorMax = new Vector2(0f, 1f);
                     lr.pivot = new Vector2(0f, 1f);
-                    lr.anchoredPosition = new Vector2(22f, -8f);
+                    // 도트 테두리는 왼쪽 위에 배터리 장식이 있어 그 오른쪽 윗줄에 얹는다
+                    lr.anchoredPosition = view.PixelFrame ? new Vector2(86f, -9f) : new Vector2(22f, -8f);
                     lr.sizeDelta = new Vector2(200f, 22f);
                     view.Label = label;
                 }
@@ -563,6 +578,8 @@ namespace FishGame.UI
         static string ShortName(SkillNode node)
         {
             string n = node.displayName;
+            // 줄인 이름은 한국어 규칙이다 — 다른 언어는 번역된 전체 이름
+            if (Loc.Current != Language.Korean) return Loc.T(n);
             return n.Replace(" 강화", "").Replace("황금 미끼 ", "미끼 ").Replace("10만 볼트", "볼트");
         }
 
@@ -587,7 +604,9 @@ namespace FishGame.UI
         LineView CreateLine(Vector2 a, Vector2 b, int ia, int ib)
         {
             var line = Instantiate(linePrefab, lineContainer);
-            line.sprite = LabArt.LineSoft;
+            // 도트 연결선이 있으면 그걸 쓴다 (찍은 길 = 파랑, 아직 = 주황 — RefreshLines에서 바꾼다)
+            var dot = LabStyle.UiSprite("OrangeLine");
+            line.sprite = dot != null ? dot : LabArt.LineSoft;
             line.type = Image.Type.Simple;
             line.raycastTarget = false;
             var rt = (RectTransform)line.transform;
@@ -759,15 +778,15 @@ namespace FishGame.UI
             if (currencyText != null)
             {
                 // 칸마다 가격이 고정이라 "다음 칸 가격"은 없다 — 각 칸의 가격은 칸 아래 · 툴팁에 있다
-                currencyText.text = $"<size=55%><color=#8FB7B8>재화</color></size>  {NumberFormatter.Format(progress.currency)}";
+                currencyText.text = Loc.F("<size=55%><color=#8FB7B8>재화</color></size>  {0}", NumberFormatter.Format(progress.currency));
             }
 
             if (hintText != null)
             {
-                string count = $"찍은 칸 {progress.totalNodesPurchased} / {db.PurchasableSlotCount}";
+                string count = Loc.F("찍은 칸 {0} / {1}", progress.totalNodesPurchased, db.PurchasableSlotCount);
                 string main = affordable > 0
-                    ? $"<color=#6FF2C8>지금 찍을 수 있는 칸 {affordable}개</color>  ·  {count}"
-                    : $"<color=#8FA7AB>재화를 더 모아야 합니다</color>  ·  {count}";
+                    ? Loc.F("<color=#6FF2C8>지금 찍을 수 있는 칸 {0}개</color>  ·  {1}", affordable, count)
+                    : Loc.F("<color=#8FA7AB>재화를 더 모아야 합니다</color>  ·  {0}", count);
                 hintText.text = string.IsNullOrEmpty(_notice) ? main : $"<color=#F2C74C>{_notice}</color>\n{main}";
             }
         }
@@ -829,6 +848,19 @@ namespace FishGame.UI
                 if (a && b) { c = lineLitColor; thick = lineThicknessLit; lit.Add(new SkillTreeFx.Segment { A = line.PA, B = line.PB }); }
                 else if (a || b) { c = lineOpenColor; thick = lineThicknessOpen; }
                 else { c = lineLockedColor; thick = lineThicknessLocked; }
+
+                // 도트 연결선: 그림 자체에 색이 있으니 색은 밝기 · 투명도만 조절한다
+                var blue = LabStyle.UiSprite("BlueLine");
+                var orange = LabStyle.UiSprite("OrangeLine");
+                if (blue != null && orange != null)
+                {
+                    var sprite = a && b ? blue : orange;
+                    if (line.Image.sprite != sprite) line.Image.sprite = sprite;
+                    c = a && b ? Color.white
+                      : a || b ? new Color(1f, 1f, 1f, 0.9f)
+                      : new Color(0.45f, 0.5f, 0.55f, 0.5f);   // 잠긴 길 — 어둡게
+                    thick = a && b ? 15f : a || b ? 12f : 8f;   // 도트 5줄이 또렷하게 보이는 굵기
+                }
 
                 if (hover)
                 {
@@ -906,7 +938,11 @@ namespace FishGame.UI
                 if (p.Fill.gameObject.activeSelf != anyVisible) p.Fill.gameObject.SetActive(anyVisible);
                 if (!anyVisible) continue;
 
-                if (p.Border != null)
+                if (p.Border != null && p.PixelFrame)
+                    p.Border.color = done ? new Color(1f, 0.92f, 0.65f, 1f)       // 다 찍음 — 금빛
+                                   : active ? Color.white
+                                   : new Color(0.55f, 0.65f, 0.7f, 0.45f);         // 아직 못 감 — 흐리게
+                else if (p.Border != null)
                     p.Border.color = done ? new Color(1f, 0.84f, 0.4f, 0.75f)
                                    : active ? new Color(0.40f, 0.95f, 0.9f, 0.45f)
                                    : new Color(0.35f, 0.75f, 0.8f, 0.14f);
@@ -1094,10 +1130,10 @@ namespace FishGame.UI
 
             if (btn.Slot.IsRoot)
             {
-                _tipTitle.text = "시작";
+                _tipTitle.text = Loc.T("시작");
                 _tipTitle.color = Color.white;
-                _tipCategory.text = $"찍은 칸 {progress.totalNodesPurchased} / {db.PurchasableSlotCount}";
-                _tipBody.text = "여기서부터 뻗어 나갑니다.\n이어진 칸을 찍으면 그 너머의 칸이 드러납니다.";
+                _tipCategory.text = Loc.F("찍은 칸 {0} / {1}", progress.totalNodesPurchased, db.PurchasableSlotCount);
+                _tipBody.text = Loc.T("여기서부터 뻗어 나갑니다.\n이어진 칸을 찍으면 그 너머의 칸이 드러납니다.");
                 _tipStats.gameObject.SetActive(false);
                 _tipFoot.text = "";
                 _tipFoot.gameObject.SetActive(false);
@@ -1111,36 +1147,36 @@ namespace FishGame.UI
                 if (state == PurchaseResult.MaxLevel || state == PurchaseResult.PrerequisiteLocked)
                     cost = SkillTreeManager.SlotCost(db, btn.SlotIndex);
 
-                _tipTitle.text = node.displayName;
+                _tipTitle.text = Loc.T(node.displayName);
                 _tipTitle.color = SkillPalette.TypeColor(node.effectType);
                 _tipCategory.text = node.effectType.IsUnlock()
                     ? SkillPalette.CategoryName(node.effectType)
-                    : $"{SkillPalette.CategoryName(node.effectType)}  ·  {level} / {max}칸";
+                    : Loc.F("{0}  ·  {1} / {2}칸", SkillPalette.CategoryName(node.effectType), level, max);
 
-                string desc = string.IsNullOrEmpty(node.tooltip) ? node.description
-                            : string.IsNullOrEmpty(node.description) ? node.tooltip
-                            : $"{node.tooltip}\n<size=85%><color=#A9C4C6>{node.description}</color></size>";
+                string desc = string.IsNullOrEmpty(node.tooltip) ? Loc.T(node.description)
+                            : string.IsNullOrEmpty(node.description) ? Loc.T(node.tooltip)
+                            : $"{Loc.T(node.tooltip)}\n<size=85%><color=#A9C4C6>{Loc.T(node.description)}</color></size>";
                 _tipBody.text = desc;
 
                 // 표처럼 — 왼쪽 이름, 오른쪽 값 (예시 화면의 확률 · 피해 · 지속 시간 줄)
                 string effect;
-                if (node.effectType.IsUnlock()) effect = level > 0 ? "해금됨" : "해금";
+                if (node.effectType.IsUnlock()) effect = level > 0 ? Loc.T("해금됨") : Loc.T("해금");
                 else
                 {
                     string cur = node.FormatEffect(level);
                     effect = state == PurchaseResult.MaxLevel ? cur
                            : $"{cur}  →  <color=#6FF2C8>{node.FormatEffect(level + 1)}</color>";
                 }
-                _tipStats.text = $"효과<pos=34%>{effect}\n가격<pos=34%><color=#FFD666>{NumberFormatter.Format(cost)}</color>";
+                _tipStats.text = Loc.F("효과<pos=34%>{0}\n가격<pos=34%><color=#FFD666>{1}</color>", effect, NumberFormatter.Format(cost));
                 _tipStats.gameObject.SetActive(true);
 
                 _tipFoot.gameObject.SetActive(true);
                 _tipFoot.text = state switch
                 {
-                    PurchaseResult.MaxLevel          => "<color=#FFD666>찍음</color>",
-                    PurchaseResult.NotEnoughCurrency => "<color=#E08A72>재화 부족</color>",
-                    PurchaseResult.Success           => "<color=#6FF2C8>클릭해서 구매</color>",
-                    _                                => "<color=#E08A72>잠김</color>",
+                    PurchaseResult.MaxLevel          => Loc.T("<color=#FFD666>찍음</color>"),
+                    PurchaseResult.NotEnoughCurrency => Loc.T("<color=#E08A72>재화 부족</color>"),
+                    PurchaseResult.Success           => Loc.T("<color=#6FF2C8>클릭해서 구매</color>"),
+                    _                                => Loc.T("<color=#E08A72>잠김</color>"),
                 };
             }
 

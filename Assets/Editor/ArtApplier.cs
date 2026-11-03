@@ -18,8 +18,33 @@ namespace FishGame.EditorTools
     ///
     /// 프리팹 · 콘텐츠를 다시 생성해도 이 메뉴만 다시 누르면 된다 (★ 전체 셋업은 마지막에 자동으로 부른다).
     /// </summary>
+    [InitializeOnLoad]
     public static class ArtApplier
     {
+        // 도트를 새로 넣으면 메뉴를 누르지 않아도 컴파일 직후 한 번 맞춘다 (그림이 다른 종이 있을 때만)
+        static ArtApplier()
+        {
+            EditorApplication.delayCall += () =>
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode || !DotsOutOfDate()) return;
+                int n = Apply();
+                Debug.Log($"[FishGame] 새 도트를 자동으로 적용했습니다 — {n}곳 변경");
+            };
+        }
+
+        static bool DotsOutOfDate()
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:FishSpecies"))
+            {
+                var sp = AssetDatabase.LoadAssetAtPath<FishSpecies>(AssetDatabase.GUIDToAssetPath(guid));
+                if (sp == null || !DotArt.TryGetValue(sp.name, out var dot)) continue;
+                // 새 그림은 아직 스프라이트로 임포트되지 않았을 수 있어 텍스처로 비교한다
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>($"{DotFolder}/{dot.file}.png");
+                if (tex != null && (sp.sprite == null || sp.sprite.texture != tex || sp.spriteFacesLeft != dot.facesLeft)) return true;
+            }
+            return false;
+        }
+
         const string ArtFolder = "Assets/_Project/Art/Custom";
         const string IconFolder = "Assets/_Project/Resources/Icons";
 
@@ -44,10 +69,16 @@ namespace FishGame.EditorTools
             { "Fish_M2_Rat",         ("Dot_Piranha",     false) },   // 피라냐
             { "Fish_M2_Grate",       ("Dot_Catfish",     true)  },   // 하수구 메기
             // 3 강
+            { "Fish_M3_Sweet",       ("Dot_Stickleback", true)  },   // 가시고기
+            { "Fish_M3_Crucian",     ("Dot_Crucian",     true)  },   // 붕어
+            { "Fish_M3_Carp",        ("Dot_Piranha",     false) },   // 강 피라냐 (하수구 피라냐와 같은 그림)
             { "Fish_M3_Cat",         ("Dot_Catfish",     true)  },   // 메기 (하수구 메기와 같은 그림, 크기만 다름)
             { "Fish_M3_Snake",       ("Dot_Snakehead",   true)  },   // 가물치
             // 4 바다
-            { "Fish_Boss_Leviathan", ("Dot_Anglerfish",  true)  },   // 심해 아귀 (최종 보스)
+            { "Fish_M4_Sardine",     ("Dot_Clownfish",   true)  },   // 흰동가리
+            { "Fish_M4_Tuna",        ("Dot_Marlin",      true)  },   // 청새치
+            { "Fish_M4_Orca",        ("Dot_Anglerfish",  true)  },   // 아귀 (바다에서 가장 큰 매복 물고기)
+            { "Fish_Boss_Leviathan", ("Dot_Shark",       true)  },   // 심해 상어 (최종 보스)
         };
 
         /// <summary>종 파일 이름 → 색 그림. 한 구역 안에서는 색이 겹치지 않는다. (도트가 있는 종은 도트가 우선)</summary>

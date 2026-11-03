@@ -152,7 +152,7 @@ namespace FishGame.Core
             SkillTreeManager.SyncLevels(database, Progress);
             if (refund > 0d || Progress.loadedVersion < PlayerProgress.CurrentVersion) SaveNow();
             if (refund > 0d) PendingNotice =
-                $"스킬트리가 새 도면으로 바뀌었습니다.\n예전에 찍은 스킬을 초기화하고 재화 {FishGame.Utils.NumberFormatter.Format(refund)}을 돌려드렸어요.";
+                Loc.F("스킬트리가 새 도면으로 바뀌었습니다.\n예전에 찍은 스킬을 초기화하고 재화 {0}을 돌려드렸어요.", FishGame.Utils.NumberFormatter.Format(refund));
         }
 
         /// <summary>메인 화면이 한 번 띄워 줄 안내 문구 (없으면 null). 읽으면 비운다.</summary>

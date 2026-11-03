@@ -98,7 +98,7 @@ namespace FishGame.UI
             LabStyle.Panel(win, corners: true, fill: new Color(0.03f, 0.10f, 0.13f, 0.97f));
             var w = UIKit.Place(win.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(980f, 700f));
 
-            UIKit.Place(UIKit.Text(w, "Title", "설정", 40f, UIKit.Ink, TextAlignmentOptions.Left, FontStyles.Bold).rectTransform,
+            UIKit.Place(UIKit.Text(w, "Title", Loc.T("설정"), 40f, UIKit.Ink, TextAlignmentOptions.Left, FontStyles.Bold).rectTransform,
                         new Vector2(0f, 1f), new Vector2(44f, -30f), new Vector2(400f, 56f));
 
             var close = UIKit.Button(w, "Close", "×", new Vector2(56f, 56f), fontSize: 34f);
@@ -106,7 +106,7 @@ namespace FishGame.UI
             close.onClick.AddListener(Close);
 
             // 탭
-            string[] tabNames = { "사운드", "화면", "조작" };
+            string[] tabNames = { Loc.T("사운드"), Loc.T("화면"), Loc.T("조작") };
             for (int i = 0; i < tabNames.Length; i++)
             {
                 int idx = i;
@@ -125,20 +125,20 @@ namespace FishGame.UI
             _pages.Add(BuildControlPage(w));
 
             // 아래 버튼
-            var reset = UIKit.Button(w, "Defaults", "기본값으로", new Vector2(220f, 56f));
+            var reset = UIKit.Button(w, "Defaults", Loc.T("기본값으로"), new Vector2(220f, 56f));
             UIKit.Place((RectTransform)reset.transform, new Vector2(0f, 0f), new Vector2(44f, 36f), new Vector2(220f, 56f));
             reset.onClick.AddListener(() => { GameSettings.ResetToDefaults(); RefreshAll(); });
 
             // 타이틀로 — 타이틀 화면에서 연 설정 창에는 두지 않는다
             if (FindAnyObjectByType<TitleScreen>() == null && FishGame.Core.GameManager.Instance != null)
             {
-                var toTitle = UIKit.Button(w, "ToTitle", "타이틀로", new Vector2(220f, 56f));
+                var toTitle = UIKit.Button(w, "ToTitle", Loc.T("타이틀로"), new Vector2(220f, 56f));
                 UIKit.Place((RectTransform)toTitle.transform, new Vector2(0.5f, 0f), new Vector2(0f, 36f), new Vector2(220f, 56f),
                             new Vector2(0.5f, 0f));
                 toTitle.onClick.AddListener(GoToTitle);
             }
 
-            var done = UIKit.Button(w, "Done", "닫기", new Vector2(220f, 56f), primary: true);
+            var done = UIKit.Button(w, "Done", Loc.T("닫기"), new Vector2(220f, 56f), primary: true);
             UIKit.Place((RectTransform)done.transform, new Vector2(1f, 0f), new Vector2(-44f, 36f), new Vector2(220f, 56f));
             done.onClick.AddListener(Close);
 
@@ -182,11 +182,11 @@ namespace FishGame.UI
         {
             var page = NewPage(win, "Page_Sound");
             // 기본값으로 되돌리면 Data 객체가 새로 만들어지므로 항상 GameSettings.Data를 거쳐 읽고 쓴다
-            VolumeRow(page, 0, "전체 볼륨", () => GameSettings.Data.masterVolume, v => GameSettings.Data.masterVolume = v);
-            VolumeRow(page, 1, "배경음", () => GameSettings.Data.musicVolume, v => GameSettings.Data.musicVolume = v);
-            VolumeRow(page, 2, "효과음", () => GameSettings.Data.sfxVolume, v => GameSettings.Data.sfxVolume = v, preview: true);
+            VolumeRow(page, 0, Loc.T("전체 볼륨"), () => GameSettings.Data.masterVolume, v => GameSettings.Data.masterVolume = v);
+            VolumeRow(page, 1, Loc.T("배경음"), () => GameSettings.Data.musicVolume, v => GameSettings.Data.musicVolume = v);
+            VolumeRow(page, 2, Loc.T("효과음"), () => GameSettings.Data.sfxVolume, v => GameSettings.Data.sfxVolume = v, preview: true);
 
-            var slot = Row(page, 3, "음소거", "모든 소리를 끈다");
+            var slot = Row(page, 3, Loc.T("음소거"), Loc.T("모든 소리를 끈다"));
             var sw = UIKit.Switch(slot, "Mute");
             UIKit.Place((RectTransform)sw.transform, new Vector2(1f, 0.5f), Vector2.zero, new Vector2(96f, 44f));
             sw.Set(GameSettings.Data.mute, instant: true);
@@ -235,17 +235,17 @@ namespace FishGame.UI
             var page = NewPage(win, "Page_Display");
             var d = GameSettings.Data;
 
-            _screenMode = UIKit.Selector(Row(page, 0, "화면 모드"), "ScreenMode", new Vector2(480f, 56f));
+            _screenMode = UIKit.Selector(Row(page, 0, Loc.T("화면 모드")), "ScreenMode", new Vector2(480f, 56f));
             FitRight(_screenMode.transform);
-            _screenMode.SetOptions(GameSettings.ScreenModeNames, d.screenMode);
+            _screenMode.SetOptions(Loc.T(GameSettings.ScreenModeNames), d.screenMode);
             _screenMode.Changed += i => { GameSettings.Data.screenMode = i; GameSettings.ApplyDisplay(changeResolution: false); };
 
 #if UNITY_EDITOR
-            string resHint = "에디터에서는 바뀌지 않음 (빌드에서 적용)";
+            string resHint = Loc.T("에디터에서는 바뀌지 않음 (빌드에서 적용)");
 #else
             string resHint = null;
 #endif
-            _resolution = UIKit.Selector(Row(page, 1, "해상도", resHint), "Resolution", new Vector2(480f, 56f));
+            _resolution = UIKit.Selector(Row(page, 1, Loc.T("해상도"), resHint), "Resolution", new Vector2(480f, 56f));
             FitRight(_resolution.transform);
             _resolution.Changed += i =>
             {
@@ -255,14 +255,21 @@ namespace FishGame.UI
                 GameSettings.ApplyDisplay(changeResolution: true);
             };
 
-            var vslot = Row(page, 2, "수직 동기화", "화면 찢어짐을 막는다");
+            var vslot = Row(page, 2, Loc.T("수직 동기화"), Loc.T("화면 찢어짐을 막는다"));
             _vsync = UIKit.Switch(vslot, "VSync");
             UIKit.Place((RectTransform)_vsync.transform, new Vector2(1f, 0.5f), Vector2.zero, new Vector2(96f, 44f));
             _vsync.Changed += on => { GameSettings.Data.vSync = on; GameSettings.ApplyDisplay(changeResolution: false); RefreshFrameLimit(); };
 
-            _frameLimit = UIKit.Selector(Row(page, 3, "프레임 제한"), "FrameLimit", new Vector2(480f, 56f));
+            _frameLimit = UIKit.Selector(Row(page, 3, Loc.T("프레임 제한")), "FrameLimit", new Vector2(480f, 56f));
             FitRight(_frameLimit.transform);
             _frameLimit.Changed += i => { GameSettings.Data.frameLimit = GameSettings.FrameLimits[i]; GameSettings.ApplyDisplay(changeResolution: false); };
+
+            // 언어 — 이름은 그 언어 글자로 (못 읽는 언어로 바꿔도 되돌아올 수 있게 'Language'도 같이)
+            var langLabel = Loc.Current == Language.English ? "Language" : Loc.T("언어") + " / Language";
+            var lang = UIKit.Selector(Row(page, 4, langLabel), "Language", new Vector2(480f, 56f));
+            FitRight(lang.transform);
+            lang.SetOptions(Loc.NativeNames, (int)Loc.Current);
+            lang.Changed += i => OnLanguagePicked((Language)i);
 
             _refreshers.Add(RefreshDisplay);
             RefreshDisplay();
@@ -275,7 +282,7 @@ namespace FishGame.UI
         void RefreshDisplay()
         {
             var d = GameSettings.Data;
-            _screenMode.SetOptions(GameSettings.ScreenModeNames, d.screenMode);
+            _screenMode.SetOptions(Loc.T(GameSettings.ScreenModeNames), d.screenMode);
 
             _resList = GameSettings.AvailableResolutions();
             var cur = GameSettings.CurrentResolution;
@@ -297,20 +304,20 @@ namespace FishGame.UI
             var d = GameSettings.Data;
             var names = new string[GameSettings.FrameLimits.Length];
             for (int i = 0; i < names.Length; i++)
-                names[i] = GameSettings.FrameLimits[i] > 0 ? $"{GameSettings.FrameLimits[i]} FPS" : "제한 없음";
+                names[i] = GameSettings.FrameLimits[i] > 0 ? $"{GameSettings.FrameLimits[i]} FPS" : Loc.T("제한 없음");
             _frameLimit.SetOptions(names, Mathf.Max(0, Array.IndexOf(GameSettings.FrameLimits, d.frameLimit)));
-            _frameLimit.SetInteractable(!d.vSync, d.vSync ? "수직 동기화 사용 중" : null);
+            _frameLimit.SetInteractable(!d.vSync, d.vSync ? Loc.T("수직 동기화 사용 중") : null);
         }
 
         // ── 조작 ────────────────────────────────────────────────
         GameObject BuildControlPage(RectTransform win)
         {
             var page = NewPage(win, "Page_Controls");
-            var sel = UIKit.Selector(Row(page, 0, "조작 방식", "판 중에도 바로 바뀐다"), "Scheme", new Vector2(480f, 56f));
+            var sel = UIKit.Selector(Row(page, 0, Loc.T("조작 방식"), Loc.T("판 중에도 바로 바뀐다")), "Scheme", new Vector2(480f, 56f));
             FitRight(sel.transform);
-            sel.SetOptions(GameSettings.ControlSchemeNames, GameSettings.Data.controlScheme);
+            sel.SetOptions(Loc.T(GameSettings.ControlSchemeNames), GameSettings.Data.controlScheme);
             sel.Changed += i => { GameSettings.Data.controlScheme = i; GameSettings.ApplyControls(); RefreshKeyGuide(); };
-            _refreshers.Add(() => { sel.SetOptions(GameSettings.ControlSchemeNames, GameSettings.Data.controlScheme); RefreshKeyGuide(); });
+            _refreshers.Add(() => { sel.SetOptions(Loc.T(GameSettings.ControlSchemeNames), GameSettings.Data.controlScheme); RefreshKeyGuide(); });
 
             var box = UIKit.Image(page, "KeyGuide", LabArt.Panel, UIKit.Track);
             LabStyle.Panel(box, corners: false, fill: new Color(0.02f, 0.07f, 0.09f, 0.9f));
@@ -333,12 +340,12 @@ namespace FishGame.UI
             string row(string action, string keys, string pad) => $"{action}<pos=26%>{keys}<pos=74%><color=#9EC2C6>{pad}</color>\n";
 
             _keyGuide.text =
-                $"<color=#9EC2C6><size=17>동작<pos=26%>키보드 · 마우스<pos=74%>게임패드</size></color>\n" +
-                row("이동", mouse ? $"{k("마우스 위치")} 쪽으로 헤엄" : $"{k("W A S D")} · {k("방향키")}", "왼쪽 스틱") +
-                row("부스터 (마우스 쪽으로 대쉬)", $"{k("마우스 오른쪽")} · {k("Space")}", "A") +
-                row("청소기 (누르면 잠깐 흡입)", $"{k("마우스 왼쪽")} · {k("E")}", "X") +
-                row("일시정지", k("ESC"), "Start") +
-                row("스킬트리 확대 · 이동", $"{k("휠")} · {k("드래그")}", "—");
+                Loc.F("<color=#9EC2C6><size=17>동작<pos=26%>키보드 · 마우스<pos=74%>게임패드</size></color>\n") +
+                row(Loc.T("이동"), mouse ? Loc.F("{0} 쪽으로 헤엄", k(Loc.T("마우스 위치"))) : Loc.F("{0} · {1}", k("W A S D"), k(Loc.T("방향키"))), Loc.T("왼쪽 스틱")) +
+                row(Loc.T("부스터 (마우스 쪽으로 대쉬)"), Loc.F("{0} · {1}", k(Loc.T("마우스 오른쪽")), k("Space")), "A") +
+                row(Loc.T("청소기 (누르면 잠깐 흡입)"), Loc.F("{0} · {1}", k(Loc.T("마우스 왼쪽")), k("E")), "X") +
+                row(Loc.T("일시정지"), k("ESC"), "Start") +
+                row(Loc.T("스킬트리 확대 · 이동"), Loc.F("{0} · {1}", k(Loc.T("휠")), k(Loc.T("드래그"))), "—");
         }
 
         // ══════════════════════════════════════════════════════════
@@ -379,6 +386,29 @@ namespace FishGame.UI
             }
             Time.timeScale = 1f;   // 히트스톱 중이었어도 멈춘 채로 넘어가지 않게
             game.GoToTitle();
+        }
+
+        /// <summary>
+        /// 언어를 바꾼다. 메뉴 화면(타이틀 · 스킬트리)은 씬을 다시 불러 모든 글자를 새로 그리고,
+        /// 판 중에는 설정 창만 새 언어로 다시 연다 (판을 끊지 않는다 — 나머지 글자는 다음 갱신 때 바뀐다).
+        /// </summary>
+        void OnLanguagePicked(Language lang)
+        {
+            if (lang == Loc.Current) return;
+            Loc.SetLanguage(lang);
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            bool inRun = FishGame.Gameplay.RunManager.Instance != null;   // 게임 씬(판 중 · 결과 창)은 다시 불러오지 않는다
+            if (!inRun)
+            {
+                _onClosed = null;
+                UnityEngine.SceneManagement.SceneManager.LoadScene(scene.buildIndex);
+                return;
+            }
+            var onClosed = _onClosed;
+            _onClosed = null;
+            Close();
+            var reopened = Open(onClosed);
+            reopened.ShowTab(1);
         }
 
         public void Close()
