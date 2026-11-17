@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fish_M2_Grate
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
   speciesId: Fish_M2_Grate
-  displayName: "\uCCA0\uB9DD \uD3EC\uC2DD\uC790"
+  displayName: "\uD558\uC218\uAD6C \uBA54\uAE30"
   codexNote: 
   sprite: {fileID: 21300000, guid: ebacbe77afc9ae64baafafd5e61d6658, type: 3}
   spriteFacesLeft: 1

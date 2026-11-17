@@ -260,3 +260,6 @@ ko	en	zh	ru	es	pt
 청새치	Marlin	旗鱼	Марлин	Marlín	Marlim
 아귀	Anglerfish	鮟鱇鱼	Удильщик	Rape	Peixe-pescador
 심해 아귀	Deep-sea anglerfish	深海鮟鱇	Глубоководный удильщик	Rape abisal	Peixe-pescador abissal
+중심에서 {0:0}m  ×{1:0.0}	{0:0}m from center  ×{1:0.0}	距中心 {0:0}米  ×{1:0.0}	{0:0} м от центра  ×{1:0.0}	A {0:0} m del centro  ×{1:0.0}	A {0:0} m do centro  ×{1:0.0}
+맵 확장 ({0}): 크기 {1:0.0} / {2:0.0}	Map expands ({0}): size {1:0.0} / {2:0.0}	地图扩展（{0}）：体型 {1:0.0} / {2:0.0}	Расширение карты ({0}): размер {1:0.0} / {2:0.0}	Expansión del mapa ({0}): tamaño {1:0.0} / {2:0.0}	Expansão do mapa ({0}): tamanho {1:0.0} / {2:0.0}
+맵이 넓어졌다 — {0}	The map expanded — {0}	地图扩大了 — {0}	Карта расширилась — {0}	El mapa se amplió — {0}	O mapa aumentou — {0}

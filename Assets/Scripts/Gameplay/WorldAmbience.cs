@@ -206,10 +206,10 @@ namespace FishGame.Gameplay
             var layout = run != null ? run.Layout : null;
             if (layout != null && layout.ZoneCount > 0)
             {
-                float y = _cam.transform.position.y;
-                int zi = Mathf.Clamp(layout.ZoneIndexAt(y), 0, layout.ZoneCount - 1);
+                Vector2 p = _cam.transform.position;
+                int zi = Mathf.Clamp(layout.ZoneIndexAt(p), 0, layout.ZoneCount - 1);
                 float zoneLight = ZoneLight[Mathf.Min(zi, ZoneLight.Length - 1)];
-                target = zoneLight * Mathf.Lerp(1f, 0.8f, layout.DepthFactorInZone(y));
+                target = zoneLight * Mathf.Lerp(1f, 0.8f, layout.DepthFactorInZone(p));
             }
             _light = Mathf.Lerp(_light, target, 1f - Mathf.Exp(-2f * dt));
         }

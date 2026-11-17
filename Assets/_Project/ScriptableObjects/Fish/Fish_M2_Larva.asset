@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fish_M2_Larva
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
   speciesId: Fish_M2_Larva
-  displayName: "\uD558\uC218 \uC720\uC0DD"
+  displayName: "\uBBF8\uAFB8\uB77C\uC9C0"
   codexNote: 
   sprite: {fileID: 21300000, guid: b00fea1b1e528204083a469e15a44ba5, type: 3}
   spriteFacesLeft: 1

@@ -147,6 +147,18 @@ namespace FishGame.Data
         [Min(1f)] public float despawnRadiusRatio = 2.2f;
         [Tooltip("주변 물고기가 한도의 절반 아래로 줄면 한 번에 이만큼까지 몰아서 스폰한다 (대쉬로 빠르게 이동할 때 빈 화면 방지)")]
         [Min(1)] public int spawnBurstMax = 4;
+        [Tooltip("지금 구역 물고기와 함께 이전 구역 물고기도 나온다. 이전 구역 종의 스폰 가중치에 곱하는 값 (0이면 이전 구역 물고기 없음)")]
+        [Range(0f, 2f)] public float previousZoneSpawnWeight = 0.6f;
+
+        [Header("맵 — 동심원 (R14)")]
+        [Tooltip("가운데 원(어항)의 반지름")]
+        [Min(4f)] public float mapBaseRadius = 24f;
+        [Tooltip("구역 하나마다 맵 반지름이 몇 배가 되는가. 8 = 어항 24 → 하수구 192 → 강 1536 → 바다 12288")]
+        [Min(1.2f)] public float mapGrowthPerZone = 8f;
+        [Tooltip("다음 구역까지 맵이 넓어지는 데 걸리는 시간(초)")]
+        [Min(0.1f)] public float mapExpandSeconds = 2.5f;
+        [Tooltip("어항에서 바닥 타일 한 칸의 월드 크기. 바깥 구역은 그 구역에 들어올 때의 몸 크기^0.8 배 (카메라 줌과 같은 비율)")]
+        [Min(0.5f)] public float mapTileWorldSize = 6f;
 
         [Header("규칙")]
         [Tooltip("포식 판정 여유. 플레이어 size * 이 값 >= 상대 size 면 먹을 수 있다.")]

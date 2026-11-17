@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fish_Rare1
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
   speciesId: Fish_Rare1
-  displayName: "\uAD00\uB9AC \uB85C\uBD07 \xB7 \uAC8C\uC774\uD2B8\uD0A4\uD37C"
+  displayName: "\uBCF4\uC2A4 \uAE08\uBD95\uC5B4"
   codexNote: 
   sprite: {fileID: 21300000, guid: 9063d5a8cca6c394f96cb36c2e31ebf0, type: 3}
   spriteFacesLeft: 0

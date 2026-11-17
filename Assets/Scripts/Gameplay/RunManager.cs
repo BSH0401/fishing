@@ -64,12 +64,14 @@ namespace FishGame.Gameplay
         public event Action<RunEndReason> OnRunEnded;
         public event Action<bool> OnPauseChanged;
         public event Action<int> OnZoneChanged;              // 새 존 인덱스
-        public event Action<ZoneGate> OnGateOpened;
+        /// <summary>맵이 다음 구역까지 넓어지기 시작했다 (새 구역 인덱스). R14 — 예전 "통로 개방"을 대신한다.</summary>
+        public event Action<int> OnMapExpanded;
         public event Action<int> OnHiddenItemFound;          // 이번 판 누적 개수
         public event Action OnBossReleased;
 
         PlayerProgress _progress;
-        readonly List<ZoneGate> _gates = new List<ZoneGate>();
+        // 맵 넓히기 애니메이션 (R14)
+        float _expandFrom, _expandTo, _expandT = 1f;
 
         /// <summary>보스가 풀려난 직후 움직이지 않는 시간. 어디서 나왔는지 보고 거리를 잴 틈.</summary>
         const float BossReleaseGraceSeconds = 1.5f;
@@ -144,6 +146,9 @@ namespace FishGame.Gameplay
             DeepestZoneThisRun = StartZoneIndex;
 
             BuildWorld();
+            // 시작 구역까지 이미 넓어진 맵으로 시작한다
+            _expandT = 1f;
+            SetWallRadius(Layout.OuterRadius(CurrentZoneIndex));
 
             if (player != null)
             {
@@ -167,6 +172,8 @@ namespace FishGame.Gameplay
 
             IsRunning = true;
             OnZoneChanged?.Invoke(CurrentZoneIndex);
+            if (player != null && worldBuilder != null && Layout.GetZone(CurrentZoneIndex)?.boss != null)
+                worldBuilder.PlaceBossNear(player.transform.position, ViewRadius);
         }
 
         void BuildWorld()
@@ -175,38 +182,61 @@ namespace FishGame.Gameplay
             {
                 Debug.LogError("[RunManager] WorldBuilder가 연결되지 않았습니다. " +
                                "Gameplay 씬을 다시 생성하거나 인스펙터에 World 오브젝트를 넣으세요.");
-                Layout = WorldLayout.Build(Database.zones,
-                                           Database.depthRichness, Database.globalValueScale);
+                Layout = WorldLayout.Build(Database.zones, Database.depthRichness, Database.globalValueScale,
+                                           Database.mapBaseRadius, Database.mapGrowthPerZone);
                 return;
             }
-
-            var collected = _progress != null ? _progress.HiddenItemSet : new HashSet<string>();
-            Layout = worldBuilder.Build(Database.zones, collected,
-                                        Database.depthRichness, Database.globalValueScale);
-
-            _gates.Clear();
-            foreach (var gate in worldBuilder.Gates)
-            {
-                if (gate == null) continue;
-                gate.Relock();
-                gate.OnOpened += HandleGateOpened;
-                _gates.Add(gate);
-            }
+            Layout = worldBuilder.Build(Database.zones, Database);
         }
 
-        void HandleGateOpened(ZoneGate gate)
+        void SetWallRadius(float r)
         {
-            if (gate == null) return;
-            OnGateOpened?.Invoke(gate);
+            if (worldBuilder != null) worldBuilder.SetActiveRadius(r);
+            else if (Layout != null) Layout.ActiveRadius = r;
+        }
+
+        /// <summary>
+        /// 동심원 맵 넓히기 (R14). 통로로 나가는 대신, 지금 구역의 크기 조건을 채우면
+        /// 벽이 다음 구역 바깥 반지름까지 부드럽게 넓어진다. 물고기는 그때부터 새 구역 + 이전 구역 종이 나온다.
+        /// </summary>
+        void UpdateExpansion()
+        {
+            if (Layout == null) return;
+
+            if (_expandT < 1f)
+            {
+                float dur = Database != null ? Mathf.Max(0.1f, Database.mapExpandSeconds) : 2.5f;
+                _expandT = Mathf.Min(1f, _expandT + Time.deltaTime / dur);
+                // 처음엔 빠르게, 끝에서 부드럽게 (반지름이 8배라 로그 보간 — 화면상 속도가 고르게 보인다)
+                float e = 1f - Mathf.Pow(1f - _expandT, 3f);
+                SetWallRadius(Mathf.Exp(Mathf.Lerp(Mathf.Log(_expandFrom), Mathf.Log(_expandTo), e)));
+            }
+
+            if (!Layout.HasGate(CurrentZoneIndex)) return;
+            float need = Layout.GateRequiredSize(CurrentZoneIndex);
+            if (need <= 0f || CurrentPlayerSize < need) return;
+
+            int next = CurrentZoneIndex + 1;
+            _expandFrom = Mathf.Max(1f, Layout.ActiveRadius);
+            _expandTo = Layout.OuterRadius(next);
+            _expandT = 0f;
+
+            CurrentZoneIndex = next;
+            if (next > DeepestZoneThisRun) DeepestZoneThisRun = next;
+            ApplyZoneVisuals(next);
+            PlayZoneMusic(next);
+            if (player != null && worldBuilder != null && Layout.GetZone(next)?.boss != null)
+                worldBuilder.PlaceBossNear(player.transform.position, ViewRadius);
+            Juice.Shake(0.35f);
+            OnMapExpanded?.Invoke(next);
+            OnZoneChanged?.Invoke(next);
         }
 
         // ══════════════════════════════════════════════════════════
         //  월드 질의 — 예전 MapBounds를 대신한다
         // ══════════════════════════════════════════════════════════
-        public float WorldTopY => Layout != null ? Layout.TopY : 0f;
-        public float WorldBottomY => Layout != null ? Layout.BottomY : -40f;
-        public float WorldHalfWidthAt(float y) => Layout != null ? Layout.HalfWidthAt(y) : 20f;
-        public float WorldCenterXAt(float y) => Layout != null ? Layout.CenterXAt(y) : 0f;
+        /// <summary>지금 벽의 반지름.</summary>
+        public float WorldRadius => Layout != null ? Layout.ActiveRadius : 24f;
 
         public Vector2 ClampToWorld(Vector2 p, float radius) =>
             Layout != null ? Layout.Clamp(p, radius) : p;
@@ -216,7 +246,7 @@ namespace FishGame.Gameplay
 
         /// <summary>HUD 깊이 게이지용 0~1.</summary>
         public float Depth01 =>
-            Layout != null && player != null ? Layout.GlobalDepth01(player.transform.position.y) : 0f;
+            Layout != null && player != null ? Layout.GlobalDepth01(player.transform.position) : 0f;
 
         // ══════════════════════════════════════════════════════════
         //  통로 판정에 쓰는 크기
@@ -239,15 +269,8 @@ namespace FishGame.Gameplay
         public float NextGateRequiredSize =>
             Layout != null ? Layout.GateRequiredSize(CurrentZoneIndex) : 0f;
 
-        public bool NextGateIsOpen
-        {
-            get
-            {
-                foreach (var g in _gates)
-                    if (g != null && g.ZoneIndex == CurrentZoneIndex) return g.IsOpen;
-                return false;
-            }
-        }
+        /// <summary>맵이 지금 넓어지는 중인가.</summary>
+        public bool IsExpanding => _expandT < 1f;
 
         /// <summary>현재 초당 제한시간 소모 배수. 오래 버틸수록 커진다.</summary>
         public float CurrentDrainMultiplier
@@ -294,7 +317,7 @@ namespace FishGame.Gameplay
             if (!FishGame.Utils.DevFlags.InfiniteTime)
                 TimeRemaining -= dt * CurrentDrainMultiplier;
 
-            TrackZone();
+            UpdateExpansion();
 
             if (TimeRemaining <= 0f)
             {
@@ -303,21 +326,6 @@ namespace FishGame.Gameplay
             }
         }
 
-        /// <summary>플레이어가 어느 존에 있는지 추적하고, 바뀌면 연출과 스폰을 갈아 끼운다.</summary>
-        void TrackZone()
-        {
-            if (Layout == null || player == null) return;
-
-            int zone = Layout.ZoneIndexAt(player.transform.position.y);
-            if (zone == CurrentZoneIndex) return;
-
-            CurrentZoneIndex = zone;
-            if (zone > DeepestZoneThisRun) DeepestZoneThisRun = zone;
-
-            ApplyZoneVisuals(zone);
-            PlayZoneMusic(zone);
-            OnZoneChanged?.Invoke(zone);
-        }
 
         /// <summary>구역 배경음 — 구역에 곡이 없으면 SoundBank의 기본 게임 곡.</summary>
         void PlayZoneMusic(int zoneIndex)
@@ -382,7 +390,7 @@ namespace FishGame.Gameplay
 
             // 깊이가 값을 정한다. 존 배율 × 존 안에서의 깊이 보너스.
             float depthMult = Layout != null && player != null
-                ? Layout.ValueMultiplierAt(player.transform.position.y, preyZoneIndex)
+                ? Layout.ValueMultiplierAt(player.transform.position, preyZoneIndex)
                 : 1f;
 
             double gained = baseMoney * Stats.CurrencyMultiplier * depthMult;
@@ -499,21 +507,32 @@ namespace FishGame.Gameplay
             TimeRemaining = MaxTime;
         }
 
-        /// <summary>이번 판의 통로를 전부 연다.</summary>
+        /// <summary>맵을 끝(마지막 구역)까지 바로 넓힌다.</summary>
         public void DevOpenAllGates()
         {
-            foreach (var g in _gates)
-                if (g != null && !g.IsOpen) g.Open();
+            if (!IsRunning || Layout == null) return;
+            ExpandInstant(Layout.ZoneCount - 1);
         }
 
-        /// <summary>해당 구역의 시작 위치로 순간이동. 위쪽 통로도 같이 열어 되돌아갈 길을 남긴다.</summary>
+        void ExpandInstant(int zoneIndex)
+        {
+            zoneIndex = Mathf.Clamp(zoneIndex, 0, Layout.ZoneCount - 1);
+            if (zoneIndex <= CurrentZoneIndex) return;
+            CurrentZoneIndex = zoneIndex;
+            if (zoneIndex > DeepestZoneThisRun) DeepestZoneThisRun = zoneIndex;
+            _expandT = 1f;
+            SetWallRadius(Layout.OuterRadius(zoneIndex));
+            ApplyZoneVisuals(zoneIndex);
+            OnMapExpanded?.Invoke(zoneIndex);
+            OnZoneChanged?.Invoke(zoneIndex);
+        }
+
+        /// <summary>해당 구역까지 맵을 넓히고 그 고리로 순간이동.</summary>
         public void DevTeleportToZone(int zoneIndex)
         {
             if (!IsRunning || Layout == null || player == null) return;
             zoneIndex = Mathf.Clamp(zoneIndex, 0, Layout.ZoneCount - 1);
-
-            foreach (var g in _gates)
-                if (g != null && g.ZoneIndex < zoneIndex && !g.IsOpen) g.Open();
+            ExpandInstant(zoneIndex);
 
             Vector2 pos = Layout.SpawnPointForZone(zoneIndex);
             var rb = player.GetComponent<Rigidbody2D>();

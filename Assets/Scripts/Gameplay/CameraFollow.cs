@@ -122,9 +122,10 @@ namespace FishGame.Gameplay
 
             // 화면이 지금 구역보다 넓어지지 않게. 크기·시야를 다 올리면 바다 폭의
             // 몇 배까지 보이게 돼서 벽 바깥 허공이 화면 대부분을 차지했다.
-            if (run != null && run.CurrentZone != null && _cam.aspect > 0.01f)
+            if (run != null && run.Layout != null && _cam.aspect > 0.01f)
             {
-                float zoneHalfW = run.CurrentZone.MaxHalfWidth;
+                // R14 원형 맵: 지금 벽 반지름이 기준
+                float zoneHalfW = run.Layout.ActiveRadius;
                 float maxOrtho = zoneHalfW * maxZoneWidthInView / _cam.aspect;
                 // 몸이 화면을 다 가리는 것도 막는다
                 float minOrtho = size * 1.5f;

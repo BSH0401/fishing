@@ -144,7 +144,7 @@ namespace FishGame.Gameplay
             int n = 0;
             foreach (var f in _active)
             {
-                if (f == null || f == _boss || f.HomeZone != zone) continue;
+                if (f == null || f == _boss || !IsActiveZone(f.HomeZone, zone)) continue;
                 if (((Vector2)f.transform.position - p).sqrMagnitude <= r2) n++;
             }
             return n;
@@ -153,14 +153,17 @@ namespace FishGame.Gameplay
         // ══════════════════════════════════════════════════════════
         //  스폰
         // ══════════════════════════════════════════════════════════
+        /// <summary>R14: 지금 구역과 바로 이전 구역 물고기가 같이 산다.</summary>
+        static bool IsActiveZone(int fishZone, int currentZone) => fishZone == currentZone || fishZone == currentZone - 1;
+
         /// <summary>판 시작 채우기의 안쪽 반경 (화면 반경 배수). 플레이어 바로 옆에서는 태어나지 않게.</summary>
         const float StartFillInner = 0.35f;
 
         bool TrySpawnOne(float innerRatio = -1f)
         {
-            if (!FindSpawnPosition(innerRatio, out Vector2 pos, out int zoneIndex)) return false;
+            if (!FindSpawnPosition(innerRatio, out Vector2 pos)) return false;
 
-            var species = PickSpecies(zoneIndex);
+            var species = PickSpecies(out int zoneIndex);
             if (species == null) return false;
 
             // 자리를 먼저 잡았으니 그 종이 들어갈 만큼 벽에서 떨어져 있는지 다시 확인
@@ -175,27 +178,43 @@ namespace FishGame.Gameplay
             return true;
         }
 
-        /// <summary>그 자리가 속한 존의 스폰 테이블에서 뽑는다.</summary>
-        FishSpecies PickSpecies(int zoneIndex)
+        /// <summary>
+        /// 지금 구역 + 이전 구역 스폰 테이블을 합쳐 뽑는다 (R14). 이전 구역 종은 previousZoneSpawnWeight를 곱한 가중치.
+        /// zoneIndex = 뽑힌 종이 속한 구역 (도감 · 재화 보조 배율 · 한도 계산에 쓴다).
+        /// </summary>
+        FishSpecies PickSpecies(out int zoneIndex)
         {
-            var zone = _layout.GetZone(zoneIndex);
-            if (zone == null || zone.spawnTable == null) return null;
+            int cur = _run != null ? _run.CurrentZoneIndex : 0;
+            zoneIndex = cur;
+            var zCur = _layout.GetZone(cur);
+            var zPrev = cur > 0 ? _layout.GetZone(cur - 1) : null;
+            float prevW = cur > 0 && _run != null && _run.Database != null ? _run.Database.previousZoneSpawnWeight : 0f;
+            if (zPrev == zCur) zPrev = null;
 
-            // R12: 내 크기에 비해 너무 작은 종은 뺀다 (다음 구역으로 넘어가도 앞 구역 잔챙이급이 깔리지 않게).
-            // 단, 그러면 뽑을 종이 하나도 없을 때는 제한을 풀어 화면이 비지 않게 한다.
+            // R12: 내 크기에 비해 너무 작은 종은 뺀다. 단, 뽑을 종이 하나도 없으면 제한을 풀어 화면이 비지 않게 한다.
             float minSize = 0f;
             if (_run != null && _run.Player != null && _run.Database != null)
                 minSize = _run.Player.Size * _run.Database.minSpawnSizeRatio;
 
-            float total = SumWeights(zone, minSize);
-            if (total <= 0f && minSize > 0f) { minSize = 0f; total = SumWeights(zone, 0f); }
+            float total = SumWeights(zCur, minSize, 1f) + SumWeights(zPrev, minSize, prevW);
+            if (total <= 0f && minSize > 0f) { minSize = 0f; total = SumWeights(zCur, 0f, 1f) + SumWeights(zPrev, 0f, prevW); }
             if (total <= 0f) return null;
 
             float roll = Random.value * total;
+            var hit = Roll(zCur, minSize, 1f, ref roll);
+            if (hit != null) return hit;
+            hit = Roll(zPrev, minSize, prevW, ref roll);
+            if (hit != null) zoneIndex = cur - 1;
+            return hit;
+        }
+
+        FishSpecies Roll(ZoneData zone, float minSize, float mult, ref float roll)
+        {
+            if (zone == null || zone.spawnTable == null || mult <= 0f) return null;
             foreach (var e in zone.spawnTable)
             {
                 if (!Eligible(e, minSize)) continue;
-                roll -= e.weight;
+                roll -= e.weight * mult;
                 if (roll <= 0f) return e.species;
             }
             return null;
@@ -209,31 +228,21 @@ namespace FishGame.Gameplay
             return true;
         }
 
-        float SumWeights(ZoneData zone, float minSize)
+        float SumWeights(ZoneData zone, float minSize, float mult)
         {
+            if (zone == null || zone.spawnTable == null || mult <= 0f) return 0f;
             float total = 0f;
-            foreach (var e in zone.spawnTable) if (Eligible(e, minSize)) total += e.weight;
+            foreach (var e in zone.spawnTable) if (Eligible(e, minSize)) total += e.weight * mult;
             return total;
-        }
-
-        /// <summary>
-        /// 지금 구역 안인가 (통로 제외, 벽 여유 margin). R12: 다른 구역에 태어난 물고기는 먹으러 갈 수 없다 (QA 17)
-        /// </summary>
-        bool InCurrentZone(Vector2 p, float margin)
-        {
-            int zone = _run != null ? _run.CurrentZoneIndex : 0;
-            var s = _layout.GetSlice(zone);
-            return p.y <= s.YTop - margin && p.y >= s.YBottom + margin;
         }
 
         /// <summary>
         /// 플레이어 화면 바로 바깥의 링 안에서 자리를 찾는다.
         /// 맵 전체에 균일하게 뿌리면 큰 존에서 화면이 텅 비어 보인다.
         /// </summary>
-        bool FindSpawnPosition(float innerRatio, out Vector2 result, out int zoneIndex)
+        bool FindSpawnPosition(float innerRatio, out Vector2 result)
         {
             result = Vector2.zero;
-            zoneIndex = _run != null ? _run.CurrentZoneIndex : 0;
 
             Vector2 playerPos = PlayerPos;
 
@@ -248,35 +257,30 @@ namespace FishGame.Gameplay
                 Vector2 p = playerPos + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * dist;
 
                 if (!_layout.Contains(p, 1f)) continue;
-                if (!InCurrentZone(p, 1f)) continue;
                 if (Obstacle.Overlaps(p, 1.5f)) continue;   // 구조물 안에서 튀어나오지 않게
 
                 result = p;
-                zoneIndex = HomeZoneAt(p.y);
                 return true;
             }
 
-            // 링이 전부 벽 바깥이면(좁은 통로 안 등) 화면 밖 · 디스폰 범위 안의 지금 구역 아무 곳
-            var slice = _layout.GetSlice(_run != null ? _run.CurrentZoneIndex : 0);
+            // 링이 거의 벽 바깥이면(작은 어항 · 벽 가까이) 원 안의 아무 곳 — 화면 밖 · 디스폰 범위 안
             float despawn = view * DespawnRatio * 0.95f;
-            for (int attempt = 0; attempt < 8; attempt++)
+            float wall = Mathf.Max(1.5f, _layout.ActiveRadius - 1f);
+            for (int attempt = 0; attempt < 12; attempt++)
             {
-                float y = Mathf.Clamp(playerPos.y + Random.Range(-outer, outer), slice.YBottom + 1f, slice.YTop - 1f);
-                float cx = _layout.CenterXAt(y);
-                float hw = _layout.HalfWidthAt(y);
-                Vector2 p = new Vector2(cx + Random.Range(-hw * 0.85f, hw * 0.85f), y);
-
-                if (!_layout.Contains(p, 1f)) continue;
-                if (!InCurrentZone(p, 1f)) continue;
+                Vector2 p = Random.insideUnitCircle * wall;
                 if (Obstacle.Overlaps(p, 1.5f)) continue;
                 float d = Vector2.Distance(p, playerPos);
                 if (d < Mathf.Min(inner, view * 1.02f) || d > despawn) continue;   // 화면 안에서 튀어나오거나, 태어나자마자 디스폰되지 않게
-
                 result = p;
-                zoneIndex = HomeZoneAt(p.y);
                 return true;
             }
-
+            // 원이 화면보다 작으면 화면 안이라도 원 안 아무 곳 (어항 초반)
+            if (wall < inner)
+            {
+                result = Random.insideUnitCircle * wall;
+                return true;
+            }
             return false;
         }
 
@@ -300,7 +304,7 @@ namespace FishGame.Gameplay
                 if (fish == _boss) continue;      // 보스는 절대 회수하지 않는다
 
                 float d2 = ((Vector2)fish.transform.position - playerPos).sqrMagnitude;
-                if (d2 > limitSqr || (fish.HomeZone != zone && d2 > offscreenSqr))
+                if (d2 > limitSqr || (!IsActiveZone(fish.HomeZone, zone) && d2 > offscreenSqr))
                     Despawn(fish);
             }
         }
@@ -329,7 +333,7 @@ namespace FishGame.Gameplay
         public AIFish SpawnBoss(FishSpecies bossSpecies, Vector2 position)
         {
             if (bossSpecies == null || _boss != null || _layout == null) return _boss;
-            int zone = _layout.ZoneIndexAt(position.y);
+            int zone = _run != null ? _run.CurrentZoneIndex : _layout.ZoneIndexAt(position);
             _boss = Spawn(bossSpecies, position, zone, Vector2.left);
             return _boss;
         }
@@ -358,11 +362,5 @@ namespace FishGame.Gameplay
 
         int GetAlive(FishSpecies s) => _aliveCount.TryGetValue(s, out int c) ? c : 0;
 
-        /// <summary>
-        /// 그 높이에서 태어난 물고기가 살 구역. 통로 안이면 위 구역으로 친다 —
-        /// ZoneIndexAt은 통로를 아래 구역으로 보므로, 그대로 쓰면 아래 구역 물고기가 통로에서 태어나
-        /// 첫 물리 프레임에 통로 높이만큼 아래로 순간이동했다.
-        /// </summary>
-        int HomeZoneAt(float y) => _layout.IsInCorridor(y, out int upper) ? upper : _layout.ZoneIndexAt(y);
     }
 }

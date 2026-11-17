@@ -5,283 +5,173 @@ using UnityEngine;
 namespace FishGame.Gameplay
 {
     /// <summary>
-    /// 존 4개를 세로로 이어 붙인 통합 맵의 기하 정보.
+    /// 동심원 맵의 기하 정보. (R14 — 예전엔 구역 4개를 세로로 이어 붙인 맵이었다)
     ///
-    /// 월드 좌표 규칙: 어항 천장이 y = 0, 아래로 내려갈수록 y가 작아진다(음수).
-    /// "아래로 갈수록 깊다"가 좌표에 그대로 드러나도록 한 것이다.
+    ///   어항 = 가운데 원, 하수구 · 강 · 바다 = 그 바깥 고리. 한 구역이 끝나는 반지름은 이전 구역의 growth배(기본 8배).
     ///
-    ///   y=0 ┬─────────────  어항 천장
-    ///       │   어항 (사발)
-    ///       ├──┐        ┌──  어항 바닥 + 통로 입구
-    ///       │  │ 통로   │
-    ///       ├──┘        └──  하수구 천장
-    ///       │   하수구 (상자)
-    ///       ⋮
+    ///          ╭──────── 바다 (반지름 R0 × 8³) ────────╮
+    ///          │   ╭──── 강 (R0 × 8²) ────╮           │
+    ///          │   │  ╭ 하수구 (R0 × 8) ╮  │           │
+    ///          │   │  │   ● 어항 (R0)    │  │           │
     ///
-    /// 벽 생성·스폰·클램프·가치 계산이 전부 이 클래스 하나를 본다.
+    /// 통로로 "나가는" 게 아니라 맵이 커진다: 지금 구역의 크기 조건을 채우면 벽(ActiveRadius)이
+    /// 다음 구역 바깥 반지름까지 넓어진다 (RunManager가 애니메이션한다). 벽 바깥은 갈 수 없다.
+    ///
+    /// 벽 · 스폰 · 클램프 · 가치 계산이 전부 이 클래스 하나를 본다. 중심은 항상 (0, 0).
     /// </summary>
     public class WorldLayout
     {
-        public struct Slice
-        {
-            public ZoneData Zone;
-            public int Index;
+        readonly ZoneData[] _zones;
+        readonly float[] _outer;   // 구역 i의 바깥 반지름
 
-            /// <summary>존 본체의 위/아래 y</summary>
-            public float YTop, YBottom;
-
-            /// <summary>이 존 아래에 붙은 통로. HasCorridor일 때만 유효.</summary>
-            public bool HasCorridor;
-            public float CorridorTop, CorridorBottom;
-            public float CorridorCenterX;
-            public float CorridorHalfWidth;
-
-            public float Height => YTop - YBottom;
-        }
-
-        readonly Slice[] _slices;
-
-        /// <summary>맵 바닥의 재화가 맵 천장보다 몇 배인지. GameDatabase.depthRichness에서 받는다.</summary>
+        /// <summary>맵 끝(바다 바깥)의 재화가 어항보다 몇 배인지. GameDatabase.depthRichness.</summary>
         public float DepthRichness { get; private set; } = 1f;
-
-        /// <summary>모든 재화에 곱해지는 전역 배율. 총 플레이타임을 맞추는 손잡이.</summary>
+        /// <summary>모든 재화에 곱해지는 전역 배율.</summary>
         public float GlobalValueScale { get; private set; } = 1f;
+        /// <summary>구역 하나마다 반지름이 몇 배가 되는가.</summary>
+        public float Growth { get; private set; } = 8f;
+        /// <summary>어항(가운데 원)의 반지름.</summary>
+        public float BaseRadius { get; private set; } = 24f;
 
-        public float TopY { get; private set; }
-        public float BottomY { get; private set; }
-        public float TotalHeight => TopY - BottomY;
-        public int ZoneCount => _slices.Length;
+        /// <summary>지금 벽의 반지름. 맵이 넓어지는 동안 RunManager가 조금씩 키운다.</summary>
+        public float ActiveRadius { get; set; }
 
-        public Slice GetSlice(int index) => _slices[Mathf.Clamp(index, 0, _slices.Length - 1)];
-        public ZoneData GetZone(int index) => GetSlice(index).Zone;
+        public int ZoneCount => _zones.Length;
+        public float MaxRadius => _outer[_outer.Length - 1];
 
-        WorldLayout(Slice[] slices, float topY, float bottomY)
+        public ZoneData GetZone(int index) =>
+            _zones.Length == 0 ? null : _zones[Mathf.Clamp(index, 0, _zones.Length - 1)];
+
+        /// <summary>구역 i의 안쪽 반지름 (어항은 0).</summary>
+        public float InnerRadius(int i) => i <= 0 ? 0f : _outer[Mathf.Min(i, _outer.Length) - 1];
+        /// <summary>구역 i의 바깥 반지름 = 그 구역까지 넓어졌을 때의 벽.</summary>
+        public float OuterRadius(int i) => _outer[Mathf.Clamp(i, 0, _outer.Length - 1)];
+
+        WorldLayout(ZoneData[] zones, float[] outer)
         {
-            _slices = slices;
-            TopY = topY;
-            BottomY = bottomY;
+            _zones = zones;
+            _outer = outer;
+            ActiveRadius = outer[0];
         }
 
         // ══════════════════════════════════════════════════════════
         //  생성
         // ══════════════════════════════════════════════════════════
-        public static WorldLayout Build(IList<ZoneData> zones,
-                                        float depthRichness = 1f, float globalValueScale = 1f)
+        public static WorldLayout Build(IList<ZoneData> zones, float depthRichness = 1f, float globalValueScale = 1f,
+                                        float baseRadius = 24f, float growth = 8f)
         {
-            var list = new List<Slice>();
-            float y = 0f;
+            var list = new List<ZoneData>();
+            if (zones != null) foreach (var z in zones) if (z != null) list.Add(z);
+            if (list.Count == 0) Debug.LogError("[WorldLayout] 존이 하나도 없습니다.");
 
-            for (int i = 0; i < zones.Count; i++)
-            {
-                var z = zones[i];
-                if (z == null) continue;
+            int n = Mathf.Max(1, list.Count);
+            baseRadius = Mathf.Max(4f, baseRadius);
+            growth = Mathf.Max(1.2f, growth);
+            var outer = new float[n];
+            for (int i = 0; i < n; i++) outer[i] = baseRadius * Mathf.Pow(growth, i);
 
-                var s = new Slice
-                {
-                    Zone = z,
-                    Index = list.Count,
-                    YTop = y,
-                    YBottom = y - Mathf.Max(10f, z.height),
-                };
-                y = s.YBottom;
-
-                bool isLast = i == zones.Count - 1;
-                if (z.hasExit && !isLast)
-                {
-                    s.HasCorridor = true;
-                    s.CorridorTop = y;
-                    s.CorridorBottom = y - Mathf.Max(2f, z.exitHeight);
-                    s.CorridorCenterX = z.exitOffsetX;
-                    s.CorridorHalfWidth = Mathf.Max(1f, z.exitHalfWidth);
-                    y = s.CorridorBottom;
-                }
-
-                list.Add(s);
-            }
-
-            if (list.Count == 0)
-            {
-                Debug.LogError("[WorldLayout] 존이 하나도 없습니다.");
-                var fallback = new Slice
-                {
-                    Zone = null, Index = 0, YTop = 0f, YBottom = -40f,
-                };
-                return new WorldLayout(new[] { fallback }, 0f, -40f);
-            }
-
-            return new WorldLayout(list.ToArray(), 0f, y)
+            return new WorldLayout(list.Count > 0 ? list.ToArray() : new ZoneData[] { null }, outer)
             {
                 DepthRichness = Mathf.Max(1f, depthRichness),
                 GlobalValueScale = Mathf.Max(0.0001f, globalValueScale),
+                Growth = growth,
+                BaseRadius = baseRadius,
             };
         }
 
         // ══════════════════════════════════════════════════════════
-        //  위치 → 존
+        //  위치 → 구역
         // ══════════════════════════════════════════════════════════
-        /// <summary>
-        /// y가 속한 존의 인덱스.
-        /// 통로 안이라면 "아래쪽 존"으로 친다 — 게이트를 통과한 순간부터
-        /// 다음 존에 들어온 것으로 취급해야 배경·스폰·가치가 한 박자 빠르게 전환된다.
-        /// </summary>
-        public int ZoneIndexAt(float y)
+        /// <summary>그 자리가 어느 고리(구역)에 있는가 — 배경 타일 · 빛 · 가치에 쓴다.</summary>
+        public int ZoneIndexAt(Vector2 p)
         {
-            for (int i = 0; i < _slices.Length; i++)
-            {
-                var s = _slices[i];
-                if (y <= s.YTop && y >= s.YBottom) return i;
-                if (s.HasCorridor && y < s.CorridorTop && y >= s.CorridorBottom)
-                    return Mathf.Min(i + 1, _slices.Length - 1);
-            }
-            return y > TopY ? 0 : _slices.Length - 1;
+            float r = p.magnitude;
+            for (int i = 0; i < _outer.Length; i++)
+                if (r <= _outer[i]) return i;
+            return _outer.Length - 1;
         }
 
-        public bool IsInCorridor(float y, out int upperZoneIndex)
+        /// <summary>고리 안에서의 진행도. 0 = 안쪽 경계, 1 = 바깥 경계.</summary>
+        public float DepthFactorInZone(Vector2 p)
         {
-            for (int i = 0; i < _slices.Length; i++)
-            {
-                var s = _slices[i];
-                if (s.HasCorridor && y <= s.CorridorTop && y >= s.CorridorBottom)
-                {
-                    upperZoneIndex = i;
-                    return true;
-                }
-            }
-            upperZoneIndex = -1;
-            return false;
+            int i = ZoneIndexAt(p);
+            float inner = InnerRadius(i), outer = OuterRadius(i);
+            return outer - inner <= 0.001f ? 0f : Mathf.Clamp01((p.magnitude - inner) / (outer - inner));
         }
 
         // ══════════════════════════════════════════════════════════
-        //  폭 / 중심
+        //  벽
         // ══════════════════════════════════════════════════════════
-        public float CenterXAt(float y)
-        {
-            if (IsInCorridor(y, out int upper)) return _slices[upper].CorridorCenterX;
-            return 0f;
-        }
-
-        public float HalfWidthAt(float y)
-        {
-            if (IsInCorridor(y, out int upper)) return _slices[upper].CorridorHalfWidth;
-
-            for (int i = 0; i < _slices.Length; i++)
-            {
-                var s = _slices[i];
-                if (y > s.YTop || y < s.YBottom) continue;
-                if (s.Zone == null) return 20f;
-                float t = s.Height <= 0.001f ? 0f : (s.YTop - y) / s.Height;
-                return s.Zone.HalfWidthAt(t);
-            }
-
-            // 범위 밖 — 가장 가까운 끝의 폭
-            var edge = y > TopY ? _slices[0] : _slices[_slices.Length - 1];
-            return edge.Zone != null ? edge.Zone.HalfWidthAt(y > TopY ? 0f : 1f) : 20f;
-        }
-
-        /// <summary>물리 콜라이더가 놓쳤을 때를 대비한 안전망. 벽 안쪽으로 밀어 넣는다.</summary>
+        /// <summary>벽 안쪽으로 밀어 넣는다 (물리 콜라이더가 놓쳤을 때를 대비한 안전망).</summary>
         public Vector2 Clamp(Vector2 p, float radius)
         {
-            p.y = Mathf.Clamp(p.y, BottomY + radius, TopY - radius);
-
-            float cx = CenterXAt(p.y);
-            float hw = HalfWidthAt(p.y);
-            float limit = Mathf.Max(0.1f, hw - radius);
-            p.x = Mathf.Clamp(p.x, cx - limit, cx + limit);
-            return p;
+            float limit = Mathf.Max(0.1f, ActiveRadius - radius);
+            float r = p.magnitude;
+            return r <= limit ? p : (r < 0.0001f ? p : p / r * limit);
         }
 
-        public bool Contains(Vector2 p, float radius)
-        {
-            if (p.y > TopY - radius || p.y < BottomY + radius) return false;
-            float cx = CenterXAt(p.y);
-            float hw = HalfWidthAt(p.y);
-            return Mathf.Abs(p.x - cx) <= hw - radius;
-        }
+        public bool Contains(Vector2 p, float radius) => p.magnitude <= ActiveRadius - radius;
 
         // ══════════════════════════════════════════════════════════
-        //  깊이와 가치
+        //  가치
         // ══════════════════════════════════════════════════════════
-        /// <summary>존 안에서의 정규화 깊이. 0 = 존 천장, 1 = 존 바닥.</summary>
-        public float DepthFactorInZone(float y)
+        /// <summary>
+        /// 맵 전체에서의 진행도 0~1. 반지름이 구역마다 growth배라 로그로 잰다 —
+        /// 어항 끝 = 0, 하수구 끝 = 1/3, 강 끝 = 2/3, 바다 끝 = 1 (구역 4개일 때).
+        /// </summary>
+        public float GlobalDepth01(Vector2 p)
         {
-            int i = ZoneIndexAt(y);
-            var s = _slices[i];
-            if (s.Height <= 0.001f) return 0f;
-            return Mathf.Clamp01((s.YTop - y) / s.Height);
+            if (_outer.Length <= 1) return 0f;
+            float r = Mathf.Max(BaseRadius, p.magnitude);
+            float steps = Mathf.Log(r / BaseRadius, Growth);
+            return Mathf.Clamp01(steps / (_outer.Length - 1));
         }
 
         /// <summary>
-        /// 이 깊이에서 먹었을 때의 재화 배율.
-        ///
-        /// 예전에는 구역마다 손으로 잡은 배율 네 개를 썼는데, 그 값들이 서로 어긋나서
-        /// 어항 → 하수구 구간이 거의 평평해지는 문제가 있었다.
-        /// 지금은 맵 전체 깊이에 대한 지수 곡선 하나로 계산한다.
-        ///
-        ///     배율 = 전역배율 × DepthRichness ^ (수면에서 바닥까지의 진행도)
-        ///
-        /// 연속 함수라 구역 경계에서 값이 튀지 않고, 한 칸 내려갈 때마다 반드시 오른다.
-        /// zone.currencyMultiplier는 특정 구역만 손볼 때 쓰는 보조 손잡이로 남겨 뒀다(기본 1).
+        /// 이 자리에서 먹었을 때의 재화 배율 = 전역배율 × DepthRichness ^ (진행도) × 먹힌 물고기 구역의 보조 배율.
+        /// 바깥 고리로 갈수록 연속으로 오른다.
         /// </summary>
-        public float ValueMultiplierAt(float y, int trimZoneIndex = -1)
+        public float ValueMultiplierAt(Vector2 p, int trimZoneIndex = -1)
         {
-            float depth01 = GlobalDepth01(y);
-            float byDepth = Mathf.Pow(DepthRichness, depth01);
-
-            // 보조 배율은 "먹힌 물고기가 속한 구역" 것을 쓴다(balance_sim과 같은 가정).
-            // 위치로만 고르면 통로(= 아래 구역으로 침)에서 먹은 윗구역 물고기가
-            // 아래 구역 배율을 받아 강 → 바다 통로에서 값이 2배로 뛴다.
-            int zi = trimZoneIndex >= 0 && trimZoneIndex < _slices.Length ? trimZoneIndex : ZoneIndexAt(y);
-            var z = _slices[zi].Zone;
+            float byDepth = Mathf.Pow(DepthRichness, GlobalDepth01(p));
+            int zi = trimZoneIndex >= 0 && trimZoneIndex < _zones.Length ? trimZoneIndex : ZoneIndexAt(p);
+            var z = _zones[zi];
             float zoneTrim = z != null ? z.currencyMultiplier : 1f;
-
             return GlobalValueScale * byDepth * zoneTrim;
         }
 
-        /// <summary>HUD에 보여줄 "지금 깊이의 가치 배율" (전역 배율 제외 — 플레이어에겐 의미 없는 수라서).</summary>
-        public float DepthValueDisplay(float y) => Mathf.Pow(DepthRichness, GlobalDepth01(y));
-
-        /// <summary>월드 전체에서의 깊이 비율. HUD의 깊이 게이지에 쓴다.</summary>
-        public float GlobalDepth01(float y)
-        {
-            if (TotalHeight <= 0.001f) return 0f;
-            return Mathf.Clamp01((TopY - y) / TotalHeight);
-        }
+        /// <summary>HUD에 보여줄 "지금 자리의 가치 배율" (전역 배율 제외).</summary>
+        public float DepthValueDisplay(Vector2 p) => Mathf.Pow(DepthRichness, GlobalDepth01(p));
 
         // ══════════════════════════════════════════════════════════
         //  주요 지점
         // ══════════════════════════════════════════════════════════
-        /// <summary>해당 존에서 플레이가 시작되는 위치 (천장에서 살짝 아래, 중앙).</summary>
+        /// <summary>그 구역에서 판을 시작하는 자리 — 어항은 한가운데, 바깥 구역은 그 고리의 가운데쯤.</summary>
         public Vector2 SpawnPointForZone(int zoneIndex)
         {
-            var s = GetSlice(zoneIndex);
-            float y = s.YTop - Mathf.Min(s.Height * 0.25f, 12f);
-            return new Vector2(0f, y);
+            if (zoneIndex <= 0) return Vector2.zero;
+            float r = Mathf.Lerp(InnerRadius(zoneIndex), OuterRadius(zoneIndex), 0.35f);
+            float a = Random.value * Mathf.PI * 2f;
+            return new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
         }
 
-        /// <summary>통로 입구(게이트)의 월드 위치. 게이트 오브젝트와 HUD 화살표가 쓴다.</summary>
-        public Vector2 GateCenter(int zoneIndex)
-        {
-            var s = GetSlice(zoneIndex);
-            if (!s.HasCorridor) return new Vector2(0f, s.YBottom);
-            return new Vector2(s.CorridorCenterX, s.CorridorTop);
-        }
+        /// <summary>다음 구역으로 넓어지는 단계가 남았는가 (마지막 구역이면 false).</summary>
+        public bool HasGate(int zoneIndex) => zoneIndex < _zones.Length - 1;
 
-        public bool HasGate(int zoneIndex) => GetSlice(zoneIndex).HasCorridor;
-
-        /// <summary>해당 존의 통로를 열기 위해 필요한 크기. 통로가 없으면 0.</summary>
+        /// <summary>맵을 다음 구역까지 넓히는 데 필요한 크기. 마지막 구역이면 0.</summary>
         public float GateRequiredSize(int zoneIndex)
         {
-            var s = GetSlice(zoneIndex);
-            if (!s.HasCorridor || s.Zone == null) return 0f;
-            return s.Zone.exitRequiredSize;
+            if (!HasGate(zoneIndex)) return 0f;
+            var z = GetZone(zoneIndex);
+            return z != null ? z.exitRequiredSize : 0f;
         }
 
-        public Vector2 BossStructureWorldPos(int zoneIndex)
+        /// <summary>보스 구조물 자리 — 그 구역 고리 안쪽 경계 근처 (넓어지자마자 찾을 수 있게).</summary>
+        public Vector2 BossStructureWorldPos(int zoneIndex, float angleRad)
         {
-            var s = GetSlice(zoneIndex);
-            if (s.Zone == null) return Vector2.zero;
-            var local = s.Zone.bossStructureLocalPos;
-            return new Vector2(local.x, s.YTop - Mathf.Abs(local.y));
+            float inner = InnerRadius(zoneIndex), outer = OuterRadius(zoneIndex);
+            float r = Mathf.Lerp(inner, outer, 0.08f) + 20f;
+            return new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad)) * r;
         }
     }
 }

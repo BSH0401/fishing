@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Fish_M4_Tuna
   m_EditorClassIdentifier: Assembly-CSharp::FishGame.Data.FishSpecies
   speciesId: Fish_M4_Tuna
-  displayName: "\uCC38\uB2E4\uB791\uC5B4"
+  displayName: "\uCCAD\uC0C8\uCE58"
   codexNote: 
-  sprite: {fileID: 21300000, guid: 5151e48a17eadd5459d34680e67c1b85, type: 3}
-  spriteFacesLeft: 0
+  sprite: {fileID: 21300000, guid: cac7af98255efbb469e8d08bd922a8be, type: 3}
+  spriteFacesLeft: 1
   tint: {r: 1, g: 1, b: 1, a: 1}
   size: 21
   visualScaleMultiplier: 1

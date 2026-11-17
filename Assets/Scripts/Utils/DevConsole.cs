@@ -277,7 +277,7 @@ namespace FishGame.Utils
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            if (Btn("통로 전부 열기")) run.DevOpenAllGates();
+            if (Btn("맵 끝까지 넓히기")) run.DevOpenAllGates();
             if (Btn(run.BossReleased ? "보스 풀려남" : "보스 소환")) run.DevReleaseBossNow();
             GUILayout.EndHorizontal();
 

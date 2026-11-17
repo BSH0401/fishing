@@ -39,7 +39,6 @@ namespace FishGame.Gameplay
         // "내가 속한 구역"이 활동 범위가 됐다 — 안 그러면 어항 치어가 바다까지 헤엄쳐 간다.
         WorldLayout _layout;
         int _homeZone;
-        float _homeTop, _homeBottom;
 
         /// <summary>이 물고기가 속한 구역. 스포너의 밀도 계산과 디버깅에 쓴다.</summary>
         public int HomeZone => _homeZone;
@@ -81,19 +80,8 @@ namespace FishGame.Gameplay
             _layout = layout;
             _homeZone = zoneIndex;
 
-            if (_layout != null)
-            {
-                var slice = _layout.GetSlice(zoneIndex);
-                _homeTop = slice.YTop;
-                // R12: 통로에는 들어가지 않는다. 예전엔 통로까지 내려올 수 있어서 닫힌 통로 안에 물고기가 쌓여
-                // 플레이어가 먹으러 갈 수 없는데도 스폰 한도를 차지했다 (QA 17 · 21 · 22)
-                _homeBottom = slice.YBottom;
-            }
-            else
-            {
-                _homeTop = 12f;
-                _homeBottom = -12f;
-            }
+            // R14 동심원 맵: 활동 범위 = 지금 벽(원) 안 전체. 구역 고리에 가두지 않는다
+            // (지금 구역 + 이전 구역 물고기가 같이 살고, 맵이 넓어지면 따라 넓어진다)
 
             _spawner = spawner;
             _spawnTime = Time.time;
@@ -356,43 +344,23 @@ namespace FishGame.Gameplay
             return used == 0 ? Vector2.zero : Vector2.ClampMagnitude(push, 1f);
         }
 
-        // ── 활동 범위 ───────────────────────────────────────────
-        Vector2 HomeCenter => new Vector2(CenterXAt((_homeTop + _homeBottom) * 0.5f),
-                                          (_homeTop + _homeBottom) * 0.5f);
+        // ── 활동 범위 (원형 벽 안) ──────────────────────────────
+        /// <summary>도망칠 때 벽에 몰리지 않게 섞는 방향 — 맵 중심.</summary>
+        Vector2 HomeCenter => Vector2.zero;
 
-        float HalfWidthAt(float y) => _layout != null ? _layout.HalfWidthAt(y) : 20f;
-        float CenterXAt(float y) => _layout != null ? _layout.CenterXAt(y) : 0f;
+        float WallRadius => _layout != null ? _layout.ActiveRadius : 24f;
 
-        bool InsideHome(Vector2 p)
-        {
-            if (p.y > _homeTop || p.y < _homeBottom) return false;
-            return Mathf.Abs(p.x - CenterXAt(p.y)) <= HalfWidthAt(p.y);
-        }
+        bool InsideHome(Vector2 p) => p.magnitude <= WallRadius - species.size * 0.5f;
 
-        /// <summary>
-        /// 벽을 피하는 힘. 통합 맵은 벽이 기울어져 있어서 y마다 폭이 다르므로
-        /// 고정된 사각형이 아니라 그 높이에서의 실제 폭을 매번 본다.
-        /// </summary>
+        /// <summary>벽을 피하는 힘 — 원형 벽까지 남은 거리가 margin보다 가까우면 안쪽으로 민다.</summary>
         Vector2 WallAvoidForce()
         {
             float margin = species.size * wallAvoidRatio;
             Vector2 p = _rb.position;
-            Vector2 force = Vector2.zero;
-
-            float cx = CenterXAt(p.y);
-            float hw = HalfWidthAt(p.y);
-
-            float left   = p.x - (cx - hw);
-            float right  = (cx + hw) - p.x;
-            float bottom = p.y - _homeBottom;
-            float top    = _homeTop - p.y;
-
-            if (left   < margin) force.x += 1f - left / margin;
-            if (right  < margin) force.x -= 1f - right / margin;
-            if (bottom < margin) force.y += 1f - bottom / margin;
-            if (top    < margin) force.y -= 1f - top / margin;
-
-            return Vector2.ClampMagnitude(force, 1f);
+            float r = p.magnitude;
+            float gap = WallRadius - r;
+            if (gap >= margin || r < 0.001f) return Vector2.zero;
+            return -p / r * Mathf.Clamp01(1f - gap / margin);
         }
 
         static Vector2 Rotate(Vector2 v, float radians)
@@ -413,28 +381,25 @@ namespace FishGame.Gameplay
             return null;
         }
 
+        /// <summary>
+        /// 원 안의 다른 목표 — 바다처럼 아주 넓은 원에서 맵 반대편을 목표로 잡지 않게, 자기 주변(배회 반경의 몇 배) 안에서 고른다.
+        /// </summary>
         Vector2 RandomPointInBounds()
         {
             float m = species != null ? species.size * 0.5f : 0.5f;
-            float y = Random.Range(_homeBottom + m, _homeTop - m);
-            float cx = CenterXAt(y);
-            float hw = Mathf.Max(m + 0.1f, HalfWidthAt(y));
-            return new Vector2(Random.Range(cx - hw + m, cx + hw - m), y);
+            float near = species != null ? Mathf.Max(6f, Mathf.Max(species.patternParam, species.size) * 4f) : 6f;
+            Vector2 p = (_rb != null ? _rb.position : Vector2.zero) + Random.insideUnitCircle * near;
+            float limit = Mathf.Max(0.1f, WallRadius - m);
+            return p.magnitude > limit ? p.normalized * limit * 0.9f : p;
         }
 
         /// <summary>경계를 넘어가면 안쪽으로 되돌린다. (밀어내기는 WallAvoidForce가 먼저 처리)</summary>
         void KeepInsideBounds()
         {
             Vector2 p = _rb.position;
-            float m = species.size * 0.5f;
-
-            p.y = Mathf.Clamp(p.y, _homeBottom + m, _homeTop - m);
-
-            float cx = CenterXAt(p.y);
-            float limit = Mathf.Max(0.1f, HalfWidthAt(p.y) - m);
-            p.x = Mathf.Clamp(p.x, cx - limit, cx + limit);
-
-            if (p != _rb.position) _rb.position = p;
+            float limit = Mathf.Max(0.1f, WallRadius - species.size * 0.5f);
+            float r = p.magnitude;
+            if (r > limit) _rb.position = p / r * limit;
         }
     }
 }

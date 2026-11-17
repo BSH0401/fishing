@@ -125,6 +125,10 @@ namespace FishGame.Data
         [Tooltip("곡마다 녹음 크기가 달라서 맞추는 볼륨 (설정의 배경음 볼륨이 여기에 곱해진다)")]
         [Range(0f, 1f)] public float musicVolume = 0.6f;
 
+        [Header("바닥 타일 (R14)")]
+        [Tooltip("이 구역 고리에 반복해서 까는 물 타일 (64px 도트). 비우면 물 색으로 칠한다")]
+        public Texture2D floorTile;
+
         [Header("연출")]
         public Color waterColor = new Color(0.55f, 0.80f, 0.72f, 1f);
         public Sprite background;
@@ -232,7 +236,8 @@ namespace FishGame.Data
         /// 몸 반경 = 크기 × 0.5 이고 벽에 스치지 않게 10% 여유를 둔다.
         /// 이보다 크면 이 구역에 갇힌다 — 그래서 이 구역에서 시작할 수도, 이 이상 자랄 수도 없다.
         /// </summary>
-        public float MaxEnterableSize => hasExit ? exitHalfWidth * 2f * 0.9f : float.MaxValue;
+        // R14 동심원 맵: 통로가 없어서 몸 크기로 갇히는 일이 없다
+        public float MaxEnterableSize => float.MaxValue;
 
         public float MaxHalfWidth
         {

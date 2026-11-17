@@ -69,7 +69,7 @@ namespace FishGame.UI
             _run.OnFishEaten += HandleFishEaten;
             _run.OnBossReleased += HandleBossReleased;
             _run.OnZoneChanged += HandleZoneChanged;
-            _run.OnGateOpened += HandleGateOpened;
+            _run.OnMapExpanded += HandleMapExpanded;
             _run.OnHiddenItemFound += HandleHiddenItemFound;
 
             ApplySlotIcons();
@@ -94,7 +94,7 @@ namespace FishGame.UI
             _run.OnFishEaten -= HandleFishEaten;
             _run.OnBossReleased -= HandleBossReleased;
             _run.OnZoneChanged -= HandleZoneChanged;
-            _run.OnGateOpened -= HandleGateOpened;
+            _run.OnMapExpanded -= HandleMapExpanded;
             _run.OnHiddenItemFound -= HandleHiddenItemFound;
         }
 
@@ -152,10 +152,10 @@ namespace FishGame.UI
             {
                 // 깊이와 함께 "지금 여기서 먹으면 몇 배인지"를 같이 보여준다.
                 // 아래로 내려갈 이유를 숫자로 드러내는 게 이 게임의 핵심이라서.
-                float y = _player.transform.position.y;
-                float depth = _run.WorldTopY - y;
-                float mult = _run.Layout.DepthValueDisplay(y);
-                depthText.text = Loc.F("깊이 {0:0}m  ×{1:0.0}", depth, mult);
+                // R14 원형 맵: 맵 중심에서의 거리 (바깥 고리일수록 값지다)
+                Vector2 p = _player.transform.position;
+                float mult = _run.Layout.DepthValueDisplay(p);
+                depthText.text = Loc.F("중심에서 {0:0}m  ×{1:0.0}", p.magnitude, mult);
             }
             if (depthBar != null) depthBar.fillAmount = _run.Depth01;
 
@@ -226,15 +226,9 @@ namespace FishGame.UI
             float need = _run.NextGateRequiredSize;
             float now = _run.CurrentPlayerSize;
 
-            if (_run.NextGateIsOpen)
-            {
-                var next = _run.Layout.GetZone(_run.CurrentZoneIndex + 1);
-                bossHintText.text = Loc.F("통로 개방 — 아래로 내려가면 {0}", (next != null ? Loc.T(next.displayName) : Loc.T("다음 구역")));
-            }
-            else
-            {
-                bossHintText.text = Loc.F("아래 통로: 크기 {0:0.0} / {1:0.0}", now, need);
-            }
+            var nextZone = _run.Layout.GetZone(_run.CurrentZoneIndex + 1);
+            bossHintText.text = Loc.F("맵 확장 ({0}): 크기 {1:0.0} / {2:0.0}",
+                                      nextZone != null ? Loc.T(nextZone.displayName) : Loc.T("다음 구역"), now, need);
         }
 
         void HandleFishEaten(float timeGain, double currency)
@@ -262,11 +256,10 @@ namespace FishGame.UI
             UpdateGateHint();
         }
 
-        void HandleGateOpened(FishGame.Gameplay.ZoneGate gate)
+        void HandleMapExpanded(int zoneIndex)
         {
-            if (gate == null) return;
-            if (gate.ZoneIndex != _run.CurrentZoneIndex) return;
-            ShowBanner(Loc.F("통로 개방 — {0}", Loc.T(gate.ToZoneName)));
+            var zone = _run != null ? _run.Layout?.GetZone(zoneIndex) : null;
+            ShowBanner(Loc.F("맵이 넓어졌다 — {0}", zone != null ? Loc.T(zone.displayName) : ""));
             UpdateGateHint();
         }
 
