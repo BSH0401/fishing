@@ -1,3 +1,4 @@
+﻿using System.Collections;
 using FishGame.Core;
 using FishGame.Gameplay;
 using FishGame.Utils;
@@ -23,6 +24,9 @@ namespace FishGame.UI
         [SerializeField] TMP_Text unlockText;
         [SerializeField] Button mainMenuButton;
         [SerializeField] Button retryButton;
+
+        Coroutine _currencyAnimation;
+        double _currencyTarget;
 
         void Awake()
         {
@@ -67,7 +71,7 @@ namespace FishGame.UI
 
         public void Show(RunResult result, RunEndReason reason)
         {
-            if (root != null) root.SetActive(true);
+            PopupScale.Show(root);
 
             if (titleText != null)
             {
@@ -91,8 +95,13 @@ namespace FishGame.UI
                 };
             }
 
+            FinishCurrency();
+            _currencyTarget = result.CurrencyEarned;
             if (currencyText != null)
-                currencyText.text = NumberFormatter.Format(result.CurrencyEarned);
+            {
+                currencyText.text = NumberFormatter.Format(0d);
+                if (_currencyTarget > 0d) _currencyAnimation = StartCoroutine(CountCurrency());
+            }
 
             if (penaltyText != null)
             {
@@ -141,7 +150,32 @@ namespace FishGame.UI
             }
         }
 
-        void OnMainMenu() => RunManager.Instance?.ReturnToMainMenu();
-        void OnRetry() => RunManager.Instance?.RestartRun();
+        IEnumerator CountCurrency()
+        {
+            string finalText = NumberFormatter.Format(_currencyTarget);
+            float elapsed = 0f;
+            while (elapsed < 0.5f)
+            {
+                yield return null;
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / 0.5f);
+                currencyText.text = NumberFormatter.Format(_currencyTarget * (1d - System.Math.Pow(1d - t, 3d)));
+                // Abbreviated/rounded text can reach its final appearance before the timer ends.
+                if (currencyText.text == finalText) break;
+            }
+            currencyText.text = finalText;
+            _currencyAnimation = null;
+            UIEmphasis.Pulse(currencyText.transform, 0.16f, 0.12f, immediate: true);
+        }
+
+        void FinishCurrency()
+        {
+            if (_currencyAnimation != null) StopCoroutine(_currencyAnimation);
+            _currencyAnimation = null;
+            if (currencyText != null) currencyText.text = NumberFormatter.Format(_currencyTarget);
+        }
+
+        void OnMainMenu() { FinishCurrency(); RunManager.Instance?.ReturnToMainMenu(); }
+        void OnRetry() { FinishCurrency(); RunManager.Instance?.RestartRun(); }
     }
 }
